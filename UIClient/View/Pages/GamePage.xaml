@@ -105,7 +105,7 @@
         </Grid.RowDefinitions>
         <Grid Grid.Row="1">
             <Button Width="80" Command="{Binding Core.LogoutCommand}" HorizontalAlignment="Right"
-                                Height="20" FontSize="22" Style="{StaticResource ButtonCustom}">
+                                Height="20" Style="{StaticResource ButtonCustom}">
                 <Button.Content>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Grid.Column="0" Text="Выйти" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center"
@@ -172,7 +172,7 @@
                                Text="{Binding Core.GameState.win_points, 
                                Converter={StaticResource ConvertWinPointsToString}, 
                                ConverterParameter={StaticResource Locator}}" 
-                               Foreground="{StaticResource ControlPressedBorderBrush}"/>
+                               Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
     
                         <TextBlock FontSize="18" HorizontalAlignment="Left"
                                Text="Матрица атаки:" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
@@ -180,7 +180,7 @@
                                Text="{Binding Core.GameState.attack_matrix, 
                                Converter={StaticResource ConvertAttackMatrixToString}, 
                                ConverterParameter={StaticResource Locator}}" 
-                               Foreground="{StaticResource ControlPressedBorderBrush}"/>
+                               Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                     </StackPanel>
                 </StackPanel>
                 <Grid Grid.Row="1" Background="{StaticResource ControlDisabledBackgroundBrush}">
