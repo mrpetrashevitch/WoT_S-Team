@@ -64,10 +64,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <PlatformTarget>x64</PlatformTarget>
     <OutputPath>..\Product\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <PlatformTarget>x64</PlatformTarget>
     <OutputPath>..\Product\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -89,6 +91,7 @@
     <LangVersion>9.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>true</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Costura, Version=5.7.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -370,6 +373,7 @@
     <Compile Include="Model\Actions.cs" />
     <Compile Include="Model\GameState.cs" />
     <Compile Include="Model\Map.cs" />
+    <Compile Include="Model\Native.cs" />
     <Compile Include="Model\Player.cs" />
     <Compile Include="Model\Points.cs" />
     <Compile Include="ViewModel\Base\ViewModelBase.cs" />
@@ -393,7 +397,6 @@
     <Compile Include="Infrastructure\Behaviors\WindowMoveBehavior.cs" />
     <Compile Include="Infrastructure\Commands\Base\CommandBase.cs" />
     <Compile Include="Infrastructure\Commands\LambdaCommand.cs" />
-    <Compile Include="Infrastructure\Converters\ConvertByteArrayToString.cs" />
     <Page Include="Infrastructure\Controls\HexField.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -479,7 +482,6 @@
     <Compile Include="Model\Config\AppConfig.cs" />
     <Compile Include="Model\Config\AppConfigJson.cs" />
     <Compile Include="Model\Core.cs" />
-    <Compile Include="Model\PInvoke\Kernel\Kernal.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

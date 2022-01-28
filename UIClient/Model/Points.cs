@@ -8,14 +8,14 @@ namespace UIClient.Model
 {
     public class Point3
     {
-        public int x { get; set; }
-        public int y { get; set; }
-        public int z { get; set; }
+        public int x;
+        public int y;
+        public int z;
     }
 
     public class Point2
     {
-        public int x { get; set; }
-        public int y { get; set; }
+        public int x ;
+        public int y;
     }
 }

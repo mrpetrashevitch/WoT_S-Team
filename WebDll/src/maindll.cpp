@@ -1,4 +1,5 @@
 #include "WebClient/client.h"
+#include "AI/ai.h"
 
 extern "C"
 {
@@ -44,5 +45,18 @@ extern "C"
 		{
 			return web_client::Result::IVALID_PARAM;
 		}
+	}
+
+	__declspec(dllexport) ai::action get_action(int curr_player,
+		ai::Player_native* players, int players_size,
+		ai::Vehicle_native* vehicle, int vehicle_size,
+		ai::WinPoints_native* win_points, int win_points_size,
+		ai::AttackMatrix_native* attack_matrix, int attack_matrix_size)
+	{
+		return ai::ai::get_action(curr_player,
+			players, players_size,
+			vehicle, vehicle_size,
+			win_points, win_points_size,
+			attack_matrix, attack_matrix_size);
 	}
 }

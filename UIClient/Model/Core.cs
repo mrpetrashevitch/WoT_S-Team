@@ -26,8 +26,6 @@ using UIClient.Model.Config;
 using UIClient.View.Pages;
 using UIClient.ViewModel;
 
-
-
 namespace UIClient.Model
 {
     public enum WebActions
@@ -81,8 +79,6 @@ namespace UIClient.Model
     {
         const string _PathCoreDll = "WebClient.dll";
         IntPtr web = IntPtr.Zero;
-        //TcpClient tcpClient;
-
 
         [DllImport(_PathCoreDll, CallingConvention = CallingConvention.Cdecl)]
         extern static IntPtr create();
@@ -95,6 +91,14 @@ namespace UIClient.Model
 
         [DllImport(_PathCoreDll, CallingConvention = CallingConvention.Cdecl)]
         extern static Result send_packet(IntPtr web, WebActions action, int size, IntPtr data, IntPtr out_size, IntPtr out_data);
+
+        [DllImport(_PathCoreDll, CallingConvention = CallingConvention.Cdecl)]
+        extern static action get_action(int curr_player,
+                                        IntPtr players, int players_size,
+                                        IntPtr vehicle, int vehicle_size,
+                                        IntPtr win_points, int win_points_size,
+                                        IntPtr attack_matrix, int attack_matrix_size);
+
 
         public Core()
         {
@@ -115,9 +119,6 @@ namespace UIClient.Model
             GetGameStateCommand = new LambdaCommand(OnGetGameStateCommandExecuted, CanGetGameStateCommandExecute);
             // init core
             Log("Ядро создано");
-
-            //tcpClient = new TcpClient();
-
             Connect();
         }
 
@@ -182,7 +183,6 @@ namespace UIClient.Model
         }
         #endregion
 
-
         #region string MessageWait : сообщение ожидания
         private string _MessageWait;
         /// <summary>сообщение ожидания</summary>
@@ -192,7 +192,6 @@ namespace UIClient.Model
             set { Set(ref _MessageWait, value); }
         }
         #endregion
-
 
         #region bool IsObserver : наблюдать
         private bool _IsObserver;
@@ -402,7 +401,6 @@ namespace UIClient.Model
         }
         #endregion
 
-
         #region GetActionsCommand : summury
         /// <summary>summury</summary>
         public ICommand GetActionsCommand { get; }
@@ -414,7 +412,6 @@ namespace UIClient.Model
                 Log("Ошибка: " + res.ToString());
         }
         #endregion
-
 
         #region GetGameStateCommand : получить статус игры
         /// <summary>получить статус игры</summary>
@@ -461,33 +458,6 @@ namespace UIClient.Model
                 pinned_msg.Free();
                 pinned_out_size.Free();
                 pinned_buffer.Free();
-
-
-
-                //var stream = tcpClient.GetStream();
-                //stream.Write(act_bytes, 0, 4);
-                //stream.Write(size_bytes, 0, 4);
-                //stream.Write(size_msg, 0, size_msg.Length);
-                //int packet_size = 8;
-                //int total_read = 0;
-                //while (total_read < packet_size)
-                //{
-                //    var read = stream.Read(buffer, total_read, packet_size - total_read);
-                //    total_read += read;
-                //    if (read == 0)
-                //        break;   // connection was broken
-                //}
-                //res = (Result)BitConverter.ToInt32(buffer, 0);
-                //packet_size = BitConverter.ToInt32(buffer, 4);
-                //total_read = 0;
-                //while (total_read < packet_size)
-                //{
-                //    var read = stream.Read(buffer, total_read, packet_size - total_read);
-                //    total_read += read;
-                //    if (read == 0)
-                //        break;   // connection was broken
-                //}
-                //message = Encoding.UTF8.GetString(buffer, 0, packet_size);
             }
 
             if (res == Result.OKEY)
@@ -497,6 +467,8 @@ namespace UIClient.Model
                     case WebActions.LOGIN:
                         {
                             Player = JsonConvert.DeserializeObject<Player>(message);
+
+
                         }
                         break;
                     case WebActions.LOGOUT:
@@ -528,6 +500,122 @@ namespace UIClient.Model
                                     {
                                         GetActions();
                                         VecEnable = true;
+                                        if (false) // true - enable io
+                                        {
+                                            IntPtr player_s_ptr = IntPtr.Zero;
+                                            GCHandle player_pipe = default(GCHandle);
+                                            IntPtr vehicle_s_ptr = IntPtr.Zero;
+                                            GCHandle vehicle_pipe = default(GCHandle);
+                                            IntPtr winpoints_s_ptr = IntPtr.Zero;
+                                            GCHandle winpoints_pipe = default(GCHandle);
+                                            IntPtr attackmatrix_s_ptr = IntPtr.Zero;
+                                            GCHandle attackmatrix_pipe = default(GCHandle);
+
+                                            Player_native[] player_s = null;
+                                            if (this.GameState.players != null)
+                                            {
+                                                player_s = new Player_native[this.GameState.players.Length];
+                                                for (int i = 0; i < this.GameState.players.Length; i++)
+                                                {
+                                                    player_s[i].idx = this.GameState.players[i].idx;
+                                                    player_s[i].is_observer = this.GameState.players[i].is_observer ? 1 : 0;
+                                                }
+                                            }
+                                            Vehicle_native[] vehicle_s = null;
+                                            if (this.GameState.vehicles.Count > 0)
+                                            {
+                                                vehicle_s = new Vehicle_native[this.GameState.vehicles.Count];
+                                                int i = 0;
+                                                foreach (var item in this.GameState.vehicles)
+                                                {
+                                                    vehicle_s[i].vehicle_id = item.Key;
+                                                    vehicle_s[i].capture_points = item.Value.capture_points;
+                                                    vehicle_s[i].health = item.Value.health;
+                                                    vehicle_s[i].player_id = item.Value.player_id;
+                                                    vehicle_s[i].position.x = item.Value.position.x;
+                                                    vehicle_s[i].position.y = item.Value.position.y;
+                                                    vehicle_s[i].position.z = item.Value.position.z;
+                                                    vehicle_s[i].spawn_position.x = item.Value.spawn_position.x;
+                                                    vehicle_s[i].spawn_position.y = item.Value.spawn_position.y;
+                                                    vehicle_s[i].spawn_position.z = item.Value.spawn_position.z;
+                                                    switch (item.Value.vehicle_type)
+                                                    {
+                                                        case "medium_tank": vehicle_s[i].vehicle_type = VehicleType.MT; break;
+                                                        case "light_tank": vehicle_s[i].vehicle_type = VehicleType.LT; break;
+                                                        case "heavy_tank": vehicle_s[i].vehicle_type = VehicleType.HT; break;
+                                                        case "at_spg": vehicle_s[i].vehicle_type = VehicleType.ASPG; break;
+                                                        case "spg": vehicle_s[i].vehicle_type = VehicleType.SPG; break;
+                                                        default: break;
+                                                    }
+                                                    i++;
+                                                }
+                                            }
+                                            WinPoints_native[] winpoints_s = null;
+                                            if (this.GameState.win_points.Count > 0)
+                                            {
+                                                winpoints_s = new WinPoints_native[this.GameState.win_points.Count];
+                                                int i = 0;
+                                                foreach (var item in this.GameState.win_points)
+                                                {
+                                                    winpoints_s[i].id = item.Key;
+                                                    winpoints_s[i].capture = item.Value.capture;
+                                                    winpoints_s[i].kill = item.Value.kill;
+                                                    i++;
+                                                }
+                                            }
+                                            AttackMatrix_native[] attackmatrix_s = null;
+                                            if (this.GameState.attack_matrix.Count > 0)
+                                            {
+                                                attackmatrix_s = new AttackMatrix_native[this.GameState.attack_matrix.Count];
+                                                int i = 0;
+                                                unsafe
+                                                {
+                                                    foreach (var item in this.GameState.attack_matrix)
+                                                    {
+                                                        int j = 0;
+                                                        attackmatrix_s[i].id = item.Key;
+                                                        foreach (var ind in item.Value)
+                                                        {
+                                                            attackmatrix_s[i].attack[j] = ind;
+                                                            j++;
+                                                        }
+                                                        i++;
+                                                    }
+                                                }
+                                            }
+
+                                            if (player_s != null)
+                                            {
+                                                player_pipe = GCHandle.Alloc(player_s, GCHandleType.Pinned);
+                                                player_s_ptr = player_pipe.AddrOfPinnedObject();
+                                            }
+                                            if (vehicle_s != null)
+                                            {
+                                                vehicle_pipe = GCHandle.Alloc(vehicle_s, GCHandleType.Pinned);
+                                                vehicle_s_ptr = vehicle_pipe.AddrOfPinnedObject();
+                                            }
+                                            if (winpoints_s != null)
+                                            {
+                                                winpoints_pipe = GCHandle.Alloc(winpoints_s, GCHandleType.Pinned);
+                                                winpoints_s_ptr = winpoints_pipe.AddrOfPinnedObject();
+                                            }
+                                            if (attackmatrix_s != null)
+                                            {
+                                                attackmatrix_pipe = GCHandle.Alloc(attackmatrix_s, GCHandleType.Pinned);
+                                                attackmatrix_s_ptr = attackmatrix_pipe.AddrOfPinnedObject();
+                                            }
+
+                                            var act = get_action(Player.idx,
+                                                player_s_ptr, player_s.Length,
+                                                vehicle_s_ptr, vehicle_s.Length,
+                                                winpoints_s_ptr, winpoints_s.Length,
+                                                attackmatrix_s_ptr, attackmatrix_s.Length);
+
+                                            if (player_s != null) player_pipe.Free();
+                                            if (vehicle_s != null) vehicle_pipe.Free();
+                                            if (winpoints_s != null) winpoints_pipe.Free();
+                                            if (attackmatrix_s != null) attackmatrix_pipe.Free();
+                                        }
                                     }
                                     else
                                     {
@@ -735,8 +823,6 @@ namespace UIClient.Model
                 IPAddress[] addresslist = Dns.GetHostAddresses(config.NetConfig.HostName);
                 await Task.Run(() => { connect_(web, (uint)addresslist[0].Address, config.NetConfig.Port); });
 
-                //await tcpClient.ConnectAsync(config.NetConfig.HostName, config.NetConfig.Port);
-
                 Connected = true;
                 Log("Подключен к серверу");
             }
@@ -746,6 +832,5 @@ namespace UIClient.Model
                 Log("Ошибка подключения к серверу");
             }
         }
-
     }
 }

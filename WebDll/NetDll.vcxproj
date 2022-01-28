@@ -163,10 +163,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\AI\ai.cpp" />
     <ClCompile Include="src\maindll.cpp" />
     <ClCompile Include="src\WebClient\client.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\AI\ai.h" />
     <ClInclude Include="src\WebClient\client.h" />
     <ClInclude Include="src\defs.h" />
   </ItemGroup>
