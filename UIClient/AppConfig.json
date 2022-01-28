@@ -1,0 +1,6 @@
+{
+  "AppConfigJson": {
+    "HostName": "wgforge-srv.wargaming.net",
+    "Port": 443
+  }
+}

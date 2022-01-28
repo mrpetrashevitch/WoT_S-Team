@@ -1,7 +1,8 @@
 .vs/
 Build/
-packages/
+Packages/
 Product/
-WGUI/bin/
-WGUI/obj/
-WGUI/Release/
+/UIClient/bin
+/UIClient/obj
+/UIClient/Release
+/UIClient/Debug

@@ -1,0 +1,26 @@
+﻿<UserControl x:Class="UIClient.Infrastructure.Controls.Tank"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:UIClient.Infrastructure.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="30" d:DesignWidth="30"
+             x:Name="CurrentControl">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="22"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" 
+                   Text="{Binding Path=Type, ElementName=CurrentControl}" 
+                   Foreground="{Binding Path=TeamColor, ElementName=CurrentControl}" 
+                   FontSize="15" VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+
+        <TextBlock Grid.Row="1" 
+                   Text="{Binding Path=HP, ElementName=CurrentControl}" 
+                   Foreground="{Binding Path=TeamColor, ElementName=CurrentControl}" 
+                   FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+     
+    </Grid>
+</UserControl>
