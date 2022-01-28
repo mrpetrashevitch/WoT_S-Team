@@ -160,31 +160,22 @@
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Row="0">
 
-                    <TextBlock Text="{Binding StringFormat=Карта: {0}, Path=Core.Map.name}" Margin="10 0 0 0"
+                    <StackPanel Margin="10 0 0 0">
+                    <TextBlock Text="{Binding StringFormat=Карта: {0}, Path=Core.Map.name}"
                                FontSize="18" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
-                    <TextBlock Text="{Binding StringFormat=Имя: {0}, Path=Core.UserName}" Margin="10 0 0 0"
+                    <TextBlock Text="{Binding StringFormat=Имя: {0}, Path=Core.UserName}"
                                FontSize="18" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
 
-
-                    <!--<Button Width="80" Content="GET ACT"
-                            Height="20" FontSize="16" Style="{StaticResource ButtonCustom}"
-                            Command="{Binding Core.GetActionsCommand}"/>
-                    <Button Width="80" Content="GET STATE"
-                            Height="20" FontSize="16" Style="{StaticResource ButtonCustom}"
-                            Command="{Binding Core.GetGameStateCommand}"/>-->
-
-                    <StackPanel>
-                        <TextBlock FontSize="18" HorizontalAlignment="Left" 
-                               Text="Выигрышные очки:" Foreground="{StaticResource ControlPressedBorderBrush}"/>
+                        <TextBlock FontSize="18" HorizontalAlignment="Left"
+                               Text="Выигрышные очки:" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                         <TextBlock FontSize="18" HorizontalAlignment="Left" 
                                Text="{Binding Core.GameState.win_points, 
                                Converter={StaticResource ConvertWinPointsToString}, 
                                ConverterParameter={StaticResource Locator}}" 
                                Foreground="{StaticResource ControlPressedBorderBrush}"/>
-                    </StackPanel>
-                    <StackPanel>
-                        <TextBlock FontSize="18" HorizontalAlignment="Left" 
-                               Text="Матрица атаки:" Foreground="{StaticResource ControlPressedBorderBrush}"/>
+    
+                        <TextBlock FontSize="18" HorizontalAlignment="Left"
+                               Text="Матрица атаки:" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                         <TextBlock FontSize="18" HorizontalAlignment="Left" 
                                Text="{Binding Core.GameState.attack_matrix, 
                                Converter={StaticResource ConvertAttackMatrixToString}, 
