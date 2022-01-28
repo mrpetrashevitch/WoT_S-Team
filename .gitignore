@@ -1,0 +1,7 @@
+.vs/
+Build/
+packages/
+Product/
+WGUI/bin/
+WGUI/obj/
+WGUI/Release/
