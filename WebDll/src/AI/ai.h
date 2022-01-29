@@ -1,5 +1,7 @@
 #pragma once
-#include "../defs.h" 
+#include "../defs.h"
+#include <cmath>
+#include <algorithm>
 
 namespace ai
 {
@@ -69,6 +71,12 @@ namespace ai
 
 	class ai
 	{
+	private:
+		static void get_targets(int curr_player,
+			vehicles_native* vehicles, int vehicles_size,
+			point position,
+			vehicles_native* targets, int* targets_size);
+		static int distance(point a, point b);
 	public:
 		static Result get_action(int curr_player,
 			player_native* players, int players_size,
