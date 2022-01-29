@@ -165,7 +165,7 @@
                         <TextBlock Text="{Binding StringFormat=Имя: {0}, Path=Core.Player.name}"
                                FontSize="18" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
 
-                        <TextBlock FontSize="18" HorizontalAlignment="Left"
+                        <TextBlock FontSize="18" HorizontalAlignment="Center"
                                Text="Выигрышные очки:" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                         <TextBlock FontSize="18" HorizontalAlignment="Left" 
                                Text="{Binding Core.GameState.win_points, 
@@ -173,7 +173,7 @@
                                ConverterParameter={StaticResource Locator}}" 
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
 
-                        <TextBlock FontSize="18" HorizontalAlignment="Left"
+                        <TextBlock FontSize="18" HorizontalAlignment="Center"
                                Text="Матрица атаки:" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                         <TextBlock FontSize="18" HorizontalAlignment="Left" 
                                Text="{Binding Core.GameState.attack_matrix, 
@@ -181,7 +181,7 @@
                                ConverterParameter={StaticResource Locator}}" 
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
 
-                        <TextBlock FontSize="18" HorizontalAlignment="Left"
+                        <TextBlock FontSize="18" HorizontalAlignment="Center"
                                Text="Наблюдатели:" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                         <TextBlock FontSize="18" HorizontalAlignment="Left" 
                                Text="{Binding Core.GameState.observers, 

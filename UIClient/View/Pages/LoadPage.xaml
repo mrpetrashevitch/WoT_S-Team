@@ -101,10 +101,10 @@
 
 
 
-                <TextBlock x:Name="text_block" Visibility="{Binding IsLoadVisible}" Grid.Row="2" Text="Загрузка..." VerticalAlignment="Center" HorizontalAlignment="Center"
+                <TextBlock x:Name="text_block" Visibility="{Binding IsLoadVisible}" Grid.Row="3" Text="Загрузка..." VerticalAlignment="Center" HorizontalAlignment="Center"
                        FontSize="22" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
 
-                <Rectangle x:Name="rectangle" Grid.Row ="2" Visibility="{Binding IsLoadVisible}" HorizontalAlignment="Center" Height="3" 
+                <Rectangle x:Name="rectangle" Grid.Row ="3" Visibility="{Binding IsLoadVisible}" HorizontalAlignment="Center" Height="3" 
                            Width="200" StrokeThickness="0" 
                            VerticalAlignment="Bottom">
                     <Rectangle.Fill>

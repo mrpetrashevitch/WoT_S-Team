@@ -180,7 +180,7 @@ namespace UIClient.ViewModel
                         }
                     }
                 }
-                await Task.Delay(1000);
+                await Task.Delay(500);
             }
         }
         #endregion
