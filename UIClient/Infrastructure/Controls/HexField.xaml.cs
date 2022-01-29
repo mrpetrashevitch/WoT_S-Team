@@ -51,7 +51,7 @@ namespace UIClient.Infrastructure.Controls
             x = 0; y = 0;
             offset.x = size - 1;
             offset.y = size - 1;
-            FieldSizeX = (field_size + 1) * Hex.size_x * 0.75;
+            FieldSizeX = (field_size+1) * Hex.size_x * 0.75 - Hex.size_y/2;
             FieldSizeY = (field_size) * Hex.size_y;
 
             int l = size - 2, r = size;
