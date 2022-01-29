@@ -17,9 +17,9 @@ extern "C"
 		}
 	}
 
-	__declspec(dllexport) web_client::Result connect_(web_client::client* web, uint addr, ushort port)
+	__declspec(dllexport) Result connect_(web_client::client* web, uint addr, ushort port)
 	{
-		if (!web) return web_client::Result::IVALID_PARAM;
+		if (!web) return Result::IVALID_PARAM;
 		SOCKADDR_IN serv_adr;
 		serv_adr.sin_addr.s_addr = addr;
 		serv_adr.sin_port = htons(port);
@@ -27,36 +27,36 @@ extern "C"
 		return web->connect(serv_adr);
 	}
 
-	__declspec(dllexport) web_client::Result send_packet(web_client::client* web, web_client::WebActions action, int size, byte* data, int* out_size, byte* out_data)
+	__declspec(dllexport) Result send_packet(web_client::client* web, web_client::WebActions action, int size, byte* data, int* out_size, byte* out_data)
 	{
-		if (!web) return web_client::Result::IVALID_PARAM;
+		if (!web) return Result::IVALID_PARAM;
 		return web->send_packet(action, size, data, out_size, out_data);
 	}
 
-	__declspec(dllexport) web_client::Result destroy(void* web)
+	__declspec(dllexport) Result destroy(void* web)
 	{
-		if (!web) return web_client::Result::IVALID_PARAM;
+		if (!web) return Result::IVALID_PARAM;
 		try
 		{
 			delete web;
-			return web_client::Result::OKEY;
+			return Result::OKEY;
 		}
 		catch (const std::exception&)
 		{
-			return web_client::Result::IVALID_PARAM;
+			return Result::IVALID_PARAM;
 		}
 	}
 
-	__declspec(dllexport) ai::action get_action(int curr_player,
+	__declspec(dllexport) Result get_action(int curr_player,
 		ai::Player_native* players, int players_size,
 		ai::Vehicle_native* vehicle, int vehicle_size,
 		ai::WinPoints_native* win_points, int win_points_size,
-		ai::AttackMatrix_native* attack_matrix, int attack_matrix_size)
+		ai::AttackMatrix_native* attack_matrix, int attack_matrix_size, ai::action_ret* out_actions)
 	{
 		return ai::ai::get_action(curr_player,
 			players, players_size,
 			vehicle, vehicle_size,
 			win_points, win_points_size,
-			attack_matrix, attack_matrix_size);
+			attack_matrix, attack_matrix_size, out_actions);
 	}
 }

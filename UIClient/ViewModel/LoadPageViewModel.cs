@@ -133,7 +133,7 @@ namespace UIClient.ViewModel
             log.num_players = PlayersMax;
             log.is_observer = IsObserver;
 
-            var res = await Core.LoginAsync(log);
+            var res = await Core.SendLoginAsync(log);
             if (res != Result.OKEY)
             {
                 Core.Log("Ошибка: " + res.ToString());
@@ -141,7 +141,7 @@ namespace UIClient.ViewModel
             }
             Core.Log("Авторизация выполнена");
 
-            res = await Core.GetMapAsync();
+            res = await Core.SendMapAsync();
             if (res != Result.OKEY)
             {
                 Core.Log("Ошибка: " + res.ToString());
@@ -156,7 +156,7 @@ namespace UIClient.ViewModel
             //wait players
             while (true)
             {
-                res = await Core.GetGameStateAsync();
+                res = await Core.SendGameStateAsync();
                 if (res == Result.OKEY)
                 {
                     if (!Core.Field.Inited)
@@ -168,7 +168,7 @@ namespace UIClient.ViewModel
                             if(Core.Field.players.TryGetValue(Core.Player.idx,out curr_player))
                                 Core.TeamColor = curr_player.color;
 
-                            res = await Core.GetGameStateAsync();
+                            res = await Core.SendGameStateAsync();
                             Core.Log("Все игроки подключены");
                             break;
                         }
