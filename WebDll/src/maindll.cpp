@@ -48,9 +48,9 @@ extern "C"
 	}
 
 	__declspec(dllexport) Result get_action(int curr_player,
-		ai::Player_native* players, int players_size,
-		ai::Vehicle_native* vehicle, int vehicle_size,
-		ai::WinPoints_native* win_points, int win_points_size,
+		ai::player_native* players, int players_size,
+		ai::vehicles_native* vehicle, int vehicle_size,
+		ai::win_points_native* win_points, int win_points_size,
 		ai::AttackMatrix_native* attack_matrix, int attack_matrix_size, ai::action_ret* out_actions)
 	{
 		return ai::ai::get_action(curr_player,

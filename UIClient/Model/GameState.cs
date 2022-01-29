@@ -34,7 +34,7 @@ namespace UIClient.Model
     public class Vehicle
     {
         public int player_id { get; set; }
-        public VehicleType vehicle_type { get; set; }
+        public vehicle_type vehicle_type { get; set; }
         public int health { get; set; }
         public Point3 spawn_position { get; set; }
         public Point3 position { get; set; }

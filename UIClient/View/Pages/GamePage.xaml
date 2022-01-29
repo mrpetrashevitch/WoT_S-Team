@@ -234,10 +234,10 @@
                         <TextBox Height="20" FontSize="16" Grid.Column="1"
                                      Text="{Binding Core.ChatText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                             <TextBox.InputBindings>
-                                <KeyBinding Command="{Binding Core.ChatSendMsgCommand}" Key="Return" />
+                                <KeyBinding Command="{Binding Core.SendChatMessageCommand}" Key="Return" />
                             </TextBox.InputBindings>
                         </TextBox>
-                        <Button Grid.Column="2" Width="20" Command="{Binding Core.ChatSendMsgCommand}"
+                        <Button Grid.Column="2" Width="20" Command="{Binding Core.SendChatMessageCommand}"
                                 Height="20" Style="{StaticResource ButtonCustom}">
                             <Button.Content>
                                 <TextBlock Grid.Column="0" Text="&#xE043;" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center"

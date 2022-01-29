@@ -40,12 +40,12 @@ namespace UIClient.Infrastructure.Behavior
 
             if (new_tank == null)
             {
-                vm.Core.MoveAsync(tank.Vehicle.id, curr_hex.Point3);
+                await vm.Core.MoveAsync(tank.Vehicle.id, curr_hex.Point3).ConfigureAwait(false);
             }
             else
             {
                 if (new_tank.Vehicle.vehicle.player_id == vm.Core.Player.idx) return;
-                vm.Core.ShootAsync(tank.Vehicle.id, curr_hex.Point3);
+                await vm.Core.ShootAsync(tank.Vehicle.id, curr_hex.Point3).ConfigureAwait(false);
             }
         }
 

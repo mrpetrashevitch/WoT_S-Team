@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace UIClient.Model
 {
-    public struct Player_native
+    public struct player_native
     {
         public int idx;
         public int is_observer;
     }
 
 
-    public enum VehicleType : int
+    public enum vehicle_type : int
     {
         [EnumMember(Value = "medium_tank")]
         СТ,
@@ -29,11 +29,11 @@ namespace UIClient.Model
         САУ
     }
 
-    public struct Vehicle_native
+    public struct vehicle_native
     {
         public int vehicle_id;
         public int player_id;
-        public VehicleType vehicle_type;
+        public vehicle_type vehicle_type;
         public int health;
         public point spawn_position;
         public point position;
@@ -67,14 +67,14 @@ namespace UIClient.Model
         public action[] actions;
     }
 
-    public struct WinPoints_native
+    public struct win_points_native
     {
         public int id;
         public int capture;
         public int kill;
     }
 
-    public unsafe struct AttackMatrix_native
+    public unsafe struct attack_matrix_native
     {
         public int id;
         public fixed int attack[3];

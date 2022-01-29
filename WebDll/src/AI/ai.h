@@ -28,13 +28,13 @@ namespace ai
 		action actions[5];
 	};
 
-	struct Player_native
+	struct player_native
 	{
 		int idx;
 		int is_observer;
 	};
 
-	enum class VehicleType : int
+	enum class vehicle_type : int
 	{
 		MT,
 		LT,
@@ -43,18 +43,18 @@ namespace ai
 		SPG
 	};
 
-	struct Vehicle_native
+	struct vehicles_native
 	{
 		int vehicle_id;
 		int player_id;
-		VehicleType vehicle_type;
+		vehicle_type vehicle_type;
 		int health;
 		point spawn_position;
 		point position;
 		int capture_points;
 	};
 
-	struct WinPoints_native
+	struct win_points_native
 	{
 		int id;
 		int capture;
@@ -71,9 +71,9 @@ namespace ai
 	{
 	public:
 		static Result get_action(int curr_player,
-			Player_native* players, int players_size,
-			Vehicle_native* vehicle, int vehicle_size,
-			WinPoints_native* win_points, int win_points_size,
+			player_native* players, int players_size,
+			vehicles_native* vehicles, int vehicles_size,
+			win_points_native* win_points, int win_points_size,
 			AttackMatrix_native* attack_matrix, int attack_matrix_size, action_ret* out_actions);
 	};
 }

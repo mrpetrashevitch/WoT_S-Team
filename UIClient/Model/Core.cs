@@ -114,9 +114,7 @@ namespace UIClient.Model
             Timer.Tick += TimerTick;
 
             LogoutCommand = new LambdaCommand(OnLogoutCommandExecuted, CanLogoutCommandExecute);
-            ChatSendMsgCommand = new LambdaCommand(OnChatSendMsgCommandExecuted, CanChatSendMsgCommandExecute);
-            GetActionsCommand = new LambdaCommand(OnGetActionsCommandExecuted, CanGetActionsCommandExecute);
-            GetGameStateCommand = new LambdaCommand(OnGetGameStateCommandExecuted, CanGetGameStateCommandExecute);
+            SendChatMessageCommand = new LambdaCommand(OnSendChatMessageCommandExecuted, CanSendChatMessageCommandExecute);
             TurnCommand = new LambdaCommand(OnTurnCommandExecuted, CanTurnCommandExecute);
 
             Log("UI ядро создано");
@@ -197,24 +195,25 @@ namespace UIClient.Model
         }
         #endregion
         private DispatcherTimer Timer = new DispatcherTimer();
-        private void TimerTick(object sender, EventArgs e)
+        private async void TimerTick(object sender, EventArgs e)
         {
             TotalTick--;
             Log("Осталось: " + TotalTick + "c");
             if (TotalTick == 0)
             {
                 Log("Время истекло");
-                TimerStop();
+                await TimerStop();
             }
         }
-        public void TimerRun()
+        public async Task TimerRun()
         {
             TotalTick = 9;
             TotalStep = 0;
             StepEnable = true;
             Timer.Start();
+            await Task.FromResult(false);
         }
-        public async void TimerStop()
+        public async Task TimerStop()
         {
             Timer.Stop();
             await SendTurnAsync();
@@ -322,13 +321,13 @@ namespace UIClient.Model
                 Log("Ошибка: " + res.ToString());
         }
         #endregion
-        #region ChatSendMsgCommand : отправить сообщение в чат
+        #region SendChatMessageCommand : отправить сообщение в чат
         /// <summary>отправить сообщение в чат</summary>
-        public ICommand ChatSendMsgCommand { get; }
-        private bool CanChatSendMsgCommandExecute(object p) => Connected && ChatText?.Length > 1 && StepEnable;
-        private void OnChatSendMsgCommandExecuted(object p)
+        public ICommand SendChatMessageCommand { get; }
+        private bool CanSendChatMessageCommandExecute(object p) => Connected && ChatText?.Length > 1 && StepEnable;
+        private async void OnSendChatMessageCommandExecuted(object p)
         {
-            var res = SendChat(ChatText);
+            var res = await SendChatAsync(ChatText).ConfigureAwait(false);
             if (res == Result.OKEY)
             {
                 Chat.Add(ChatText);
@@ -338,43 +337,19 @@ namespace UIClient.Model
                 Log("Ошибка: " + res.ToString());
         }
         #endregion
-        #region GetActionsCommand : summury
-        /// <summary>summury</summary>
-        public ICommand GetActionsCommand { get; }
-        private bool CanGetActionsCommandExecute(object p) => Connected;
-        private void OnGetActionsCommandExecuted(object p)
-        {
-            var res = SendActions();
-            if (res != Result.OKEY)
-                Log("Ошибка: " + res.ToString());
-        }
-        #endregion
-        #region GetGameStateCommand : получить статус игры
-        /// <summary>получить статус игры</summary>
-        public ICommand GetGameStateCommand { get; }
-        private bool CanGetGameStateCommandExecute(object p) => true;
-        private void OnGetGameStateCommandExecuted(object p)
-        {
-            var res = SendGameState();
-            if (res != Result.OKEY)
-                Log("Ошибка: " + res.ToString());
-        }
-        #endregion
         #region TurnCommand : переключить ход
         /// <summary>переключить ход</summary>
         public ICommand TurnCommand { get; }
         private bool CanTurnCommandExecute(object p) => StepEnable;
-        private void OnTurnCommandExecuted(object p)
+        private async void OnTurnCommandExecuted(object p)
         {
-            TimerStop();
+            await TimerStop();
         }
         #endregion
 
-
-
         static object locker = new object();
 
-        Result SendPacket<T>(WebActions action, T data, bool scip_data = false)
+        async Task<Result> SendPacket<T>(WebActions action, T data, bool scip_data = false)
         {
             string json_str = "";
 
@@ -401,11 +376,10 @@ namespace UIClient.Model
                     res = send_packet(web, action, size_msg.Length, pointer_msg, pointer_out_size, pointer_buffer);
 
                 message = Encoding.UTF8.GetString(buffer, 0, BitConverter.ToInt32(out_size, 0));
-
-                pinned_msg.Free();
-                pinned_out_size.Free();
-                pinned_buffer.Free();
             }
+            pinned_msg.Free();
+            pinned_out_size.Free();
+            pinned_buffer.Free();
 
             if (res == Result.OKEY)
             {
@@ -424,8 +398,6 @@ namespace UIClient.Model
                     case WebActions.MAP:
                         {
                             Map = JsonConvert.DeserializeObject<Map>(message);
-                            //Map.size = 12;
-                            App.Current.Dispatcher.BeginInvoke(new Action(() => { Field.CreateField(Map); }));
                         }
                         break;
                     case WebActions.GAME_STATE:
@@ -442,37 +414,35 @@ namespace UIClient.Model
                                 {
                                     if (GameState.current_player_idx == Player.idx)
                                     {
-                                        App.Current.Dispatcher.Invoke(new Action(() => { TimerRun(); CommandBase.RaiseCanExecuteChanged(); }));
-                                        SendActions();
+                                        App.Current.Dispatcher.Invoke(new Action(() => { TimerRun().Wait(); CommandBase.RaiseCanExecuteChanged(); }));
+                                        await SendActionsAsync().ConfigureAwait(false);
 
                                         if (AIEnable)
                                         {
                                             var actions = GetAIActions();
-                                            App.Current.Dispatcher.Invoke(new Action(() =>
+
+                                            foreach (var i in actions.actions)
                                             {
-                                                foreach (var i in actions.actions)
+                                                if (i.action_type == action_type.move)
                                                 {
-                                                    if (i.action_type == action_type.move)
-                                                    {
-                                                        MoveAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z });
-                                                    }
-                                                    else if (i.action_type == action_type.shoot)
-                                                    {
-                                                        ShootAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z });
-                                                    }
+                                                    await MoveAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z }).ConfigureAwait(false);
                                                 }
-                                            }));
+                                                else if (i.action_type == action_type.shoot)
+                                                {
+                                                    await ShootAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z }).ConfigureAwait(false);
+                                                }
+                                            }
                                             if (StepEnable)
                                             {
-                                                SendTurn();
-                                                SendGameState();
+                                                await SendTurnAsync().ConfigureAwait(false);
+                                                await SendGameStateAsync().ConfigureAwait(false);
                                             }
                                         }
                                     }
                                     else
                                     {
-                                        SendTurn();
-                                        SendGameState();
+                                        await SendTurnAsync().ConfigureAwait(false);
+                                        await SendGameStateAsync().ConfigureAwait(false);
                                     }
                                 }
                                 App.Current.Dispatcher.Invoke(new Action(() => { Field.UpdateContent(GameState); }));
@@ -495,30 +465,11 @@ namespace UIClient.Model
                             }
                         }
                         break;
-                    case WebActions.TURN:
-                        {
-
-                        }
-                        break;
-                    case WebActions.CHAT:
-                        {
-
-                        }
-                        break;
-                    case WebActions.MOVE:
-                        {
-
-                        }
-                        break;
-                    case WebActions.SHOOT:
-                        break;
                     default:
                         break;
                 }
             }
             return res;
-
-
         }
 
         public action_ret GetAIActions()
@@ -532,20 +483,20 @@ namespace UIClient.Model
             IntPtr attackmatrix_s_ptr = IntPtr.Zero;
             GCHandle attackmatrix_pipe = default(GCHandle);
 
-            Player_native[] player_s = null;
+            player_native[] player_s = null;
             if (this.GameState.players != null)
             {
-                player_s = new Player_native[this.GameState.players.Length];
+                player_s = new player_native[this.GameState.players.Length];
                 for (int i = 0; i < this.GameState.players.Length; i++)
                 {
                     player_s[i].idx = this.GameState.players[i].idx;
                     player_s[i].is_observer = this.GameState.players[i].is_observer ? 1 : 0;
                 }
             }
-            Vehicle_native[] vehicle_s = null;
+            vehicle_native[] vehicle_s = null;
             if (this.GameState.vehicles.Count > 0)
             {
-                vehicle_s = new Vehicle_native[this.GameState.vehicles.Count];
+                vehicle_s = new vehicle_native[this.GameState.vehicles.Count];
                 int i = 0;
                 foreach (var item in this.GameState.vehicles)
                 {
@@ -563,10 +514,10 @@ namespace UIClient.Model
                     i++;
                 }
             }
-            WinPoints_native[] winpoints_s = null;
+            win_points_native[] winpoints_s = null;
             if (this.GameState.win_points.Count > 0)
             {
-                winpoints_s = new WinPoints_native[this.GameState.win_points.Count];
+                winpoints_s = new win_points_native[this.GameState.win_points.Count];
                 int i = 0;
                 foreach (var item in this.GameState.win_points)
                 {
@@ -576,10 +527,10 @@ namespace UIClient.Model
                     i++;
                 }
             }
-            AttackMatrix_native[] attackmatrix_s = null;
+            attack_matrix_native[] attackmatrix_s = null;
             if (this.GameState.attack_matrix.Count > 0)
             {
-                attackmatrix_s = new AttackMatrix_native[this.GameState.attack_matrix.Count];
+                attackmatrix_s = new attack_matrix_native[this.GameState.attack_matrix.Count];
                 int i = 0;
                 unsafe
                 {
@@ -633,18 +584,18 @@ namespace UIClient.Model
             return action_re;
         }
 
-        public async void MoveAsync(int id, Point3 point)
+        public async Task MoveAsync(int id, Point3 point)
         {
-            Result res = await SendMoveAsync(id, point);
+            Result res = await SendMoveAsync(id, point).ConfigureAwait(false);
 
             if (res == Result.OKEY)
             {
                 TotalStep++;
-                Field.VehicleMove(id, point);
+                App.Current.Dispatcher.Invoke(() => { Field.VehicleMove(id, point); });
                 Log("Машина перемещена по x: " + point.x + ", y: " + point.y + ", z: " + point.z);
 
                 if (TotalStep == 5)
-                    TimerStop();
+                    await TimerStop();
             }
             else if (res == Result.BAD_COMMAND)
             {
@@ -653,27 +604,27 @@ namespace UIClient.Model
             else if (res == Result.INAPPROPRIATE_GAME_STATE)
             {
                 Log("Ход перешел другому");
-                TimerStop();
+                await TimerStop();
             }
             else
             {
                 Log(res.ToString());
-                TimerStop();
+                await TimerStop();
             }
         }
 
-        public async void ShootAsync(int id, Point3 point)
+        public async Task ShootAsync(int id, Point3 point)
         {
-            Result res = await SendShootAsync(id, point);
+            Result res = await SendShootAsync(id, point).ConfigureAwait(false);
 
             if (res == Result.OKEY)
             {
                 TotalStep++;
-                Field.VehicleShoot(id, point);
+                App.Current.Dispatcher.Invoke(() => { Field.VehicleShoot(id, point); });
                 Log("Выстрел по x: " + point.x + ", y: " + point.y + ", z: " + point.z);
 
                 if (TotalStep == 5)
-                    TimerStop();
+                    await TimerStop();
             }
             else if (res == Result.BAD_COMMAND)
             {
@@ -682,104 +633,50 @@ namespace UIClient.Model
             else if (res == Result.INAPPROPRIATE_GAME_STATE)
             {
                 Log("Ход перешел другому");
-                TimerStop();
+                await TimerStop();
             }
             else
             {
                 Log(res.ToString());
-                TimerStop();
+                await TimerStop();
             }
-        }
-
-        public Result SendLogin(LoginCreate log)
-        {
-            if (!Connected) return Result.CONNECTED_FALSE;
-            return SendPacket(WebActions.LOGIN, log);
         }
 
         public async Task<Result> SendLoginAsync(LoginCreate log)
         {
             if (!Connected) return Result.CONNECTED_FALSE;
-            return await Task.Run(() => SendPacket(WebActions.LOGIN, log));
-        }
-
-        public Result SendLogout()
-        {
-            if (!Connected) return Result.CONNECTED_FALSE;
-            return SendPacket(WebActions.LOGOUT, 0, true);
+            return await Task.Run(() => SendPacket(WebActions.LOGIN, log)).ConfigureAwait(false);
         }
 
         public async Task<Result> SendLogoutAsync()
         {
             if (!Connected) return Result.CONNECTED_FALSE;
-            return await Task.Run(() => SendPacket(WebActions.LOGOUT, 0, true));
-        }
-
-        public Result SendMap()
-        {
-            if (!Connected) return Result.CONNECTED_FALSE;
-            return SendPacket(WebActions.MAP, 0, true);
+            return await Task.Run(() => SendPacket(WebActions.LOGOUT, 0, true)).ConfigureAwait(false);
         }
 
         public async Task<Result> SendMapAsync()
         {
             if (!Connected) return Result.CONNECTED_FALSE;
-            return await Task.Run(() => SendPacket(WebActions.MAP, 0, true));
-        }
-
-        public Result SendGameState()
-        {
-            if (!Connected) return Result.CONNECTED_FALSE;
-            return SendPacket(WebActions.GAME_STATE, 0, true);
+            return await Task.Run(() => SendPacket(WebActions.MAP, 0, true)).ConfigureAwait(false);
         }
 
         public async Task<Result> SendGameStateAsync()
         {
             if (!Connected) return Result.CONNECTED_FALSE;
-            return await Task.Run(() => SendPacket(WebActions.GAME_STATE, 0, true));
-        }
-
-        public Result SendActions()
-        {
-            if (!Connected) return Result.CONNECTED_FALSE;
-            return SendPacket(WebActions.GAME_ACTIONS, 0, true);
+            return await Task.Run(() => SendPacket(WebActions.GAME_STATE, 0, true)).ConfigureAwait(false);
         }
 
         public async Task<Result> SendActionsAsync()
         {
             if (!Connected) return Result.CONNECTED_FALSE;
-            return await Task.Run(() => SendPacket(WebActions.GAME_ACTIONS, 0, true));
-        }
-
-        public Result SendTurn()
-        {
-            if (!Connected) return Result.CONNECTED_FALSE;
-            App.Current.Dispatcher.BeginInvoke(new Action(() => { StepEnable = false; CommandBase.RaiseCanExecuteChanged(); }));
-            return SendPacket(WebActions.TURN, 0, true);
+            return await Task.Run(() => SendPacket(WebActions.GAME_ACTIONS, 0, true)).ConfigureAwait(false);
         }
 
         public async Task<Result> SendTurnAsync()
         {
             if (!Connected) return Result.CONNECTED_FALSE;
-            await App.Current.Dispatcher.BeginInvoke(new Action(() => { StepEnable = false; CommandBase.RaiseCanExecuteChanged(); }));
-            return await Task.Run(() => SendPacket(WebActions.TURN, 0, true));
-        }
-
-        public Result SendChat(string msg)
-        {
-            if (!Connected) return Result.CONNECTED_FALSE;
-            Message msgs = new Message();
-            msgs.message = msg;
-            return SendPacket(WebActions.CHAT, msgs);
-        }
-
-        public Result SendMove(int id, Point3 point)
-        {
-            if (!Connected) return Result.CONNECTED_FALSE;
-            ActionMove move = new ActionMove();
-            move.target = point;
-            move.vehicle_id = id;
-            return SendPacket(WebActions.MOVE, move);
+            App.Current.Dispatcher.Invoke(() => { StepEnable = false; CommandBase.RaiseCanExecuteChanged(); });
+            return await Task.Run(() => SendPacket(WebActions.TURN, 0, true)).ConfigureAwait(false);
         }
 
         public async Task<Result> SendMoveAsync(int id, Point3 point)
@@ -788,16 +685,15 @@ namespace UIClient.Model
             ActionMove move = new ActionMove();
             move.target = point;
             move.vehicle_id = id;
-            return await Task.Run(() => SendPacket(WebActions.MOVE, move));
+            return await Task.Run(() => SendPacket(WebActions.MOVE, move)).ConfigureAwait(false);
         }
 
-        public Result SendShoot(int id, Point3 point)
+        public async Task<Result> SendChatAsync(string msg)
         {
             if (!Connected) return Result.CONNECTED_FALSE;
-            ActionShoot shoot = new ActionShoot();
-            shoot.target = point;
-            shoot.vehicle_id = id;
-            return SendPacket(WebActions.SHOOT, shoot);
+            Message msgs = new Message();
+            msgs.message = msg;
+            return await SendPacket(WebActions.CHAT, msgs).ConfigureAwait(false);
         }
 
         public async Task<Result> SendShootAsync(int id, Point3 point)
@@ -806,7 +702,7 @@ namespace UIClient.Model
             ActionShoot shoot = new ActionShoot();
             shoot.target = point;
             shoot.vehicle_id = id;
-            return await Task.Run(() => SendPacket(WebActions.SHOOT, shoot));
+            return await Task.Run(() => SendPacket(WebActions.SHOOT, shoot)).ConfigureAwait(false);
         }
 
         public async void Connect()

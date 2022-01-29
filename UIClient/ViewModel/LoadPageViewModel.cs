@@ -133,7 +133,7 @@ namespace UIClient.ViewModel
             log.num_players = PlayersMax;
             log.is_observer = IsObserver;
 
-            var res = await Core.SendLoginAsync(log);
+            var res = await Core.SendLoginAsync(log).ConfigureAwait(false);
             if (res != Result.OKEY)
             {
                 Core.Log("Ошибка: " + res.ToString());
@@ -141,34 +141,40 @@ namespace UIClient.ViewModel
             }
             Core.Log("Авторизация выполнена");
 
-            res = await Core.SendMapAsync();
+            res = await Core.SendMapAsync().ConfigureAwait(false);
             if (res != Result.OKEY)
             {
                 Core.Log("Ошибка: " + res.ToString());
                 return;
             }
+
             Core.Log("Карта загружена");
             Core.MessageWait = "Ожидание хода...";
 
-            var main_page = App.Host.Services.GetRequiredService<MainWindowViewModel>();
-            main_page.SelectGamePage();
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                Core.Field.CreateField(Core.Map);
+                var main_page = App.Host.Services.GetRequiredService<MainWindowViewModel>();
+                main_page.SelectGamePage();
+            });
 
             //wait players
             while (true)
             {
-                res = await Core.SendGameStateAsync();
+                res = await Core.SendGameStateAsync().ConfigureAwait(false);
                 if (res == Result.OKEY)
                 {
                     if (!Core.Field.Inited)
                     {
-                        Core.Field.CreateContent(Core.GameState);
+                        App.Current.Dispatcher.Invoke(() => {  Core.Field.CreateContent(Core.GameState); });
+
                         if (Core.Field.Inited)
                         {
                             PlayerEx curr_player;
-                            if(Core.Field.players.TryGetValue(Core.Player.idx,out curr_player))
+                            if (Core.Field.players.TryGetValue(Core.Player.idx, out curr_player))
                                 Core.TeamColor = curr_player.color;
 
-                            res = await Core.SendGameStateAsync();
+                            res = await Core.SendGameStateAsync().ConfigureAwait(false);
                             Core.Log("Все игроки подключены");
                             break;
                         }
