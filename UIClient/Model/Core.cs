@@ -406,9 +406,12 @@ namespace UIClient.Model
 
                             if (Field.Inited)
                             {
-                                if (GameState.winner != null)
+                                if (GameState.finished)
                                 {
-                                    MessageWait = "Победитель: " + Field.players[GameState.winner.Value].player.name;
+                                    if (GameState.winner != null)
+                                        MessageWait = "Победитель: " + Field.players[GameState.winner.Value].player.name;
+                                    else
+                                        MessageWait = "Ничья";
                                 }
                                 else
                                 {
