@@ -398,7 +398,6 @@ namespace UIClient.Model
                     case WebActions.MAP:
                         {
                             Map = JsonConvert.DeserializeObject<Map>(message);
-                            Map.size = 16;
                         }
                         break;
                     case WebActions.GAME_STATE:
