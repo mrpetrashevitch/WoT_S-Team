@@ -5,10 +5,11 @@
     </ResourceDictionary.MergedDictionaries>
 
     <Style x:Key="ButtonCustom" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="{StaticResource ControlNormalBackgroundBrush}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
-                    <Grid Background="{StaticResource ControlNormalBackgroundBrush}">
+                    <Grid Background="{TemplateBinding Background}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal">
@@ -79,15 +80,6 @@
                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
                                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                           TextBlock.Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
-                        
-                        <!--<ContentPresenter x:Name="ContentPresenterBlur" Focusable="False" Content="{TemplateBinding Content}"
-                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
-                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" 
-                                          Opacity="0">
-                            <ContentPresenter.Effect>
-                                <BlurEffect Radius="10"/>
-                            </ContentPresenter.Effect>
-                        </ContentPresenter>-->
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

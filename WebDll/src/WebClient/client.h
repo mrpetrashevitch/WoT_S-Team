@@ -23,25 +23,6 @@ namespace web_client
 		SHOOT = 102,
 	};
 
-	enum class Result : int
-	{
-		OKEY = 0,
-		BAD_COMMAND = 1,
-		ACCESS_DENIED = 2,
-		INAPPROPRIATE_GAME_STATE = 3,
-		TIMEOUT = 4,
-		INTERNAL_SERVER_ERROR = 500,
-
-		// for client
-		ERROR_WSA_INIT,
-		ERROR_SOCKET,
-		ERROR_CONNECT,
-		CONNECTED_FALSE,
-		ERROR_SEND,
-		ERROR_RECV,
-		IVALID_PARAM,
-	};
-
 	class client
 	{
 		bool _inited;
@@ -60,7 +41,7 @@ namespace web_client
 
 		Result connect(const SOCKADDR_IN& addr);
 		Result detach();
-		Result send_packet(WebActions action, int size, byte* data, int* out_size ,byte* out_data );
+		Result send_packet(WebActions action, int size, byte* data, int* out_size, byte* out_data);
 	};
 
 }

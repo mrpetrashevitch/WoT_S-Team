@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
@@ -57,6 +58,14 @@ namespace UIClient.Model
         public int vec_id;
         public point point;
     };
+
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct action_ret
+    {
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
+        public action[] actions;
+    }
 
     public struct WinPoints_native
     {

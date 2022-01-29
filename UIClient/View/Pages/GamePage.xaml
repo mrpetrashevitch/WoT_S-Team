@@ -159,7 +159,6 @@
                     <RowDefinition Height="250"/>
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Row="0">
-
                     <StackPanel Margin="10 0 0 0">
                         <TextBlock Text="{Binding StringFormat=Карта: {0}, Path=Core.Map.name}"
                                FontSize="18" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
@@ -181,7 +180,7 @@
                                Converter={StaticResource ConvertAttackMatrixToString}, 
                                ConverterParameter={StaticResource Locator}}" 
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
-                        
+
                         <TextBlock FontSize="18" HorizontalAlignment="Left"
                                Text="Наблюдатели:" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                         <TextBlock FontSize="18" HorizontalAlignment="Left" 
@@ -189,8 +188,33 @@
                                Converter={StaticResource ConvertObserversToString}, 
                                ConverterParameter={StaticResource Locator}}" 
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
+
+                        <CheckBox Content="Включить AI" FontSize="18" HorizontalAlignment="Left"
+                                IsChecked="{Binding Core.AIEnable, Mode=TwoWay}" Foreground="{StaticResource ControlPressedBorderBrush}"
+                                Height="25" Style="{StaticResource CheckboxStyle}" Focusable="False"/>
                     </StackPanel>
                 </StackPanel>
+
+                <Button Grid.Row="0" Width="200"  Command="{Binding Core.TurnCommand}"
+                        HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                        Height="70" Style="{StaticResource ButtonCustom}" VerticalContentAlignment="Center"
+                        HorizontalContentAlignment="Center">
+
+                    <Button.Content>
+                        <TextBlock Grid.Column="0" Text="Походить" FontSize="37"
+                                           FontFamily="{StaticResource FontCenturyGothic}" >
+                            <TextBlock.Foreground>
+                                <LinearGradientBrush StartPoint="0 0" EndPoint="0 1">
+                                    <LinearGradientBrush.GradientStops>
+                                        <GradientStop Offset="0.1" Color="{StaticResource ControlPressedBorderColor}" />
+                                        <GradientStop Offset="1" Color="{StaticResource ControlMouseOverBorderColor}" />
+                                    </LinearGradientBrush.GradientStops>
+                                </LinearGradientBrush>
+                            </TextBlock.Foreground>
+                        </TextBlock>
+                    </Button.Content>
+                </Button>
+
                 <Grid Grid.Row="1" Background="{StaticResource ControlDisabledBackgroundBrush}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="230"/>

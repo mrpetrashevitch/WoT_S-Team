@@ -94,11 +94,11 @@ namespace UIClient.Model
         extern static Result send_packet(IntPtr web, WebActions action, int size, IntPtr data, IntPtr out_size, IntPtr out_data);
 
         [DllImport(_PathCoreDll, CallingConvention = CallingConvention.Cdecl)]
-        extern static action get_action(int curr_player,
+        extern static Result get_action(int curr_player,
                                         IntPtr players, int players_size,
                                         IntPtr vehicle, int vehicle_size,
                                         IntPtr win_points, int win_points_size,
-                                        IntPtr attack_matrix, int attack_matrix_size);
+                                        IntPtr attack_matrix, int attack_matrix_size, out action_ret actions);
 
 
         public Core()
@@ -117,13 +117,11 @@ namespace UIClient.Model
             ChatSendMsgCommand = new LambdaCommand(OnChatSendMsgCommandExecuted, CanChatSendMsgCommandExecute);
             GetActionsCommand = new LambdaCommand(OnGetActionsCommandExecuted, CanGetActionsCommandExecute);
             GetGameStateCommand = new LambdaCommand(OnGetGameStateCommandExecuted, CanGetGameStateCommandExecute);
+            TurnCommand = new LambdaCommand(OnTurnCommandExecuted, CanTurnCommandExecute);
 
             Log("UI ядро создано");
             Connect();
         }
-
-
-
 
         #region bool Connected : подключен ли к серверу
         private bool _Connected;
@@ -132,6 +130,15 @@ namespace UIClient.Model
         {
             get { return _Connected; }
             set { Set(ref _Connected, value); }
+        }
+        #endregion
+        #region bool AIEnable : включить автоматическую игру
+        private bool _AIEnable;
+        /// <summary>включить автоматическую игру</summary>
+        public bool AIEnable
+        {
+            get { return _AIEnable; }
+            set { Set(ref _AIEnable, value); }
         }
         #endregion
 
@@ -170,7 +177,6 @@ namespace UIClient.Model
         }
         #endregion
 
-
         #region Timer
         #region int TotalTick : прошло секунд
         private int _TotalTick;
@@ -193,9 +199,9 @@ namespace UIClient.Model
         private DispatcherTimer Timer = new DispatcherTimer();
         private void TimerTick(object sender, EventArgs e)
         {
-            TotalTick++;
+            TotalTick--;
             Log("Осталось: " + TotalTick + "c");
-            if (TotalTick == 9)
+            if (TotalTick == 0)
             {
                 Log("Время истекло");
                 TimerStop();
@@ -203,7 +209,7 @@ namespace UIClient.Model
         }
         public void TimerRun()
         {
-            TotalTick = 0;
+            TotalTick = 9;
             TotalStep = 0;
             StepEnable = true;
             Timer.Start();
@@ -211,8 +217,8 @@ namespace UIClient.Model
         public async void TimerStop()
         {
             Timer.Stop();
-            await TurnAsync();
-            await GetGameStateAsync();
+            await SendTurnAsync();
+            await SendGameStateAsync();
         }
         #endregion
         #region Hex SelectedHex : выбранная ячейка
@@ -224,7 +230,6 @@ namespace UIClient.Model
             set { Set(ref _SelectedHex, value); }
         }
         #endregion
-
 
         #region string ChatText : вписанный текст
         private string _ChatText;
@@ -244,8 +249,19 @@ namespace UIClient.Model
             set { Set(ref _Chat, value); }
         }
         #endregion
-
-
+        #region ObservableCollection<string> Logs : програмные логи
+        private ObservableCollection<string> _Logs = new ObservableCollection<string>();
+        /// <summary>програмные логи</summary>
+        public ObservableCollection<string> Logs
+        {
+            get { return _Logs; }
+            set { Set(ref _Logs, value); }
+        }
+        public void Log(string str)
+        {
+            Logs.Insert(0, str);
+        }
+        #endregion
 
         #region Player Player : текущий игрок
         private Player _Player;
@@ -293,26 +309,6 @@ namespace UIClient.Model
         }
         #endregion
 
-
-
-
-
-        #region ObservableCollection<string> Logs : програмные логи
-        private ObservableCollection<string> _Logs = new ObservableCollection<string>();
-        /// <summary>програмные логи</summary>
-        public ObservableCollection<string> Logs
-        {
-            get { return _Logs; }
-            set { Set(ref _Logs, value); }
-        }
-        public void Log(string str)
-        {
-            Logs.Insert(0, str);
-        }
-        #endregion
-
-
-
         #region LogoutCommand : выйти из сессии
         /// <summary>выйти из сессии</summary>
         public ICommand LogoutCommand { get; }
@@ -321,19 +317,18 @@ namespace UIClient.Model
         {
             var main_page = App.Host.Services.GetRequiredService<MainWindowViewModel>();
             main_page.SelectLoadPage();
-            var res = await LogoutAsync();
+            var res = await SendLogoutAsync();
             if (res != Result.OKEY)
                 Log("Ошибка: " + res.ToString());
         }
         #endregion
-
         #region ChatSendMsgCommand : отправить сообщение в чат
         /// <summary>отправить сообщение в чат</summary>
         public ICommand ChatSendMsgCommand { get; }
         private bool CanChatSendMsgCommandExecute(object p) => Connected && ChatText?.Length > 1 && StepEnable;
         private void OnChatSendMsgCommandExecuted(object p)
         {
-            var res = ChatSend(ChatText);
+            var res = SendChat(ChatText);
             if (res == Result.OKEY)
             {
                 Chat.Add(ChatText);
@@ -343,30 +338,40 @@ namespace UIClient.Model
                 Log("Ошибка: " + res.ToString());
         }
         #endregion
-
         #region GetActionsCommand : summury
         /// <summary>summury</summary>
         public ICommand GetActionsCommand { get; }
         private bool CanGetActionsCommandExecute(object p) => Connected;
         private void OnGetActionsCommandExecuted(object p)
         {
-            var res = GetActions();
+            var res = SendActions();
             if (res != Result.OKEY)
                 Log("Ошибка: " + res.ToString());
         }
         #endregion
-
         #region GetGameStateCommand : получить статус игры
         /// <summary>получить статус игры</summary>
         public ICommand GetGameStateCommand { get; }
         private bool CanGetGameStateCommandExecute(object p) => true;
         private void OnGetGameStateCommandExecuted(object p)
         {
-            var res = GetGameState();
+            var res = SendGameState();
             if (res != Result.OKEY)
                 Log("Ошибка: " + res.ToString());
         }
         #endregion
+
+        #region TurnCommand : переключить ход
+        /// <summary>переключить ход</summary>
+        public ICommand TurnCommand { get; }
+        private bool CanTurnCommandExecute(object p) => StepEnable;
+        private void OnTurnCommandExecuted(object p)
+        {
+            TimerStop();
+        }
+        #endregion
+
+
 
         static object locker = new object();
 
@@ -438,122 +443,34 @@ namespace UIClient.Model
                                 {
                                     if (GameState.current_player_idx == Player.idx)
                                     {
-                                        TimerRun();
-                                        GetActions();
+                                        App.Current.Dispatcher.Invoke(new Action(() => { TimerRun(); CommandBase.RaiseCanExecuteChanged(); }));
+                                        SendActions();
 
-                                        if (false) // true - enable io
+                                        if (AIEnable)
                                         {
-                                            IntPtr player_s_ptr = IntPtr.Zero;
-                                            GCHandle player_pipe = default(GCHandle);
-                                            IntPtr vehicle_s_ptr = IntPtr.Zero;
-                                            GCHandle vehicle_pipe = default(GCHandle);
-                                            IntPtr winpoints_s_ptr = IntPtr.Zero;
-                                            GCHandle winpoints_pipe = default(GCHandle);
-                                            IntPtr attackmatrix_s_ptr = IntPtr.Zero;
-                                            GCHandle attackmatrix_pipe = default(GCHandle);
-
-                                            Player_native[] player_s = null;
-                                            if (this.GameState.players != null)
+                                            var actions = GetAIActions();
+                                            foreach (var i in actions.actions)
                                             {
-                                                player_s = new Player_native[this.GameState.players.Length];
-                                                for (int i = 0; i < this.GameState.players.Length; i++)
+                                                if (i.action_type == action_type.move)
                                                 {
-                                                    player_s[i].idx = this.GameState.players[i].idx;
-                                                    player_s[i].is_observer = this.GameState.players[i].is_observer ? 1 : 0;
+                                                    MoveAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z });
+                                                }
+                                                else if (i.action_type == action_type.shoot)
+                                                {
+                                                    ShootAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z });
                                                 }
                                             }
-                                            Vehicle_native[] vehicle_s = null;
-                                            if (this.GameState.vehicles.Count > 0)
+                                            if (StepEnable)
                                             {
-                                                vehicle_s = new Vehicle_native[this.GameState.vehicles.Count];
-                                                int i = 0;
-                                                foreach (var item in this.GameState.vehicles)
-                                                {
-                                                    vehicle_s[i].vehicle_id = item.Key;
-                                                    vehicle_s[i].capture_points = item.Value.capture_points;
-                                                    vehicle_s[i].health = item.Value.health;
-                                                    vehicle_s[i].player_id = item.Value.player_id;
-                                                    vehicle_s[i].position.x = item.Value.position.x;
-                                                    vehicle_s[i].position.y = item.Value.position.y;
-                                                    vehicle_s[i].position.z = item.Value.position.z;
-                                                    vehicle_s[i].spawn_position.x = item.Value.spawn_position.x;
-                                                    vehicle_s[i].spawn_position.y = item.Value.spawn_position.y;
-                                                    vehicle_s[i].spawn_position.z = item.Value.spawn_position.z;
-                                                    vehicle_s[i].vehicle_type = item.Value.vehicle_type;
-                                                    i++;
-                                                }
+                                                SendTurn();
+                                                SendGameState();
                                             }
-                                            WinPoints_native[] winpoints_s = null;
-                                            if (this.GameState.win_points.Count > 0)
-                                            {
-                                                winpoints_s = new WinPoints_native[this.GameState.win_points.Count];
-                                                int i = 0;
-                                                foreach (var item in this.GameState.win_points)
-                                                {
-                                                    winpoints_s[i].id = item.Key;
-                                                    winpoints_s[i].capture = item.Value.capture;
-                                                    winpoints_s[i].kill = item.Value.kill;
-                                                    i++;
-                                                }
-                                            }
-                                            AttackMatrix_native[] attackmatrix_s = null;
-                                            if (this.GameState.attack_matrix.Count > 0)
-                                            {
-                                                attackmatrix_s = new AttackMatrix_native[this.GameState.attack_matrix.Count];
-                                                int i = 0;
-                                                unsafe
-                                                {
-                                                    foreach (var item in this.GameState.attack_matrix)
-                                                    {
-                                                        int j = 0;
-                                                        attackmatrix_s[i].id = item.Key;
-                                                        foreach (var ind in item.Value)
-                                                        {
-                                                            attackmatrix_s[i].attack[j] = ind;
-                                                            j++;
-                                                        }
-                                                        i++;
-                                                    }
-                                                }
-                                            }
-
-                                            if (player_s != null)
-                                            {
-                                                player_pipe = GCHandle.Alloc(player_s, GCHandleType.Pinned);
-                                                player_s_ptr = player_pipe.AddrOfPinnedObject();
-                                            }
-                                            if (vehicle_s != null)
-                                            {
-                                                vehicle_pipe = GCHandle.Alloc(vehicle_s, GCHandleType.Pinned);
-                                                vehicle_s_ptr = vehicle_pipe.AddrOfPinnedObject();
-                                            }
-                                            if (winpoints_s != null)
-                                            {
-                                                winpoints_pipe = GCHandle.Alloc(winpoints_s, GCHandleType.Pinned);
-                                                winpoints_s_ptr = winpoints_pipe.AddrOfPinnedObject();
-                                            }
-                                            if (attackmatrix_s != null)
-                                            {
-                                                attackmatrix_pipe = GCHandle.Alloc(attackmatrix_s, GCHandleType.Pinned);
-                                                attackmatrix_s_ptr = attackmatrix_pipe.AddrOfPinnedObject();
-                                            }
-
-                                            var act = get_action(Player.idx,
-                                                player_s_ptr, player_s.Length,
-                                                vehicle_s_ptr, vehicle_s.Length,
-                                                winpoints_s_ptr, winpoints_s.Length,
-                                                attackmatrix_s_ptr, attackmatrix_s.Length);
-
-                                            if (player_s != null) player_pipe.Free();
-                                            if (vehicle_s != null) vehicle_pipe.Free();
-                                            if (winpoints_s != null) winpoints_pipe.Free();
-                                            if (attackmatrix_s != null) attackmatrix_pipe.Free();
                                         }
                                     }
                                     else
                                     {
-                                        Turn();
-                                        GetGameState();
+                                        SendTurn();
+                                        SendGameState();
                                     }
                                 }
                                 App.Current.Dispatcher.Invoke(new Action(() => { Field.UpdateContent(GameState); }));
@@ -563,7 +480,6 @@ namespace UIClient.Model
                     case WebActions.GAME_ACTIONS:
                         {
                             var v = JsonConvert.DeserializeObject<Actions>(message);
-
                             if (v.actions != null)
                             {
                                 foreach (var i in v.actions)
@@ -573,15 +489,6 @@ namespace UIClient.Model
                                         Message msg = JsonConvert.DeserializeObject<Message>(i.data.ToString());
                                         App.Current.Dispatcher.Invoke(new Action(() => { Chat.Add(msg.message); }));
                                     }
-                                    //else if (i.action_type == NetActions.MOVE)
-                                    //{
-                                    //    ActionMove move = JsonConvert.DeserializeObject<ActionMove>(i.data.ToString());
-                                    //    //Field.VehicleMove(move.vehicle_id, move.target);
-                                    //}
-                                    //else if (i.action_type == NetActions.SHOOT)
-                                    //{
-                                    //    ActionShoot shoot = JsonConvert.DeserializeObject<ActionShoot>(i.data.ToString());
-                                    //}
                                 }
                             }
                         }
@@ -612,81 +519,251 @@ namespace UIClient.Model
 
         }
 
-        public Result Login(LoginCreate log)
+        public action_ret GetAIActions()
+        {
+            IntPtr player_s_ptr = IntPtr.Zero;
+            GCHandle player_pipe = default(GCHandle);
+            IntPtr vehicle_s_ptr = IntPtr.Zero;
+            GCHandle vehicle_pipe = default(GCHandle);
+            IntPtr winpoints_s_ptr = IntPtr.Zero;
+            GCHandle winpoints_pipe = default(GCHandle);
+            IntPtr attackmatrix_s_ptr = IntPtr.Zero;
+            GCHandle attackmatrix_pipe = default(GCHandle);
+
+            Player_native[] player_s = null;
+            if (this.GameState.players != null)
+            {
+                player_s = new Player_native[this.GameState.players.Length];
+                for (int i = 0; i < this.GameState.players.Length; i++)
+                {
+                    player_s[i].idx = this.GameState.players[i].idx;
+                    player_s[i].is_observer = this.GameState.players[i].is_observer ? 1 : 0;
+                }
+            }
+            Vehicle_native[] vehicle_s = null;
+            if (this.GameState.vehicles.Count > 0)
+            {
+                vehicle_s = new Vehicle_native[this.GameState.vehicles.Count];
+                int i = 0;
+                foreach (var item in this.GameState.vehicles)
+                {
+                    vehicle_s[i].vehicle_id = item.Key;
+                    vehicle_s[i].capture_points = item.Value.capture_points;
+                    vehicle_s[i].health = item.Value.health;
+                    vehicle_s[i].player_id = item.Value.player_id;
+                    vehicle_s[i].position.x = item.Value.position.x;
+                    vehicle_s[i].position.y = item.Value.position.y;
+                    vehicle_s[i].position.z = item.Value.position.z;
+                    vehicle_s[i].spawn_position.x = item.Value.spawn_position.x;
+                    vehicle_s[i].spawn_position.y = item.Value.spawn_position.y;
+                    vehicle_s[i].spawn_position.z = item.Value.spawn_position.z;
+                    vehicle_s[i].vehicle_type = item.Value.vehicle_type;
+                    i++;
+                }
+            }
+            WinPoints_native[] winpoints_s = null;
+            if (this.GameState.win_points.Count > 0)
+            {
+                winpoints_s = new WinPoints_native[this.GameState.win_points.Count];
+                int i = 0;
+                foreach (var item in this.GameState.win_points)
+                {
+                    winpoints_s[i].id = item.Key;
+                    winpoints_s[i].capture = item.Value.capture;
+                    winpoints_s[i].kill = item.Value.kill;
+                    i++;
+                }
+            }
+            AttackMatrix_native[] attackmatrix_s = null;
+            if (this.GameState.attack_matrix.Count > 0)
+            {
+                attackmatrix_s = new AttackMatrix_native[this.GameState.attack_matrix.Count];
+                int i = 0;
+                unsafe
+                {
+                    foreach (var item in this.GameState.attack_matrix)
+                    {
+                        int j = 0;
+                        attackmatrix_s[i].id = item.Key;
+                        foreach (var ind in item.Value)
+                        {
+                            attackmatrix_s[i].attack[j] = ind;
+                            j++;
+                        }
+                        i++;
+                    }
+                }
+            }
+
+            if (player_s != null)
+            {
+                player_pipe = GCHandle.Alloc(player_s, GCHandleType.Pinned);
+                player_s_ptr = player_pipe.AddrOfPinnedObject();
+            }
+            if (vehicle_s != null)
+            {
+                vehicle_pipe = GCHandle.Alloc(vehicle_s, GCHandleType.Pinned);
+                vehicle_s_ptr = vehicle_pipe.AddrOfPinnedObject();
+            }
+            if (winpoints_s != null)
+            {
+                winpoints_pipe = GCHandle.Alloc(winpoints_s, GCHandleType.Pinned);
+                winpoints_s_ptr = winpoints_pipe.AddrOfPinnedObject();
+            }
+            if (attackmatrix_s != null)
+            {
+                attackmatrix_pipe = GCHandle.Alloc(attackmatrix_s, GCHandleType.Pinned);
+                attackmatrix_s_ptr = attackmatrix_pipe.AddrOfPinnedObject();
+            }
+
+            action_ret action_re;
+            var act = get_action(Player.idx,
+                player_s_ptr, player_s.Length,
+                vehicle_s_ptr, vehicle_s.Length,
+                winpoints_s_ptr, winpoints_s.Length,
+                attackmatrix_s_ptr, attackmatrix_s.Length, out action_re);
+
+            if (player_s != null) player_pipe.Free();
+            if (vehicle_s != null) vehicle_pipe.Free();
+            if (winpoints_s != null) winpoints_pipe.Free();
+            if (attackmatrix_s != null) attackmatrix_pipe.Free();
+
+            return action_re;
+        }
+
+        public async void MoveAsync(int id, Point3 point)
+        {
+            Result res = await SendMoveAsync(id, point);
+
+            if (res == Result.OKEY)
+            {
+                TotalStep++;
+                Field.VehicleMove(id, point);
+                Log("Машина перемещена по x: " + point.x + ", y: " + point.y + ", z: " + point.z);
+
+                if (TotalStep == 5)
+                    TimerStop();
+            }
+            else if (res == Result.BAD_COMMAND)
+            {
+                Log("Неверный ход");
+            }
+            else if (res == Result.INAPPROPRIATE_GAME_STATE)
+            {
+                Log("Ход перешел другому");
+                TimerStop();
+            }
+            else
+            {
+                Log(res.ToString());
+                TimerStop();
+            }
+        }
+
+        public async void ShootAsync(int id, Point3 point)
+        {
+            Result res = await SendShootAsync(id, point);
+
+            if (res == Result.OKEY)
+            {
+                TotalStep++;
+                Field.VehicleShoot(id, point);
+                Log("Выстрел по x: " + point.x + ", y: " + point.y + ", z: " + point.z);
+
+                if (TotalStep == 5)
+                    TimerStop();
+            }
+            else if (res == Result.BAD_COMMAND)
+            {
+                Log("Неверный ход");
+            }
+            else if (res == Result.INAPPROPRIATE_GAME_STATE)
+            {
+                Log("Ход перешел другому");
+                TimerStop();
+            }
+            else
+            {
+                Log(res.ToString());
+                TimerStop();
+            }
+        }
+
+        public Result SendLogin(LoginCreate log)
         {
             if (!Connected) return Result.CONNECTED_FALSE;
             return SendPacket(WebActions.LOGIN, log);
         }
 
-        public async Task<Result> LoginAsync(LoginCreate log)
+        public async Task<Result> SendLoginAsync(LoginCreate log)
         {
             if (!Connected) return Result.CONNECTED_FALSE;
             return await Task.Run(() => SendPacket(WebActions.LOGIN, log));
         }
 
-        public Result Logout()
+        public Result SendLogout()
         {
             if (!Connected) return Result.CONNECTED_FALSE;
             return SendPacket(WebActions.LOGOUT, 0, true);
         }
 
-        public async Task<Result> LogoutAsync()
+        public async Task<Result> SendLogoutAsync()
         {
             if (!Connected) return Result.CONNECTED_FALSE;
             return await Task.Run(() => SendPacket(WebActions.LOGOUT, 0, true));
         }
 
-        public Result GetMap()
+        public Result SendMap()
         {
             if (!Connected) return Result.CONNECTED_FALSE;
             return SendPacket(WebActions.MAP, 0, true);
         }
 
-        public async Task<Result> GetMapAsync()
+        public async Task<Result> SendMapAsync()
         {
             if (!Connected) return Result.CONNECTED_FALSE;
             return await Task.Run(() => SendPacket(WebActions.MAP, 0, true));
         }
 
-        public Result GetGameState()
+        public Result SendGameState()
         {
             if (!Connected) return Result.CONNECTED_FALSE;
             return SendPacket(WebActions.GAME_STATE, 0, true);
         }
 
-        public async Task<Result> GetGameStateAsync()
+        public async Task<Result> SendGameStateAsync()
         {
             if (!Connected) return Result.CONNECTED_FALSE;
             return await Task.Run(() => SendPacket(WebActions.GAME_STATE, 0, true));
         }
 
-        public Result GetActions()
+        public Result SendActions()
         {
             if (!Connected) return Result.CONNECTED_FALSE;
             return SendPacket(WebActions.GAME_ACTIONS, 0, true);
         }
 
-        public async Task<Result> GetActionsAsync()
+        public async Task<Result> SendActionsAsync()
         {
             if (!Connected) return Result.CONNECTED_FALSE;
             return await Task.Run(() => SendPacket(WebActions.GAME_ACTIONS, 0, true));
         }
 
-        public Result Turn()
+        public Result SendTurn()
         {
             if (!Connected) return Result.CONNECTED_FALSE;
-            StepEnable = false;
+            App.Current.Dispatcher.BeginInvoke(new Action(() => { StepEnable = false; CommandBase.RaiseCanExecuteChanged(); }));
             return SendPacket(WebActions.TURN, 0, true);
         }
 
-        public async Task<Result> TurnAsync()
+        public async Task<Result> SendTurnAsync()
         {
             if (!Connected) return Result.CONNECTED_FALSE;
-            StepEnable = false;
+            await App.Current.Dispatcher.BeginInvoke(new Action(() => { StepEnable = false; CommandBase.RaiseCanExecuteChanged(); }));
             return await Task.Run(() => SendPacket(WebActions.TURN, 0, true));
         }
 
-        public Result ChatSend(string msg)
+        public Result SendChat(string msg)
         {
             if (!Connected) return Result.CONNECTED_FALSE;
             Message msgs = new Message();
@@ -694,7 +771,7 @@ namespace UIClient.Model
             return SendPacket(WebActions.CHAT, msgs);
         }
 
-        public Result Move(int id, Point3 point)
+        public Result SendMove(int id, Point3 point)
         {
             if (!Connected) return Result.CONNECTED_FALSE;
             ActionMove move = new ActionMove();
@@ -703,7 +780,7 @@ namespace UIClient.Model
             return SendPacket(WebActions.MOVE, move);
         }
 
-        public async Task<Result> MoveAsync(int id, Point3 point)
+        public async Task<Result> SendMoveAsync(int id, Point3 point)
         {
             if (!Connected) return Result.CONNECTED_FALSE;
             ActionMove move = new ActionMove();
@@ -712,7 +789,7 @@ namespace UIClient.Model
             return await Task.Run(() => SendPacket(WebActions.MOVE, move));
         }
 
-        public Result Shoot(int id, Point3 point)
+        public Result SendShoot(int id, Point3 point)
         {
             if (!Connected) return Result.CONNECTED_FALSE;
             ActionShoot shoot = new ActionShoot();
@@ -721,7 +798,7 @@ namespace UIClient.Model
             return SendPacket(WebActions.SHOOT, shoot);
         }
 
-        public async Task<Result> ShootAsync(int id, Point3 point)
+        public async Task<Result> SendShootAsync(int id, Point3 point)
         {
             if (!Connected) return Result.CONNECTED_FALSE;
             ActionShoot shoot = new ActionShoot();
