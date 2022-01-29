@@ -43,21 +43,14 @@ namespace ai
 		SPG
 	};
 
-	class Point3
-	{
-		int x;
-		int y;
-		int z;
-	};
-
 	struct Vehicle_native
 	{
 		int vehicle_id;
 		int player_id;
 		VehicleType vehicle_type;
 		int health;
-		Point3 spawn_position;
-		Point3 position;
+		point spawn_position;
+		point position;
 		int capture_points;
 	};
 

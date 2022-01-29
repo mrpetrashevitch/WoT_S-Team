@@ -360,7 +360,6 @@ namespace UIClient.Model
                 Log("Ошибка: " + res.ToString());
         }
         #endregion
-
         #region TurnCommand : переключить ход
         /// <summary>переключить ход</summary>
         public ICommand TurnCommand { get; }
@@ -449,17 +448,20 @@ namespace UIClient.Model
                                         if (AIEnable)
                                         {
                                             var actions = GetAIActions();
-                                            foreach (var i in actions.actions)
+                                            App.Current.Dispatcher.Invoke(new Action(() =>
                                             {
-                                                if (i.action_type == action_type.move)
+                                                foreach (var i in actions.actions)
                                                 {
-                                                    MoveAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z });
+                                                    if (i.action_type == action_type.move)
+                                                    {
+                                                        MoveAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z });
+                                                    }
+                                                    else if (i.action_type == action_type.shoot)
+                                                    {
+                                                        ShootAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z });
+                                                    }
                                                 }
-                                                else if (i.action_type == action_type.shoot)
-                                                {
-                                                    ShootAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z });
-                                                }
-                                            }
+                                            }));
                                             if (StepEnable)
                                             {
                                                 SendTurn();
