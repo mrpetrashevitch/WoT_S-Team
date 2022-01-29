@@ -1,5 +1,6 @@
 #include "ai.h"
 
+
 namespace ai
 {
 	Result ai::get_action(int curr_player,
