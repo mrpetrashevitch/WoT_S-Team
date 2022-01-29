@@ -98,7 +98,8 @@ namespace UIClient.Model
                                         IntPtr players, int players_size,
                                         IntPtr vehicle, int vehicle_size,
                                         IntPtr win_points, int win_points_size,
-                                        IntPtr attack_matrix, int attack_matrix_size, out action_ret actions);
+                                        IntPtr attack_matrix, int attack_matrix_size,
+                                        IntPtr base_, int base_size, out action_ret actions);
 
 
         public Core()
@@ -485,6 +486,8 @@ namespace UIClient.Model
             GCHandle winpoints_pipe = default(GCHandle);
             IntPtr attackmatrix_s_ptr = IntPtr.Zero;
             GCHandle attackmatrix_pipe = default(GCHandle);
+            IntPtr base_s_ptr = IntPtr.Zero;
+            GCHandle base_pipe = default(GCHandle);
 
             player_native[] player_s = null;
             if (this.GameState.players != null)
@@ -550,6 +553,19 @@ namespace UIClient.Model
                     }
                 }
             }
+            point[] base_s = null;
+            if (this.Map.content._base != null)
+            {
+                base_s = new point[this.Map.content._base.Length];
+                int i = 0;
+                foreach (var item in this.Map.content._base)
+                {
+                    base_s[i].x = item.x;
+                    base_s[i].y = item.y;
+                    base_s[i].z = item.z;
+                    i++;
+                }
+            }
 
             if (player_s != null)
             {
@@ -571,18 +587,26 @@ namespace UIClient.Model
                 attackmatrix_pipe = GCHandle.Alloc(attackmatrix_s, GCHandleType.Pinned);
                 attackmatrix_s_ptr = attackmatrix_pipe.AddrOfPinnedObject();
             }
+            if (base_s != null)
+            {
+                base_pipe = GCHandle.Alloc(base_s, GCHandleType.Pinned);
+                base_s_ptr = base_pipe.AddrOfPinnedObject();
+            }
 
             action_ret action_re;
             var act = get_action(Player.idx,
                 player_s_ptr, player_s.Length,
                 vehicle_s_ptr, vehicle_s.Length,
                 winpoints_s_ptr, winpoints_s.Length,
-                attackmatrix_s_ptr, attackmatrix_s.Length, out action_re);
+                attackmatrix_s_ptr, attackmatrix_s.Length,
+                base_s_ptr, base_s.Length, 
+                out action_re);
 
             if (player_s != null) player_pipe.Free();
             if (vehicle_s != null) vehicle_pipe.Free();
             if (winpoints_s != null) winpoints_pipe.Free();
             if (attackmatrix_s != null) attackmatrix_pipe.Free();
+            if (base_s != null) base_pipe.Free();
 
             return action_re;
         }
