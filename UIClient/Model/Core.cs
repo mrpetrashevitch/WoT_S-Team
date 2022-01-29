@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
@@ -60,7 +61,7 @@ namespace UIClient.Model
         IVALID_PARAM,
     };
 
-    class LoginCreate
+    public class LoginCreate
     {
         public string name { get; set; }
         public string password { get; set; }
@@ -103,24 +104,25 @@ namespace UIClient.Model
         public Core()
         {
             web = create();
-            if (web == IntPtr.Zero) throw new Exception("");
+            Log("Web ядро создано");
 
+            if (web == IntPtr.Zero) throw new Exception("Error create core!");
 
-            Logs = new ObservableCollection<string>();
             Chat = new ObservableCollection<string>();
             Field = new HexField();
-            PlayersMax = 2;
+            Timer.Interval = new TimeSpan(0, 0, 1);
+            Timer.Tick += TimerTick;
 
-
-            SetUserNameCommand = new LambdaCommand(OnSetUserNameCommandExecuted, CanSetUserNameCommandExecute);
             LogoutCommand = new LambdaCommand(OnLogoutCommandExecuted, CanLogoutCommandExecute);
             ChatSendMsgCommand = new LambdaCommand(OnChatSendMsgCommandExecuted, CanChatSendMsgCommandExecute);
             GetActionsCommand = new LambdaCommand(OnGetActionsCommandExecuted, CanGetActionsCommandExecute);
             GetGameStateCommand = new LambdaCommand(OnGetGameStateCommandExecuted, CanGetGameStateCommandExecute);
-            // init core
-            Log("Ядро создано");
+
+            Log("UI ядро создано");
             Connect();
         }
+
+
 
 
         #region bool Connected : подключен ли к серверу
@@ -133,56 +135,22 @@ namespace UIClient.Model
         }
         #endregion
 
-        #region string UserName : имя пользователя
-        private string _UserName;
-        /// <summary>имя пользователя</summary>
-        public string UserName
+        #region bool StepEnable : есть ли возможность ходить
+        private bool _StepEnable = false;
+        /// <summary>есть ли возможность ходить</summary>
+        public bool StepEnable
         {
-            get { return _UserName; }
-            set { Set(ref _UserName, value); }
+            get { return _StepEnable; }
+            set
+            {
+                if (Set(ref _StepEnable, value))
+                {
+                    if (value) MessageWaitVisible = Visibility.Collapsed;
+                    else MessageWaitVisible = Visibility.Visible;
+                }
+            }
         }
         #endregion
-
-        #region string Pass : пароль
-        private string _Pass = "";
-        /// <summary>пароль</summary>
-        public string Pass
-        {
-            get { return _Pass; }
-            set { Set(ref _Pass, value); }
-        }
-        #endregion
-
-        #region string GameName : имя игры
-        private string _GameName;
-        /// <summary>имя игры</summary>
-        public string GameName
-        {
-            get { return _GameName; }
-            set { Set(ref _GameName, value); }
-        }
-        #endregion
-
-        #region int PlayersMax : максимальное количество игроков
-        private int _PlayersMax;
-        /// <summary>максимальное количество игроков</summary>
-        public int PlayersMax
-        {
-            get { return _PlayersMax; }
-            set { Set(ref _PlayersMax, value); }
-        }
-        #endregion
-
-        #region int? TurnMax : максимальное количество раундов
-        private int? _TurnMax;
-        /// <summary>максимальное количество раундов</summary>
-        public int? TurnMax
-        {
-            get { return _TurnMax; }
-            set { Set(ref _TurnMax, value); }
-        }
-        #endregion
-
         #region string MessageWait : сообщение ожидания
         private string _MessageWait;
         /// <summary>сообщение ожидания</summary>
@@ -192,44 +160,61 @@ namespace UIClient.Model
             set { Set(ref _MessageWait, value); }
         }
         #endregion
-
-        #region bool IsObserver : наблюдать
-        private bool _IsObserver;
-        /// <summary>наблюдать</summary>
-        public bool IsObserver
+        #region Visibility MessageWaitVisible : надпись ожидания
+        private Visibility _MessageWaitVisible;
+        /// <summary>надпись ожидания</summary>
+        public Visibility MessageWaitVisible
         {
-            get { return _IsObserver; }
-            set { Set(ref _IsObserver, value); }
+            get { return _MessageWaitVisible; }
+            set { Set(ref _MessageWaitVisible, value); }
         }
         #endregion
 
-        #region bool VecEnable : summury
-        private bool _VecEnable = false;
-        /// <summary>summury</summary>
-        public bool VecEnable
+
+        #region Timer
+        #region int TotalTick : прошло секунд
+        private int _TotalTick;
+        /// <summary>прошло секунд</summary>
+        public int TotalTick
         {
-            get { return _VecEnable; }
-            set
+            get { return _TotalTick; }
+            set { Set(ref _TotalTick, value); }
+        }
+        #endregion
+        #region int TotalStep : сделано шагов
+        private int _TotalStep;
+        /// <summary>сделано шагов</summary>
+        public int TotalStep
+        {
+            get { return _TotalStep; }
+            set { Set(ref _TotalStep, value); }
+        }
+        #endregion
+        private DispatcherTimer Timer = new DispatcherTimer();
+        private void TimerTick(object sender, EventArgs e)
+        {
+            TotalTick++;
+            Log("Осталось: " + TotalTick + "c");
+            if (TotalTick == 9)
             {
-                if (Set(ref _VecEnable, value))
-                {
-                    if (value) WaitMsgVisible = Visibility.Collapsed;
-                    else WaitMsgVisible = Visibility.Visible;
-                }
+                Log("Время истекло");
+                TimerStop();
             }
         }
-        #endregion
-
-        #region Visibility WaitMsgVisible : надпись ожидания
-        private Visibility _WaitMsgVisible;
-        /// <summary>надпись ожидания</summary>
-        public Visibility WaitMsgVisible
+        public void TimerRun()
         {
-            get { return _WaitMsgVisible; }
-            set { Set(ref _WaitMsgVisible, value); }
+            TotalTick = 0;
+            TotalStep = 0;
+            StepEnable = true;
+            Timer.Start();
+        }
+        public async void TimerStop()
+        {
+            Timer.Stop();
+            await TurnAsync();
+            await GetGameStateAsync();
         }
         #endregion
-
         #region Hex SelectedHex : выбранная ячейка
         private Hex _SelectedHex;
         /// <summary>выбранная ячейка</summary>
@@ -240,25 +225,6 @@ namespace UIClient.Model
         }
         #endregion
 
-        #region Player Player : текущий игрок
-        private Player _Player;
-        /// <summary>текущий игрок</summary>
-        public Player Player
-        {
-            get { return _Player; }
-            set { Set(ref _Player, value); }
-        }
-        #endregion
-
-        #region ObservableCollection<string> Chat : логи чата
-        private ObservableCollection<string> _Chat;
-        /// <summary>логи чата</summary>
-        public ObservableCollection<string> Chat
-        {
-            get { return _Chat; }
-            set { Set(ref _Chat, value); }
-        }
-        #endregion
 
         #region string ChatText : вписанный текст
         private string _ChatText;
@@ -269,7 +235,36 @@ namespace UIClient.Model
             set { Set(ref _ChatText, value); }
         }
         #endregion
+        #region ObservableCollection<string> Chat : логи чата
+        private ObservableCollection<string> _Chat;
+        /// <summary>логи чата</summary>
+        public ObservableCollection<string> Chat
+        {
+            get { return _Chat; }
+            set { Set(ref _Chat, value); }
+        }
+        #endregion
 
+
+
+        #region Player Player : текущий игрок
+        private Player _Player;
+        /// <summary>текущий игрок</summary>
+        public Player Player
+        {
+            get { return _Player; }
+            set { Set(ref _Player, value); }
+        }
+        #endregion
+        #region Brush TeamColor : цвет команды игрока
+        private Brush _TeamColor = new SolidColorBrush(Color.FromArgb(0xFF, 0xf8, 0x57, 0x06));
+        /// <summary>цвет команды игрока</summary>
+        public Brush TeamColor
+        {
+            get { return _TeamColor; }
+            set { Set(ref _TeamColor, value); }
+        }
+        #endregion
         #region Map Map : карта
         private Map _Map;
         /// <summary>карта</summary>
@@ -279,7 +274,6 @@ namespace UIClient.Model
             set { Set(ref _Map, value); }
         }
         #endregion
-
         #region HexField Field : игорвое поле
         private HexField _Field;
         /// <summary>игорвое поле</summary>
@@ -289,7 +283,6 @@ namespace UIClient.Model
             set { Set(ref _Field, value); }
         }
         #endregion
-
         #region GameState GameState : статус игры
         private GameState _GameState;
         /// <summary>статус игры</summary>
@@ -300,75 +293,25 @@ namespace UIClient.Model
         }
         #endregion
 
+
+
+
+
         #region ObservableCollection<string> Logs : програмные логи
-        private ObservableCollection<string> _Logs;
+        private ObservableCollection<string> _Logs = new ObservableCollection<string>();
         /// <summary>програмные логи</summary>
         public ObservableCollection<string> Logs
         {
             get { return _Logs; }
             set { Set(ref _Logs, value); }
         }
-        void Log(string str)
+        public void Log(string str)
         {
             Logs.Insert(0, str);
         }
         #endregion
 
-        #region SetUserNameCommand : установить имя пользователя
-        /// <summary>установить имя пользователя</summary>
-        public ICommand SetUserNameCommand { get; }
-        private bool CanSetUserNameCommandExecute(object p)
-        {
-            if (!Connected) return false;
-            if (UserName == null || UserName.Length < 4) return false;
-            if (GameName != null && GameName.Length == 0) return false;
-            if (PlayersMax < 1 || PlayersMax > 3) return false;
-            if (TurnMax != null && TurnMax < 1) return false;
-            return true;
-        }
-        private async void OnSetUserNameCommandExecuted(object p)
-        {
-            var res = await LoginAsync();
-            if (res != Result.OKEY)
-            {
-                Log("Ошибка: " + res.ToString());
-                return;
-            }
-            Log("Авторизация выполнена");
 
-            res = await GetMapAsync();
-            if (res != Result.OKEY)
-            {
-                Log("Ошибка: " + res.ToString());
-                return;
-            }
-            Log("Карта загружена");
-            MessageWait = "Ожидание хода...";
-
-            var main_page = App.Host.Services.GetRequiredService<MainWindowViewModel>();
-            main_page.SelectGamePage();
-
-            //wait players
-            while (true)
-            {
-                res = await GetGameStateAsync();
-                if (res == Result.OKEY)
-                {
-                    if (!Field.Inited)
-                    {
-                        Field.CreateContent(GameState);
-                        if (Field.Inited)
-                        {
-                            res = await GetGameStateAsync();
-                            Log("Все игроки подключены");
-                            break;
-                        }
-                    }
-                }
-                await Task.Delay(1000);
-            }
-        }
-        #endregion
 
         #region LogoutCommand : выйти из сессии
         /// <summary>выйти из сессии</summary>
@@ -387,7 +330,7 @@ namespace UIClient.Model
         #region ChatSendMsgCommand : отправить сообщение в чат
         /// <summary>отправить сообщение в чат</summary>
         public ICommand ChatSendMsgCommand { get; }
-        private bool CanChatSendMsgCommandExecute(object p) => Connected && ChatText?.Length > 1 && VecEnable;
+        private bool CanChatSendMsgCommandExecute(object p) => Connected && ChatText?.Length > 1 && StepEnable;
         private void OnChatSendMsgCommandExecuted(object p)
         {
             var res = ChatSend(ChatText);
@@ -467,8 +410,6 @@ namespace UIClient.Model
                     case WebActions.LOGIN:
                         {
                             Player = JsonConvert.DeserializeObject<Player>(message);
-
-
                         }
                         break;
                     case WebActions.LOGOUT:
@@ -480,8 +421,7 @@ namespace UIClient.Model
                         {
                             Map = JsonConvert.DeserializeObject<Map>(message);
                             //Map.size = 12;
-                            App.Current.Dispatcher.Invoke(new Action(() => { Field.CreateField(Map); }));
-
+                            App.Current.Dispatcher.BeginInvoke(new Action(() => { Field.CreateField(Map); }));
                         }
                         break;
                     case WebActions.GAME_STATE:
@@ -498,8 +438,9 @@ namespace UIClient.Model
                                 {
                                     if (GameState.current_player_idx == Player.idx)
                                     {
+                                        TimerRun();
                                         GetActions();
-                                        VecEnable = true;
+
                                         if (false) // true - enable io
                                         {
                                             IntPtr player_s_ptr = IntPtr.Zero;
@@ -538,15 +479,7 @@ namespace UIClient.Model
                                                     vehicle_s[i].spawn_position.x = item.Value.spawn_position.x;
                                                     vehicle_s[i].spawn_position.y = item.Value.spawn_position.y;
                                                     vehicle_s[i].spawn_position.z = item.Value.spawn_position.z;
-                                                    switch (item.Value.vehicle_type)
-                                                    {
-                                                        case "medium_tank": vehicle_s[i].vehicle_type = VehicleType.MT; break;
-                                                        case "light_tank": vehicle_s[i].vehicle_type = VehicleType.LT; break;
-                                                        case "heavy_tank": vehicle_s[i].vehicle_type = VehicleType.HT; break;
-                                                        case "at_spg": vehicle_s[i].vehicle_type = VehicleType.ASPG; break;
-                                                        case "spg": vehicle_s[i].vehicle_type = VehicleType.SPG; break;
-                                                        default: break;
-                                                    }
+                                                    vehicle_s[i].vehicle_type = item.Value.vehicle_type;
                                                     i++;
                                                 }
                                             }
@@ -619,7 +552,6 @@ namespace UIClient.Model
                                     }
                                     else
                                     {
-                                        VecEnable = false;
                                         Turn();
                                         GetGameState();
                                     }
@@ -680,32 +612,15 @@ namespace UIClient.Model
 
         }
 
-        public Result Login()
+        public Result Login(LoginCreate log)
         {
             if (!Connected) return Result.CONNECTED_FALSE;
-
-            LoginCreate log = new LoginCreate();
-            log.name = UserName;
-            log.password = Pass;
-            log.game = GameName;
-            log.num_turns = TurnMax;
-            log.num_players = PlayersMax;
-            log.is_observer = IsObserver;
             return SendPacket(WebActions.LOGIN, log);
-
         }
 
-        public async Task<Result> LoginAsync()
+        public async Task<Result> LoginAsync(LoginCreate log)
         {
             if (!Connected) return Result.CONNECTED_FALSE;
-
-            LoginCreate log = new LoginCreate();
-            log.name = UserName;
-            log.password = Pass;
-            log.game = GameName;
-            log.num_turns = TurnMax;
-            log.num_players = PlayersMax;
-            log.is_observer = IsObserver;
             return await Task.Run(() => SendPacket(WebActions.LOGIN, log));
         }
 
@@ -760,12 +675,14 @@ namespace UIClient.Model
         public Result Turn()
         {
             if (!Connected) return Result.CONNECTED_FALSE;
+            StepEnable = false;
             return SendPacket(WebActions.TURN, 0, true);
         }
 
         public async Task<Result> TurnAsync()
         {
             if (!Connected) return Result.CONNECTED_FALSE;
+            StepEnable = false;
             return await Task.Run(() => SendPacket(WebActions.TURN, 0, true));
         }
 
@@ -821,7 +738,9 @@ namespace UIClient.Model
                 var config = App.Host.Services.GetRequiredService<AppConfig>();
 
                 IPAddress[] addresslist = Dns.GetHostAddresses(config.NetConfig.HostName);
+#pragma warning disable CS0618 // Тип или член устарел
                 await Task.Run(() => { connect_(web, (uint)addresslist[0].Address, config.NetConfig.Port); });
+#pragma warning restore CS0618 // Тип или член устарел
 
                 Connected = true;
                 Log("Подключен к серверу");

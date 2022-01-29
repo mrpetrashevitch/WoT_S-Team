@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using UIClient.Infrastructure.Controls;
@@ -33,7 +34,7 @@ namespace UIClient.Model
     public class Vehicle
     {
         public int player_id { get; set; }
-        public string vehicle_type { get; set; }
+        public VehicleType vehicle_type { get; set; }
         public int health { get; set; }
         public Point3 spawn_position { get; set; }
         public Point3 position { get; set; }

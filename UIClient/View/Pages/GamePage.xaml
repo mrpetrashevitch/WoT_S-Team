@@ -132,14 +132,14 @@
                 <Grid Grid.Row="0">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <TextBlock Text="{Binding StringFormat=Ход: {0}, Path=Core.GameState.current_turn}"
-                               FontSize="18" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
+                               FontSize="18" Foreground="{Binding Core.TeamColor}"/>
                         <TextBlock Text="{Binding StringFormat=/{0}, Path=Core.GameState.num_turns}"
-                               FontSize="18" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
+                               FontSize="18" Foreground="{Binding Core.TeamColor}"/>
 
                         <TextBlock Text="{Binding StringFormat=Игроков: {0}, Path=Core.Field.PlayerCount}" Margin="10 0 0 0"
-                               FontSize="18" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
+                               FontSize="18" Foreground="{Binding Core.TeamColor}"/>
                         <TextBlock Text="{Binding StringFormat=/{0}, Path=Core.GameState.num_players}"
-                               FontSize="18" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
+                               FontSize="18" Foreground="{Binding Core.TeamColor}"/>
                     </StackPanel>
                 </Grid>
 
@@ -148,9 +148,9 @@
                         <ContentControl  Content="{Binding Core.Field}"/>
                     </ScrollViewer>
                     <TextBlock Text="{Binding Core.MessageWait}" FontSize="28" VerticalAlignment="Center" 
-                               HorizontalAlignment="Center" Visibility="{Binding Core.WaitMsgVisible}"
+                               HorizontalAlignment="Center" Visibility="{Binding Core.MessageWaitVisible}"
                                FontFamily="{StaticResource FontCenturyGothic}" 
-                               Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
+                               Foreground="{Binding Core.TeamColor}"/>
                 </Grid>
             </Grid>
             <Grid Grid.Column="1">
@@ -161,9 +161,9 @@
                 <StackPanel Grid.Row="0">
 
                     <StackPanel Margin="10 0 0 0">
-                    <TextBlock Text="{Binding StringFormat=Карта: {0}, Path=Core.Map.name}"
+                        <TextBlock Text="{Binding StringFormat=Карта: {0}, Path=Core.Map.name}"
                                FontSize="18" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
-                    <TextBlock Text="{Binding StringFormat=Имя: {0}, Path=Core.UserName}"
+                        <TextBlock Text="{Binding StringFormat=Имя: {0}, Path=Core.Player.name}"
                                FontSize="18" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
 
                         <TextBlock FontSize="18" HorizontalAlignment="Left"
@@ -173,12 +173,20 @@
                                Converter={StaticResource ConvertWinPointsToString}, 
                                ConverterParameter={StaticResource Locator}}" 
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
-    
+
                         <TextBlock FontSize="18" HorizontalAlignment="Left"
                                Text="Матрица атаки:" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                         <TextBlock FontSize="18" HorizontalAlignment="Left" 
                                Text="{Binding Core.GameState.attack_matrix, 
                                Converter={StaticResource ConvertAttackMatrixToString}, 
+                               ConverterParameter={StaticResource Locator}}" 
+                               Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
+                        
+                        <TextBlock FontSize="18" HorizontalAlignment="Left"
+                               Text="Наблюдатели:" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
+                        <TextBlock FontSize="18" HorizontalAlignment="Left" 
+                               Text="{Binding Core.GameState.observers, 
+                               Converter={StaticResource ConvertObserversToString}, 
                                ConverterParameter={StaticResource Locator}}" 
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                     </StackPanel>

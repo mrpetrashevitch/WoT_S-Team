@@ -47,16 +47,25 @@ namespace UIClient.Infrastructure.Behavior
 
                 if (res == Result.OKEY)
                 {
+                    vm.Core.TotalStep++;
                     vm.Core.Field.VehicleMove(tank.Vehicle.id, hex.Point3);
-                    vm.Core.VecEnable = false;
-                    res = await vm.Core.TurnAsync();
-                    res = await vm.Core.GetGameStateAsync();
+                    vm.Core.Log("Машина перемещена по x: " + hex.Point3.x + ", y: " + hex.Point3.y + ", z: " + hex.Point3.z);
+
+                    if (vm.Core.TotalStep == 5)
+                        vm.Core.TimerStop();
+
+                    //vm.Core.VecEnable = false;
+                    //res = await vm.Core.TurnAsync();
+                    //res = await vm.Core.GetGameStateAsync();
                 }
-                else // has be late
+                else if (res == Result.BAD_COMMAND)
                 {
-                    vm.Core.VecEnable = false;
-                    res = await vm.Core.TurnAsync();
-                    res = await vm.Core.GetGameStateAsync();
+                    vm.Core.Log(res.ToString());
+                }
+                else
+                {
+                    vm.Core.Log("Ход перешел другому");
+                    vm.Core.TimerStop();
                 }
             }
             else
@@ -65,14 +74,13 @@ namespace UIClient.Infrastructure.Behavior
                 Result res = await vm.Core.ShootAsync(tank.Vehicle.id, hex.Point3);
                 if (res == Result.OKEY)
                 {
+                    vm.Core.TotalStep++;
                     vm.Core.Field.VehicleShoot(tank.Vehicle.id, hex.Point3);
-                    vm.Core.VecEnable = false;
                     res = await vm.Core.TurnAsync();
                     res = await vm.Core.GetGameStateAsync();
                 }
                 else // has be late
                 {
-                    vm.Core.VecEnable = false;
                     res = await vm.Core.TurnAsync();
                     res = await vm.Core.GetGameStateAsync();
                 }

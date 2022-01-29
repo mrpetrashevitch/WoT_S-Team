@@ -9,7 +9,6 @@
       xmlns:b="clr-namespace:UIClient.Infrastructure.Behavior"
       FontFamily="{StaticResource FontCenturyGothic}"
       d:DesignHeight="250" d:DesignWidth="650"
-      Title="{Binding Title}"
       DataContext="{Binding LoadPageViewModel, Source={StaticResource Locator}}">
     <Page.Resources>
         <Storyboard x:Key="LoadAnimation" RepeatBehavior="Forever">
@@ -55,7 +54,7 @@
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                     <TextBox HorizontalAlignment="Right" Margin="10 0" Grid.Row="2" Height="30" Width="170" FontSize="18" 
                              HorizontalContentAlignment="Center"
-                             Text="{Binding Core.UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                             Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 </Grid>
 
                 <Grid Grid.Row="2" Visibility="{Binding IsControlVisible}">
@@ -63,14 +62,14 @@
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                     <TextBox HorizontalAlignment="Right" Margin="10 0" Grid.Row="2" Height="30" Width="170" FontSize="18" 
                              HorizontalContentAlignment="Center"
-                             Text="{Binding Core.Pass, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                             Text="{Binding Pass, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 </Grid>
                 <Grid Grid.Row="3" Visibility="{Binding IsControlVisible}">
                     <TextBlock HorizontalAlignment="Left" Margin="10 0" Text="Имя игры:" FontSize="22" VerticalAlignment="Center" 
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                     <TextBox HorizontalAlignment="Right" Margin="10 0" Grid.Row="2" Height="30" Width="170" FontSize="18" 
                              HorizontalContentAlignment="Center"
-                             Text="{Binding Core.GameName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                             Text="{Binding GameName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 </Grid>
 
                 <Grid Grid.Row="4" Visibility="{Binding IsControlVisible}">
@@ -79,20 +78,20 @@
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                     <TextBox HorizontalAlignment="Right" Grid.Row="2" Height="30" Width="50" FontSize="18" 
                              HorizontalContentAlignment="Center"
-                             Text="{Binding Core.PlayersMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                             Text="{Binding PlayersMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         <TextBlock HorizontalAlignment="Left" Margin="10 0" Text="Ходы:" FontSize="22" VerticalAlignment="Center" 
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                     </StackPanel>
                     <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Grid.Row="2" Height="30" Width="50" FontSize="18" 
                              HorizontalContentAlignment="Center"
-                             Text="{Binding Core.TurnMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                             Text="{Binding TurnMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 </Grid>
                 
                 <Grid Grid.Row="5" Visibility="{Binding IsControlVisible}">
                     <CheckBox Content="Наблюдать" FontSize="22" Margin="10 0" HorizontalAlignment="Left"
-                                IsChecked="{Binding Core.IsObserver, Mode=TwoWay}" Foreground="{StaticResource ControlPressedBorderBrush}"
+                                IsChecked="{Binding IsObserver, Mode=TwoWay}" Foreground="{StaticResource ControlPressedBorderBrush}"
                                 Height="30" Style="{StaticResource CheckboxStyle}" Focusable="False"/>
-                    <Button Width="80" Grid.Row="3" Command="{Binding Core.SetUserNameCommand}" Margin="10 0" HorizontalAlignment="Right"
+                    <Button Width="80" Grid.Row="3" Command="{Binding LoginCommand}" Margin="10 0" HorizontalAlignment="Right"
                                 Height="30" FontSize="22" Style="{StaticResource ButtonCustom}" 
                             Content="Войти"/>
                 </Grid>

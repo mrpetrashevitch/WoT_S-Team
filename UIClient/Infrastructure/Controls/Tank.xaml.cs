@@ -25,18 +25,8 @@ namespace UIClient.Infrastructure.Controls
         {
             InitializeComponent();
             HP = vehicle.vehicle.health;
-            string type = vehicle.vehicle.vehicle_type;
-            switch (type)
-            {
-                case "medium_tank": type = "СТ"; break;
-                case "light_tank": type = "ЛТ"; break;
-                case "heavy_tank": type = "ТТ"; break;
-                case "at_spg": type = "ПТ"; break;
-                case "spg": type = "САУ"; break;
-                default: break;
-            }
             Vehicle = vehicle;
-            Type = type;
+            Type = vehicle.vehicle.vehicle_type.ToString();
             TeamColor = team_color;
         }
 

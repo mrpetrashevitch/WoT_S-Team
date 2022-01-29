@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,13 +13,19 @@ namespace UIClient.Model
         public int is_observer;
     }
 
+
     public enum VehicleType : int
     {
-        MT,
-        LT,
-        HT,
-        ASPG,
-        SPG
+        [EnumMember(Value = "medium_tank")]
+        СТ,
+        [EnumMember(Value = "light_tank")]
+        ЛТ,
+        [EnumMember(Value = "heavy_tank")]
+        ТТ,
+        [EnumMember(Value = "at_spg")]
+        ПТ,
+        [EnumMember(Value = "spg")]
+        САУ
     }
 
     public struct Vehicle_native
