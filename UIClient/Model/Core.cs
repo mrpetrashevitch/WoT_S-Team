@@ -427,16 +427,16 @@ namespace UIClient.Model
                                             int steps = 0;
                                             foreach (var i in actions.actions)
                                             {
+                                                Result result = Result.OKEY;
                                                 if (i.action_type == action_type.move)
                                                 {
-                                                    await MoveAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z }).ConfigureAwait(false);
-                                                    steps++;
+                                                    result = await MoveAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z }).ConfigureAwait(false);
                                                 }
                                                 else if (i.action_type == action_type.shoot)
                                                 {
-                                                    await ShootAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z }).ConfigureAwait(false);
-                                                    steps++;
+                                                    result = await ShootAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z }).ConfigureAwait(false);
                                                 }
+                                                if(result == Result.OKEY) steps++;
                                             }
                                             if (steps != 5)
                                             {
@@ -611,7 +611,7 @@ namespace UIClient.Model
             return action_re;
         }
 
-        public async Task MoveAsync(int id, Point3 point)
+        public async Task<Result> MoveAsync(int id, Point3 point)
         {
             Result res = await SendMoveAsync(id, point).ConfigureAwait(false);
 
@@ -638,9 +638,10 @@ namespace UIClient.Model
                 Log(res.ToString());
                 await TimerStop();
             }
+            return res;
         }
 
-        public async Task ShootAsync(int id, Point3 point)
+        public async Task<Result> ShootAsync(int id, Point3 point)
         {
             Result res = await SendShootAsync(id, point).ConfigureAwait(false);
 
@@ -667,6 +668,7 @@ namespace UIClient.Model
                 Log(res.ToString());
                 await TimerStop();
             }
+            return res;
         }
 
         public async Task<Result> SendLoginAsync(LoginCreate log)
