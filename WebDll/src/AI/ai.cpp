@@ -1,4 +1,7 @@
 #include "ai.h"
+#include <cmath>
+#include <algorithm>
+
 
 namespace ai
 {

@@ -1,7 +1,5 @@
 #pragma once
 #include "../defs.h"
-#include <cmath>
-#include <algorithm>
 
 namespace ai
 {
