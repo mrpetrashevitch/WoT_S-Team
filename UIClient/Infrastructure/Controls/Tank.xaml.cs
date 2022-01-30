@@ -49,12 +49,12 @@ namespace UIClient.Infrastructure.Controls
         public static readonly DependencyProperty TypeProperty =
             DependencyProperty.Register(nameof(Type), typeof(string), typeof(Tank), new PropertyMetadata(default(string)));
 
-        public double HP
+        public int HP
         {
-            get { return (double)GetValue(HPProperty); }
+            get { return (int)GetValue(HPProperty); }
             set { SetValue(HPProperty, value); }
         }
         public static readonly DependencyProperty HPProperty =
-            DependencyProperty.Register(nameof(HP), typeof(double), typeof(Tank), new PropertyMetadata(default(double)));
+            DependencyProperty.Register(nameof(HP), typeof(int), typeof(Tank), new PropertyMetadata(default(int)));
     }
 }
