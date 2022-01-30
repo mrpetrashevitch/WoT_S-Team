@@ -171,7 +171,7 @@
                                Text="{Binding Core.GameState.win_points, 
                                Converter={StaticResource ConvertWinPointsToString}, 
                                ConverterParameter={StaticResource Locator}}" 
-                               Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
+                               Foreground="{StaticResource ControlPressedBorderBrush}"/>
 
                         <TextBlock FontSize="18" HorizontalAlignment="Center"
                                Text="Матрица атаки:" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
@@ -179,7 +179,7 @@
                                Text="{Binding Core.GameState.attack_matrix, 
                                Converter={StaticResource ConvertAttackMatrixToString}, 
                                ConverterParameter={StaticResource Locator}}" 
-                               Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
+                               Foreground="{StaticResource ControlPressedBorderBrush}"/>
 
                         <TextBlock FontSize="18" HorizontalAlignment="Center"
                                Text="Наблюдатели:" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
@@ -187,7 +187,7 @@
                                Text="{Binding Core.GameState.observers, 
                                Converter={StaticResource ConvertObserversToString}, 
                                ConverterParameter={StaticResource Locator}}" 
-                               Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
+                               Foreground="{StaticResource ControlPressedBorderBrush}"/>
 
                         <CheckBox Content="Включить AI" FontSize="18" HorizontalAlignment="Left"
                                 IsChecked="{Binding Core.AIEnable, Mode=TwoWay}" Foreground="{StaticResource ControlPressedBorderBrush}"

@@ -49,7 +49,7 @@ namespace web_client
 
 	client::client(): _inited(false), _connected(false), _socket(0)
 	{
-
+		ZeroMemory(&_addr, sizeof(_addr));
 	}
 
 	client::~client()
