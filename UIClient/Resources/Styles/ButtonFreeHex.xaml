@@ -74,10 +74,26 @@
                         <Path x:Name="Border" Data="M11,1 L29,1 L39,17.5 L29,34 L11,34 L1,17.5z" StrokeThickness="1" 
                               Fill="{StaticResource ControlNormalBackgroundBrush}" 
                               Stroke="{StaticResource ControlDisabledBorderBrush}"/>
+
+                        <TextBlock Text="&#xF27E;" FontSize="24" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                   Visibility="{Binding Path=CanMove, RelativeSource={ RelativeSource AncestorType=local:Hex, Mode=FindAncestor}}"
+                                   Foreground="{StaticResource ControlMouseOverBorderBrush}"
+                                   FontFamily="{ StaticResource IonIcons}"
+                                   >
+                        </TextBlock>
+
+                        <TextBlock Text="&#xF2C0;" FontSize="24" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                   Visibility="{Binding Path=CanShoot, RelativeSource={ RelativeSource AncestorType=local:Hex, Mode=FindAncestor}}"
+                                   Foreground="{StaticResource ControlMouseOverBorderBrush}"
+                                   FontFamily="{ StaticResource IonIcons}"
+                                   >
+                        </TextBlock>
                         
                         <ContentPresenter x:Name="ContentPresenter" Focusable="False" Content="{TemplateBinding Content}"
                                           HorizontalAlignment="Center" 
                                           VerticalAlignment="Center"/>
+                        
+
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

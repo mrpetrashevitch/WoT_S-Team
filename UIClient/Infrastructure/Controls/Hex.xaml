@@ -14,9 +14,7 @@
              IsEnabled="{Binding Core.StepEnable}">
     <Grid>
         <Button x:Name="Btn" Style="{StaticResource ButtonFreeHex}"
-                Content="{Binding Path=Tank, ElementName=CurrentControl}"
-                />
-
+                Content="{Binding Path=Tank, ElementName=CurrentControl}"/>
     </Grid>
     
     <i:Interaction.Behaviors>

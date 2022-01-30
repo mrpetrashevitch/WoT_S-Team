@@ -15,7 +15,7 @@ namespace UIClient.Model.Server
 
     public class Point2
     {
-        public int x ;
+        public int x;
         public int y;
     }
 }

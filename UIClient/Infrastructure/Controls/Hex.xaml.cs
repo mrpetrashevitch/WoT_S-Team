@@ -78,6 +78,22 @@ namespace UIClient.Infrastructure.Controls
             }
         }
 
+        public Visibility CanMove
+        {
+            get { return (Visibility)GetValue(CanMoveProperty); }
+            set { SetValue(CanMoveProperty, value); }
+        }
+        public static readonly DependencyProperty CanMoveProperty =
+            DependencyProperty.Register(nameof(CanMove), typeof(Visibility), typeof(Hex), new PropertyMetadata(Visibility.Hidden));
+
+        public Visibility CanShoot
+        {
+            get { return (Visibility)GetValue(CanShootProperty); }
+            set { SetValue(CanShootProperty, value); }
+        }
+        public static readonly DependencyProperty CanShootProperty =
+            DependencyProperty.Register(nameof(CanShoot), typeof(Visibility), typeof(Hex), new PropertyMetadata(Visibility.Hidden));
+
         public Point2 Point2 { get; set; }
         public Point3 Point3 { get; set; }
     }

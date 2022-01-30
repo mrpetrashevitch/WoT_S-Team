@@ -27,7 +27,6 @@ namespace UIClient
             var app = new App();
             app.InitializeComponent();
             app.Run();
-            //Task.Run(new Action(() => { App.Core?.Free(); })).Wait();//очистка всех неуправляемых рессурсов
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args)

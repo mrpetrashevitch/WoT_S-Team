@@ -77,6 +77,8 @@ namespace UIClient.Model
 
             Chat = new ObservableCollection<string>();
             Field = new HexField();
+            SelectedCanMove = new List<Hex>();
+            SelectedCanShoot = new List<Hex>();
             Timer.Interval = new TimeSpan(0, 0, 1);
             Timer.Tick += TimerTick;
 
@@ -97,6 +99,8 @@ namespace UIClient.Model
             Field = new HexField();
             SelectedHex = null;
             ChatText = null;
+            SelectedCanMove.Clear();
+            SelectedCanShoot.Clear();
             Chat.Clear();
             MessageWait = "Ожидание хода...";
             TeamColor = new SolidColorBrush(Color.FromArgb(0xFF, 0xf8, 0x57, 0x06));
@@ -208,6 +212,24 @@ namespace UIClient.Model
         {
             get { return _SelectedHex; }
             set { Set(ref _SelectedHex, value); }
+        }
+        #endregion
+        #region List<Hex> SelectedCanMove : лист гексов, куда можно ходить
+        private List<Hex> _SelectedCanMove;
+        /// <summary>лист гексов, куда можно ходить</summary>
+        public List<Hex> SelectedCanMove
+        {
+            get { return _SelectedCanMove; }
+            set { Set(ref _SelectedCanMove, value); }
+        }
+        #endregion
+        #region List<Hex> SelectedCanShoot : лист гексов, куда можно стрелять
+        private List<Hex> _SelectedCanShoot;
+        /// <summary>лист гексов, куда можно стрелять</summary>
+        public List<Hex> SelectedCanShoot
+        {
+            get { return _SelectedCanShoot; }
+            set { Set(ref _SelectedCanShoot, value); }
         }
         #endregion
 

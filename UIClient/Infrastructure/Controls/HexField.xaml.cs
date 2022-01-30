@@ -121,9 +121,48 @@ namespace UIClient.Infrastructure.Controls
             AddBase(new Point3 { x = -1, y = 0, z = 1 });
         }
 
-        Hex GetHex(Point3 p)
+        public Hex GetHex(Point3 p)
         {
-            return hex_field[offset.y + (p.z + (p.x - (p.x & 1)) / 2), offset.x + p.x];
+            int of_x = offset.x + p.x;
+            if (of_x < 0 || of_x > field_size - 1) return null;
+            int of_y = offset.y + (p.z + (p.x - (p.x & 1)) / 2);
+            if (of_y < 0 || of_y > field_size - 1) return null;
+            return hex_field[of_y, of_x];
+        }
+
+        public int GetDistance(Point3 a, Point3 b)
+        {
+            return (Math.Abs(a.x - b.x) + Math.Abs(a.y - b.y) + Math.Abs(a.z - b.z)) / 2;
+        }
+
+        public List<Hex> GetHexAround(Point3 point, int n, int N)
+        {
+            List<Hex> res = new List<Hex>();
+            if (n > N || n < 0 || N < 0) return res;
+
+            Point3 hex = new Point3();
+            for (int dx = -N; dx <= N; dx++)
+            {
+                for (int dy = -N; dy <= N; dy++)
+                {
+                    for (int dz = -N; dz <= N; dz++)
+                    {
+                        if (dx + dy + dz == 0)
+                        {
+                            hex.x = dx + point.x;
+                            hex.y = dy + point.y;
+                            hex.z = dz + point.z;
+                            int d = GetDistance(point, hex);
+                            if (d < n || d > N) continue;
+
+                            var add_hex = GetHex(hex);
+                            if (add_hex != null)
+                                res.Add(add_hex);
+                        }
+                    }
+                }
+            }
+            return res;
         }
 
         VehicleEx GetVehicle(Point3 p)
