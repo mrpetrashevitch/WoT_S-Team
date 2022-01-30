@@ -53,7 +53,7 @@ namespace UIClient.Infrastructure.Controls
             x = 0; y = 0;
             offset.x = size - 1;
             offset.y = size - 1;
-            FieldSizeX = (field_size+1) * Hex.size_x * 0.75 - Hex.size_y/2;
+            FieldSizeX = (field_size + 1) * Hex.size_x * 0.75 - Hex.size_y / 2;
             FieldSizeY = (field_size) * Hex.size_y;
 
             int l = size - 2, r = size;
@@ -162,38 +162,37 @@ namespace UIClient.Infrastructure.Controls
 
         public void CreateContent(GameState state)
         {
+            if (state == null) return;
             if (state.players == null) return;
             PlayerCount = state.players.Length;
             if (state.num_players != state.players.Length) return;
 
             this.players.Clear();
             PlayerCount = 0;
-            if (state.players != null)
+
+            int i = 0;
+            foreach (var item in state.players)
             {
-                int i = 0;
-                foreach (var item in state.players)
-                {
-                    PlayerEx px = new PlayerEx();
-                    px.player = item;
-                    px.color = team_colors[i];
-                    this.players.Add(item.idx, px);
-                    i++;
-                    PlayerCount++;
-                }
+                PlayerEx px = new PlayerEx();
+                px.player = item;
+                px.color = team_colors[i];
+                this.players.Add(item.idx, px);
+                i++;
+                PlayerCount++;
             }
 
             vehicles.Clear();
             Dictionary<int, Vehicle> v = state.vehicles;
             if (v != null)
-                foreach (var i in v)
+                foreach (var it in v)
                 {
                     VehicleEx vx = new VehicleEx();
-                    vx.vehicle = i.Value;
+                    vx.vehicle = it.Value;
                     vx.hex = GetHex(vx.vehicle.position);
-                    vx.id = i.Key;
+                    vx.id = it.Key;
                     Tank tank = new Tank(vx, players[vx.vehicle.player_id].color);
                     vx.hex.Tank = tank;
-                    vehicles.Add(i.Key, vx);
+                    vehicles.Add(it.Key, vx);
                 }
 
             Inited = true;
@@ -246,7 +245,7 @@ namespace UIClient.Infrastructure.Controls
             var target = GetVehicle(point);
             if (target == null) return;
             if (target.hex.Tank == null) return;
-   
+
             Tank tank = (Tank)target.hex.Tank;
             tank.HP--;
             target.vehicle.health--;

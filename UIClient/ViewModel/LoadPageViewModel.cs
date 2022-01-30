@@ -126,6 +126,8 @@ namespace UIClient.ViewModel
         }
         private async void OnLoginCommandExecuted(object p)
         {
+            Core.Reset();
+
             LoginCreate log = new LoginCreate();
             log.name = UserName;
             log.password = Pass;
@@ -133,6 +135,7 @@ namespace UIClient.ViewModel
             log.num_turns = TurnMax;
             log.num_players = PlayersMax;
             log.is_observer = IsObserver;
+
 
             var res = await Core.SendLoginAsync(log).ConfigureAwait(false);
             if (res != Result.OKEY)

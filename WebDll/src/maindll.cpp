@@ -33,7 +33,7 @@ extern "C"
 		return web->send_packet(action, size, data, out_size, out_data);
 	}
 
-	__declspec(dllexport) Result destroy(void* web)
+	__declspec(dllexport) Result destroy(web_client::client* web)
 	{
 		if (!web) return Result::IVALID_PARAM;
 		try

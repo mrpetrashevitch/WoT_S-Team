@@ -88,6 +88,20 @@ namespace UIClient.Model
             Connect();
         }
 
+        public void Reset()
+        {
+            StepEnable = false;
+            GameState = null;
+            Map = null;
+            Player = null;
+            Field = new HexField();
+            SelectedHex = null;
+            ChatText = null;
+            Chat.Clear();
+            MessageWait = "Ожидание хода...";
+            TeamColor = new SolidColorBrush(Color.FromArgb(0xFF, 0xf8, 0x57, 0x06));
+        }
+
         #region bool Connected : подключен ли к серверу
         private bool _Connected;
         /// <summary>подключен ли к серверу</summary>
@@ -108,7 +122,7 @@ namespace UIClient.Model
         #endregion
 
         #region bool StepEnable : есть ли возможность ходить
-        private bool _StepEnable = false;
+        private bool _StepEnable;
         /// <summary>есть ли возможность ходить</summary>
         public bool StepEnable
         {
@@ -239,7 +253,7 @@ namespace UIClient.Model
         }
         #endregion
         #region Brush TeamColor : цвет команды игрока
-        private Brush _TeamColor = new SolidColorBrush(Color.FromArgb(0xFF, 0xf8, 0x57, 0x06));
+        private Brush _TeamColor;
         /// <summary>цвет команды игрока</summary>
         public Brush TeamColor
         {
@@ -559,11 +573,11 @@ namespace UIClient.Model
 
             action_ret action_re;
             var act = WebClientDll.get_action(Player.idx,
-                player_s_ptr, player_s.Length,
-                vehicle_s_ptr, vehicle_s.Length,
-                winpoints_s_ptr, winpoints_s.Length,
-                attackmatrix_s_ptr, attackmatrix_s.Length,
-                base_s_ptr, base_s.Length,
+                player_s_ptr, player_s?.Length ?? 0,
+                vehicle_s_ptr, vehicle_s?.Length ?? 0,
+                winpoints_s_ptr, winpoints_s?.Length ?? 0,
+                attackmatrix_s_ptr, attackmatrix_s?.Length ?? 0,
+                base_s_ptr, base_s?.Length ?? 0,
                 out action_re);
 
             if (player_s != null) player_pipe.Free();
