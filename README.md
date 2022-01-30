@@ -13,7 +13,7 @@
 - MSVC++ v.14.29
 - NET Framework v. 4.7.2
 
-### Ñommand line (all parameters are required)
+### Command line (all parameters are required)
 - u - user name
 - p - pass
 - g - game name
