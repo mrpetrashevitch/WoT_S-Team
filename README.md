@@ -21,6 +21,7 @@
 - tc - turn count (1 to 100)
 - o - is observer (0 or 1)
 - ai - enable artificial intelligence (0 or 1)
+
 Example: `u USER p PASS g GAMENAME  pc 1 tc 45 o 0  ai 1`
 
 ### About
