@@ -50,7 +50,7 @@
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="1" Visibility="{Binding IsControlVisible}">
-                    <TextBlock HorizontalAlignment="Left" Margin="10 0" Text="Имя:" FontSize="22" VerticalAlignment="Center" 
+                    <TextBlock HorizontalAlignment="Left" Margin="10 0" Text="Имя:" FontSize="18" VerticalAlignment="Center" 
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                     <TextBox HorizontalAlignment="Right" Margin="10 0" Grid.Row="2" Height="30" Width="170" FontSize="18" 
                              HorizontalContentAlignment="Center"
@@ -58,14 +58,14 @@
                 </Grid>
 
                 <Grid Grid.Row="2" Visibility="{Binding IsControlVisible}">
-                    <TextBlock HorizontalAlignment="Left" Margin="10 0" Text="Пароль:" FontSize="22" VerticalAlignment="Center" 
+                    <TextBlock HorizontalAlignment="Left" Margin="10 0" Text="Пароль:" FontSize="18" VerticalAlignment="Center" 
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                     <TextBox HorizontalAlignment="Right" Margin="10 0" Grid.Row="2" Height="30" Width="170" FontSize="18" 
                              HorizontalContentAlignment="Center"
                              Text="{Binding Pass, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 </Grid>
                 <Grid Grid.Row="3" Visibility="{Binding IsControlVisible}">
-                    <TextBlock HorizontalAlignment="Left" Margin="10 0" Text="Имя игры:" FontSize="22" VerticalAlignment="Center" 
+                    <TextBlock HorizontalAlignment="Left" Margin="10 0" Text="Имя игры:" FontSize="18" VerticalAlignment="Center" 
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                     <TextBox HorizontalAlignment="Right" Margin="10 0" Grid.Row="2" Height="30" Width="170" FontSize="18" 
                              HorizontalContentAlignment="Center"
@@ -74,26 +74,46 @@
 
                 <Grid Grid.Row="4" Visibility="{Binding IsControlVisible}">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock HorizontalAlignment="Left" Margin="10 0" Text="Игроки:" FontSize="22" VerticalAlignment="Center" 
+                        <TextBlock HorizontalAlignment="Left" Margin="10 0" Text="Игроки:" FontSize="18" VerticalAlignment="Center" 
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
-                    <TextBox HorizontalAlignment="Right" Grid.Row="2" Height="30" Width="50" FontSize="18" 
+                    <TextBox HorizontalAlignment="Right" Grid.Row="2" Height="30" Width="60" FontSize="18" 
                              HorizontalContentAlignment="Center"
                              Text="{Binding PlayersMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                        <TextBlock HorizontalAlignment="Left" Margin="10 0" Text="Ходы:" FontSize="22" VerticalAlignment="Center" 
+                        <TextBlock HorizontalAlignment="Left" Margin="10 0" Text="Ходы:" FontSize="18" VerticalAlignment="Center" 
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                     </StackPanel>
-                    <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Grid.Row="2" Height="30" Width="50" FontSize="18" 
+                    <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Grid.Row="2" Height="30" Width="60" FontSize="18" 
                              HorizontalContentAlignment="Center"
                              Text="{Binding TurnMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 </Grid>
                 
                 <Grid Grid.Row="5" Visibility="{Binding IsControlVisible}">
-                    <CheckBox Content="Наблюдать" FontSize="22" Margin="10 0" HorizontalAlignment="Left"
+                    <StackPanel Orientation="Horizontal">
+                        
+                    <CheckBox Content="Наблюдать" FontSize="18" Margin="10 0" HorizontalAlignment="Left"
                                 IsChecked="{Binding IsObserver, Mode=TwoWay}" Foreground="{StaticResource ControlPressedBorderBrush}"
                                 Height="30" Style="{StaticResource CheckboxStyle}" Focusable="False"/>
-                    <Button Width="80" Grid.Row="3" Command="{Binding LoginCommand}" Margin="10 0" HorizontalAlignment="Right"
-                                Height="30" FontSize="22" Style="{StaticResource ButtonCustom}" 
-                            Content="Войти"/>
+                    <CheckBox Content="AI" FontSize="18" HorizontalAlignment="Left"
+                                IsChecked="{Binding Core.AIEnable, Mode=TwoWay}" Foreground="{StaticResource ControlPressedBorderBrush}"
+                                Height="30" Style="{StaticResource CheckboxStyle}" Focusable="False"/>
+                    </StackPanel>
+                    <Button Width="70" Grid.Row="3" Command="{Binding LoginCommand}" Margin="10 0" HorizontalAlignment="Right"
+                                Height="30" FontSize="18" Style="{StaticResource ButtonCustom}" 
+                            >
+                        <Button.Content>
+                            <TextBlock Grid.Column="0" Text="Войти" FontSize="22"
+                                           FontFamily="{StaticResource FontCenturyGothic}" >
+                                <TextBlock.Foreground>
+                                    <LinearGradientBrush StartPoint="0 0" EndPoint="0 1">
+                                        <LinearGradientBrush.GradientStops>
+                                            <GradientStop Offset="0.1" Color="{StaticResource ControlPressedBorderColor}" />
+                                            <GradientStop Offset="1" Color="{StaticResource ControlMouseOverBorderColor}" />
+                                        </LinearGradientBrush.GradientStops>
+                                    </LinearGradientBrush>
+                                </TextBlock.Foreground>
+                            </TextBlock>
+                        </Button.Content>
+                    </Button>
                 </Grid>
 
                 <StackPanel Grid.Row="3" Visibility="{Binding IsControlVisible}">

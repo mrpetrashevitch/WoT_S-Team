@@ -424,29 +424,29 @@ namespace UIClient.Model
                                         if (AIEnable)
                                         {
                                             var actions = GetAIActions();
-
+                                            int steps = 0;
                                             foreach (var i in actions.actions)
                                             {
                                                 if (i.action_type == action_type.move)
                                                 {
                                                     await MoveAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z }).ConfigureAwait(false);
+                                                    steps++;
                                                 }
                                                 else if (i.action_type == action_type.shoot)
                                                 {
                                                     await ShootAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z }).ConfigureAwait(false);
+                                                    steps++;
                                                 }
                                             }
-                                            if (StepEnable)
+                                            if (steps != 5)
                                             {
-                                                await SendTurnAsync().ConfigureAwait(false);
-                                                await SendGameStateAsync().ConfigureAwait(false);
+                                                await TimerStop().ConfigureAwait(false);
                                             }
                                         }
                                     }
                                     else
                                     {
-                                        await SendTurnAsync().ConfigureAwait(false);
-                                        await SendGameStateAsync().ConfigureAwait(false);
+                                        await TimerStop().ConfigureAwait(false);
                                     }
                                 }
                                 App.Current.Dispatcher.Invoke(new Action(() => { Field.UpdateContent(GameState); }));
@@ -463,7 +463,7 @@ namespace UIClient.Model
                                     if (i.action_type == WebActions.CHAT)
                                     {
                                         Message msg = JsonConvert.DeserializeObject<Message>(i.data.ToString());
-                                        App.Current.Dispatcher.Invoke(new Action(() => { Chat.Add(msg.message); }));
+                                        App.Current.Dispatcher.Invoke(() => { Chat.Add(msg.message); });
                                     }
                                 }
                             }
@@ -599,7 +599,7 @@ namespace UIClient.Model
                 vehicle_s_ptr, vehicle_s.Length,
                 winpoints_s_ptr, winpoints_s.Length,
                 attackmatrix_s_ptr, attackmatrix_s.Length,
-                base_s_ptr, base_s.Length, 
+                base_s_ptr, base_s.Length,
                 out action_re);
 
             if (player_s != null) player_pipe.Free();
