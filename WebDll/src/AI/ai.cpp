@@ -1,6 +1,5 @@
 #include "ai.h"
 
-
 namespace ai
 {
 	Result ai::get_action(int curr_player,
@@ -10,7 +9,7 @@ namespace ai
 		AttackMatrix_native* attack_matrix, int attack_matrix_size,
 		point* base, int base_size, action_ret* out_actions)
 	{
-	
+			
 			for (int j = 0, i = 0; j < vehicles_size; j++)
 			{
 				/*if (vehicles[j].player_id == curr_player)
@@ -45,7 +44,7 @@ namespace ai
 				out_actions->actions[i].action_type = action_type::move;
 				out_actions->actions[i].vec_id = vehicles[j].vehicle_id;
 				out_actions->actions[i].point = vehicles[j].position;
-				if (base->x < vehicles[j].position.x) {
+				/*if (base->x < vehicles[j].position.x) {
 					out_actions->actions[i].point.x -= 2;
 					out_actions->actions[i].point.y++;
 					out_actions->actions[i].point.z++;
@@ -59,7 +58,39 @@ namespace ai
 					out_actions->actions[i].point.x++;
 					out_actions->actions[i].point.y++;
 					out_actions->actions[i].point.z -= 2;
+				}*/
+				point base_center = point();
+				int min_value = distance(vehicles[j].position, base_center);
+				for (int dx = -2; dx <= 2; dx++) {
+					for (int dy = -2; dy <= 2; dy++) {
+						int dz = 0 - dx - dy;
+						point new_point = vehicles[j].position;
+						new_point.x += dx;
+						new_point.y += dy;
+						new_point.z += dz;
+						int dist0 = distance(vehicles[j].position, new_point);
+						if (dist0 > 2 || 
+							dist0 == 0) {
+							continue;
+						}
+						int dist_to_base = distance(new_point, base_center);
+						if (dist_to_base < min_value) {
+							bool position_ok = true;
+							for (int t = 0; t < vehicles_size; t++) {
+								if (distance(vehicles[t].position, new_point) == 0) {
+									position_ok = false;
+									break;
+								}
+							}
+							if (!position_ok) {
+								continue;
+							}
+							out_actions->actions[i].point = new_point;
+							min_value = dist_to_base;
+						}
+					}
 				}
+				vehicles[j].position = out_actions->actions[i].point;
 				i++;
 			}
 		return Result::OKEY;
@@ -92,6 +123,24 @@ namespace ai
 	bool ai::check_neutrality(int curr_player, int goal,
 		AttackMatrix_native* attack_matrix, int attack_matrix_size)
 	{
-		return true;
+		for (int i = 0; i < attack_matrix_size; i++) {
+			if (attack_matrix[i].id != goal) {
+				continue;
+			}
+			for (int j = 0; j < 3; j++) {
+				if (attack_matrix[i].attack[j] == curr_player) {
+					return true;
+				}
+			}
+		}
+		bool was_attacked_by_third = false;
+		for (int i = 0; i < attack_matrix_size; i++) {
+			for (int j = 0; j < 3; j++) {
+				if (attack_matrix[i].attack[j] == goal && attack_matrix[i].id != curr_player) {
+					was_attacked_by_third = true;
+				}
+			}
+		}
+		return !was_attacked_by_third;
 	}
 }
