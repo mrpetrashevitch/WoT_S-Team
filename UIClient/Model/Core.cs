@@ -333,7 +333,7 @@ namespace UIClient.Model
             var res = await SendChatAsync(ChatText).ConfigureAwait(false);
             if (res == Result.OKEY)
             {
-                Chat.Add(ChatText);
+                //Chat.Add(ChatText);
                 ChatText = "";
             }
             else
@@ -416,12 +416,17 @@ namespace UIClient.Model
                                 }
                                 else
                                 {
-                                    if (GameState.current_player_idx == Player.idx)
+                                    App.Current.Dispatcher.Invoke(new Action(() =>
                                     {
-                                        App.Current.Dispatcher.Invoke(new Action(() => { TimerRun().Wait(); CommandBase.RaiseCanExecuteChanged(); }));
-                                        await SendActionsAsync().ConfigureAwait(false);
+                                        TimerRun().Wait();
+                                        Field.UpdateContent(this.GameState);
+                                        CommandBase.RaiseCanExecuteChanged();
+                                    }));
+                                    await SendActionsAsync().ConfigureAwait(false);
 
-                                        if (AIEnable)
+                                    if (AIEnable)
+                                    {
+                                        if (GameState.current_player_idx == Player.idx)
                                         {
                                             var actions = GetAIActions();
                                             int steps = 0;
@@ -436,20 +441,19 @@ namespace UIClient.Model
                                                 {
                                                     result = await ShootAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z }).ConfigureAwait(false);
                                                 }
-                                                if(result == Result.OKEY) steps++;
+                                                if (result == Result.OKEY) steps++;
                                             }
                                             if (steps != 5)
                                             {
                                                 await TimerStop().ConfigureAwait(false);
                                             }
                                         }
-                                    }
-                                    else
-                                    {
-                                        await TimerStop().ConfigureAwait(false);
+                                        else
+                                        {
+                                            await TimerStop().ConfigureAwait(false);
+                                        }
                                     }
                                 }
-                                App.Current.Dispatcher.Invoke(new Action(() => { Field.UpdateContent(this.GameState); }));
                             }
                         }
                         break;
