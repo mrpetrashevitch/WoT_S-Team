@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using UIClient.Model;
+using UIClient.Model.Client;
+using UIClient.Model.Server;
 using UIClient.ViewModel;
 
 namespace UIClient.Infrastructure.Converters
@@ -23,7 +25,7 @@ namespace UIClient.Infrastructure.Converters
 
             foreach (var i in win_points)
             {
-                Model.PlayerEx player;
+                PlayerEx player;
                 if (!players.TryGetValue(i.Key, out player))
                     continue;
                 hex.Append(player.player.name).Append(": очки захвата: ").Append(i.Value.capture);

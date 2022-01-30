@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using UIClient.Model;
+using UIClient.Model.Client;
 
 namespace UIClient.Infrastructure.Controls
 {

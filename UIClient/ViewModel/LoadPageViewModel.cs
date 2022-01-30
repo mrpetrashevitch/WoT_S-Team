@@ -10,6 +10,7 @@ using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
 using UIClient.View.Pages;
+using UIClient.Model.Client;
 
 namespace UIClient.ViewModel
 {

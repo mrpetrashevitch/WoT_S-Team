@@ -23,7 +23,10 @@ using Newtonsoft.Json.Converters;
 using UIClient.Infrastructure.Command;
 using UIClient.Infrastructure.Command.Base;
 using UIClient.Infrastructure.Controls;
+using UIClient.Model.Client;
+using UIClient.Model.Client.Api;
 using UIClient.Model.Config;
+using UIClient.Model.Server;
 using UIClient.View.Pages;
 using UIClient.ViewModel;
 
@@ -61,50 +64,13 @@ namespace UIClient.Model
         IVALID_PARAM,
     };
 
-    public class LoginCreate
-    {
-        public string name { get; set; }
-        public string password { get; set; }
-        public string game { get; set; }
-        public int? num_turns { get; set; }
-        public int num_players { get; set; }
-        public bool is_observer { get; set; }
-    }
-
-    class Message
-    {
-        public string message { get; set; }
-    }
-
     public class Core : ViewModel.Base.ViewModelBase
     {
-        const string _PathCoreDll = "WebClient.dll";
         IntPtr web = IntPtr.Zero;
-
-        [DllImport(_PathCoreDll, CallingConvention = CallingConvention.Cdecl)]
-        extern static IntPtr create();
-
-        [DllImport(_PathCoreDll, CallingConvention = CallingConvention.Cdecl)]
-        extern static Result destroy(IntPtr web);
-
-        [DllImport(_PathCoreDll, CallingConvention = CallingConvention.Cdecl)]
-        extern static Result connect_(IntPtr web, uint addr, ushort port);
-
-        [DllImport(_PathCoreDll, CallingConvention = CallingConvention.Cdecl)]
-        extern static Result send_packet(IntPtr web, WebActions action, int size, IntPtr data, IntPtr out_size, IntPtr out_data);
-
-        [DllImport(_PathCoreDll, CallingConvention = CallingConvention.Cdecl)]
-        extern static Result get_action(int curr_player,
-                                        IntPtr players, int players_size,
-                                        IntPtr vehicle, int vehicle_size,
-                                        IntPtr win_points, int win_points_size,
-                                        IntPtr attack_matrix, int attack_matrix_size,
-                                        IntPtr base_, int base_size, out action_ret actions);
-
-
+        object locker = new object();
         public Core()
         {
-            web = create();
+            web = WebClientDll.create();
             Log("Web ядро создано");
 
             if (web == IntPtr.Zero) throw new Exception("Error create core!");
@@ -348,8 +314,6 @@ namespace UIClient.Model
         }
         #endregion
 
-        static object locker = new object();
-
         async Task<Result> SendPacket<T>(WebActions action, T data, bool scip_data = false)
         {
             string json_str = "";
@@ -372,9 +336,9 @@ namespace UIClient.Model
             lock (locker)
             {
                 if (scip_data)
-                    res = send_packet(web, action, 0, IntPtr.Zero, pointer_out_size, pointer_buffer);
+                    res = WebClientDll.send_packet(web, action, 0, IntPtr.Zero, pointer_out_size, pointer_buffer);
                 else
-                    res = send_packet(web, action, size_msg.Length, pointer_msg, pointer_out_size, pointer_buffer);
+                    res = WebClientDll.send_packet(web, action, size_msg.Length, pointer_msg, pointer_out_size, pointer_buffer);
 
                 message = Encoding.UTF8.GetString(buffer, 0, BitConverter.ToInt32(out_size, 0));
             }
@@ -449,7 +413,7 @@ namespace UIClient.Model
                                         await TimerStop().ConfigureAwait(false);
                                     }
                                 }
-                                App.Current.Dispatcher.Invoke(new Action(() => { Field.UpdateContent(GameState); }));
+                                App.Current.Dispatcher.Invoke(new Action(() => { Field.UpdateContent(this.GameState); }));
                             }
                         }
                         break;
@@ -462,7 +426,7 @@ namespace UIClient.Model
                                 {
                                     if (i.action_type == WebActions.CHAT)
                                     {
-                                        Message msg = JsonConvert.DeserializeObject<Message>(i.data.ToString());
+                                        ChatMessage msg = JsonConvert.DeserializeObject<ChatMessage>(i.data.ToString());
                                         App.Current.Dispatcher.Invoke(() => { Chat.Add(msg.message); });
                                     }
                                 }
@@ -594,7 +558,7 @@ namespace UIClient.Model
             }
 
             action_ret action_re;
-            var act = get_action(Player.idx,
+            var act = WebClientDll.get_action(Player.idx,
                 player_s_ptr, player_s.Length,
                 vehicle_s_ptr, vehicle_s.Length,
                 winpoints_s_ptr, winpoints_s.Length,
@@ -718,7 +682,7 @@ namespace UIClient.Model
         public async Task<Result> SendChatAsync(string msg)
         {
             if (!Connected) return Result.CONNECTED_FALSE;
-            Message msgs = new Message();
+            ChatMessage msgs = new ChatMessage();
             msgs.message = msg;
             return await SendPacket(WebActions.CHAT, msgs).ConfigureAwait(false);
         }
@@ -741,7 +705,7 @@ namespace UIClient.Model
 
                 IPAddress[] addresslist = Dns.GetHostAddresses(config.NetConfig.HostName);
 #pragma warning disable CS0618 // Тип или член устарел
-                await Task.Run(() => { connect_(web, (uint)addresslist[0].Address, config.NetConfig.Port); });
+                await Task.Run(() => { WebClientDll.connect_(web, (uint)addresslist[0].Address, config.NetConfig.Port); });
 #pragma warning restore CS0618 // Тип или член устарел
 
                 Connected = true;

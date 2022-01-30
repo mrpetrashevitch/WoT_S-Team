@@ -5,8 +5,9 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using UIClient.Model.Server;
 
-namespace UIClient.Model
+namespace UIClient.Model.Client.Api
 {
     public struct player_native
     {
@@ -14,26 +15,11 @@ namespace UIClient.Model
         public int is_observer;
     }
 
-
-    public enum vehicle_type : int
-    {
-        [EnumMember(Value = "medium_tank")]
-        СТ,
-        [EnumMember(Value = "light_tank")]
-        ЛТ,
-        [EnumMember(Value = "heavy_tank")]
-        ТТ,
-        [EnumMember(Value = "at_spg")]
-        ПТ,
-        [EnumMember(Value = "spg")]
-        САУ
-    }
-
     public struct vehicle_native
     {
         public int vehicle_id;
         public int player_id;
-        public vehicle_type vehicle_type;
+        public VehicleType vehicle_type;
         public int health;
         public point spawn_position;
         public point position;

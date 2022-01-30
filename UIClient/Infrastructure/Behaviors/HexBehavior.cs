@@ -18,8 +18,6 @@ namespace UIClient.Infrastructure.Behavior
     {
         protected override void OnAttached()
         {
-            //AssociatedObject.LostFocus += AssociatedObject_LostFocus;
-            //AssociatedObject.SelectionChanged += AssociatedObject_SelectionChanged;
             AssociatedObject.PreviewMouseLeftButtonUp += AssociatedObject_PreviewMouseLeftButtonUp;
         }
 

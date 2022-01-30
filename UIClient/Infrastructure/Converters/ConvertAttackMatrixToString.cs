@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using UIClient.Model.Client;
 using UIClient.ViewModel;
 
 namespace UIClient.Infrastructure.Converters
@@ -22,7 +23,7 @@ namespace UIClient.Infrastructure.Converters
 
             foreach (var item in attack_matrix)
             {
-                Model.PlayerEx player;
+                PlayerEx player;
                 if (!players.TryGetValue(item.Key, out player))
                     continue;
                 hex.Append(player.player.name).Append(": ");

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UIClient.Model
+namespace UIClient.Model.Server
 {
     public class Map
     {
@@ -19,7 +19,6 @@ namespace UIClient.Model
     {
         [JsonProperty(PropertyName = "base")]
         public Point3[] _base { get; set; }
-
         public object[] catapult { get; set; }
         public object[] hard_repair { get; set; }
         public object[] light_repair { get; set; }

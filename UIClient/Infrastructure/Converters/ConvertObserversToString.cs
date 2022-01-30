@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using UIClient.Model;
+using UIClient.Model.Server;
 using UIClient.ViewModel;
 
 namespace UIClient.Infrastructure.Converters

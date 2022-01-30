@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UIClient.Model.Server;
 
-namespace UIClient.Model
+namespace UIClient.Model.Client
 {
     public class Actions
     {
-        public ActionNet[] actions { get; set; }
+        public WebAction[] actions { get; set; }
     }
 
-    public class ActionNet
+    public class WebAction
     {
         public int player_id { get; set; }
         public WebActions action_type { get; set; }
