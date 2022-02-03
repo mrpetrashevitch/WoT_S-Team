@@ -22,7 +22,7 @@ namespace UIClient.Model.Client.Api
         public extern static Result connect_(IntPtr web, uint addr, ushort port);
 
         [DllImport(_PathCoreDll, CallingConvention = CallingConvention.Cdecl)]
-        public extern static Result send_packet(IntPtr web, WebActions action, int size, IntPtr data, IntPtr out_size, IntPtr out_data);
+        public extern static Result send_packet(IntPtr web, Model.WebAction action, int size, IntPtr data, IntPtr out_size, IntPtr out_data);
 
         [DllImport(_PathCoreDll, CallingConvention = CallingConvention.Cdecl)]
         public extern static Result get_action(int curr_player,

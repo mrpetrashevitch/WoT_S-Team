@@ -92,8 +92,7 @@ namespace web_client
 	Result client::send_packet(WebActions action, int size, byte* data, int* out_size, byte* out_data)
 	{
 		if (!_connected) return Result::CONNECTED_FALSE;
-		if (!_send_all(&action, sizeof(action)) ||
-			!_send_all(&size, sizeof(size)))
+		if (!_send_all(&action, sizeof(action)) || !_send_all(&size, sizeof(size)))
 			return Result::ERROR_SEND;
 
 		if (size)
@@ -102,8 +101,7 @@ namespace web_client
 
 		Result res;
 		int packet_size;
-		if (!_recv_all(&res, sizeof(res)) ||
-			!_recv_all(&packet_size, sizeof(packet_size)))
+		if (!_recv_all(&res, sizeof(res)) || !_recv_all(&packet_size, sizeof(packet_size)))
 			return Result::ERROR_RECV;
 
 		if (packet_size == 0)

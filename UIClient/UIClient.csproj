@@ -545,6 +545,13 @@
   <ItemGroup>
     <Resource Include="6.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\HT.png" />
+    <Resource Include="Resources\Images\LT.png" />
+    <Resource Include="Resources\Images\MT.png" />
+    <Resource Include="Resources\Images\SPG.png" />
+    <Resource Include="Resources\Images\ATSPG.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Extensions.Logging.Abstractions.6.0.0\build\Microsoft.Extensions.Logging.Abstractions.targets" Condition="Exists('..\packages\Microsoft.Extensions.Logging.Abstractions.6.0.0\build\Microsoft.Extensions.Logging.Abstractions.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

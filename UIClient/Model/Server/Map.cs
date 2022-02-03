@@ -19,10 +19,6 @@ namespace UIClient.Model.Server
     {
         [JsonProperty(PropertyName = "base")]
         public Point3[] _base { get; set; }
-        public object[] catapult { get; set; }
-        public object[] hard_repair { get; set; }
-        public object[] light_repair { get; set; }
-        public object[] obstacle { get; set; }
     }
 
     public class SpawnPoints

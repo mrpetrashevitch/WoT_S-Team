@@ -32,7 +32,7 @@ using UIClient.ViewModel;
 
 namespace UIClient.Model
 {
-    public enum WebActions
+    public enum WebAction
     {
         LOGIN = 1,
         LOGOUT = 2,
@@ -66,46 +66,6 @@ namespace UIClient.Model
 
     public class Core : ViewModel.Base.ViewModelBase
     {
-        IntPtr web = IntPtr.Zero;
-        object locker = new object();
-        public Core()
-        {
-            web = WebClientDll.create();
-            Log("Web ядро создано");
-
-            if (web == IntPtr.Zero) throw new Exception("Error create core!");
-
-            Chat = new ObservableCollection<string>();
-            Field = new HexField();
-            SelectedCanMove = new List<Hex>();
-            SelectedCanShoot = new List<Hex>();
-            Timer.Interval = new TimeSpan(0, 0, 1);
-            Timer.Tick += TimerTick;
-
-            LogoutCommand = new LambdaCommand(OnLogoutCommandExecuted, CanLogoutCommandExecute);
-            SendChatMessageCommand = new LambdaCommand(OnSendChatMessageCommandExecuted, CanSendChatMessageCommandExecute);
-            TurnCommand = new LambdaCommand(OnTurnCommandExecuted, CanTurnCommandExecute);
-
-            Log("UI ядро создано");
-            Connect();
-        }
-
-        public void Reset()
-        {
-            StepEnable = false;
-            GameState = null;
-            Map = null;
-            Player = null;
-            Field = new HexField();
-            SelectedHex = null;
-            ChatText = null;
-            SelectedCanMove.Clear();
-            SelectedCanShoot.Clear();
-            Chat.Clear();
-            MessageWait = "Ожидание хода...";
-            TeamColor = new SolidColorBrush(Color.FromArgb(0xFF, 0xf8, 0x57, 0x06));
-        }
-
         #region bool Connected : подключен ли к серверу
         private bool _Connected;
         /// <summary>подключен ли к серверу</summary>
@@ -113,142 +73,6 @@ namespace UIClient.Model
         {
             get { return _Connected; }
             set { Set(ref _Connected, value); }
-        }
-        #endregion
-        #region bool AIEnable : включить автоматическую игру
-        private bool _AIEnable;
-        /// <summary>включить автоматическую игру</summary>
-        public bool AIEnable
-        {
-            get { return _AIEnable; }
-            set { Set(ref _AIEnable, value); }
-        }
-        #endregion
-
-        #region bool StepEnable : есть ли возможность ходить
-        private bool _StepEnable;
-        /// <summary>есть ли возможность ходить</summary>
-        public bool StepEnable
-        {
-            get { return _StepEnable; }
-            set
-            {
-                if (Set(ref _StepEnable, value))
-                {
-                    if (value) MessageWaitVisible = Visibility.Collapsed;
-                    else MessageWaitVisible = Visibility.Visible;
-                }
-            }
-        }
-        #endregion
-        #region string MessageWait : сообщение ожидания
-        private string _MessageWait;
-        /// <summary>сообщение ожидания</summary>
-        public string MessageWait
-        {
-            get { return _MessageWait; }
-            set { Set(ref _MessageWait, value); }
-        }
-        #endregion
-        #region Visibility MessageWaitVisible : надпись ожидания
-        private Visibility _MessageWaitVisible;
-        /// <summary>надпись ожидания</summary>
-        public Visibility MessageWaitVisible
-        {
-            get { return _MessageWaitVisible; }
-            set { Set(ref _MessageWaitVisible, value); }
-        }
-        #endregion
-
-        #region Timer
-        #region int TotalTick : прошло секунд
-        private int _TotalTick;
-        /// <summary>прошло секунд</summary>
-        public int TotalTick
-        {
-            get { return _TotalTick; }
-            set { Set(ref _TotalTick, value); }
-        }
-        #endregion
-        #region int TotalStep : сделано шагов
-        private int _TotalStep;
-        /// <summary>сделано шагов</summary>
-        public int TotalStep
-        {
-            get { return _TotalStep; }
-            set { Set(ref _TotalStep, value); }
-        }
-        #endregion
-        private DispatcherTimer Timer = new DispatcherTimer();
-        private async void TimerTick(object sender, EventArgs e)
-        {
-            TotalTick--;
-            Log("Осталось: " + TotalTick + "c");
-            if (TotalTick == 0)
-            {
-                Log("Время истекло");
-                await TimerStop();
-            }
-        }
-        public async Task TimerRun()
-        {
-            TotalTick = 9;
-            TotalStep = 0;
-            StepEnable = true;
-            Timer.Start();
-            await Task.FromResult(false);
-        }
-        public async Task TimerStop()
-        {
-            Timer.Stop();
-            await SendTurnAsync();
-            await SendGameStateAsync();
-        }
-        #endregion
-        #region Hex SelectedHex : выбранная ячейка
-        private Hex _SelectedHex;
-        /// <summary>выбранная ячейка</summary>
-        public Hex SelectedHex
-        {
-            get { return _SelectedHex; }
-            set { Set(ref _SelectedHex, value); }
-        }
-        #endregion
-        #region List<Hex> SelectedCanMove : лист гексов, куда можно ходить
-        private List<Hex> _SelectedCanMove;
-        /// <summary>лист гексов, куда можно ходить</summary>
-        public List<Hex> SelectedCanMove
-        {
-            get { return _SelectedCanMove; }
-            set { Set(ref _SelectedCanMove, value); }
-        }
-        #endregion
-        #region List<Hex> SelectedCanShoot : лист гексов, куда можно стрелять
-        private List<Hex> _SelectedCanShoot;
-        /// <summary>лист гексов, куда можно стрелять</summary>
-        public List<Hex> SelectedCanShoot
-        {
-            get { return _SelectedCanShoot; }
-            set { Set(ref _SelectedCanShoot, value); }
-        }
-        #endregion
-
-        #region string ChatText : вписанный текст
-        private string _ChatText;
-        /// <summary>вписанный текст</summary>
-        public string ChatText
-        {
-            get { return _ChatText; }
-            set { Set(ref _ChatText, value); }
-        }
-        #endregion
-        #region ObservableCollection<string> Chat : логи чата
-        private ObservableCollection<string> _Chat;
-        /// <summary>логи чата</summary>
-        public ObservableCollection<string> Chat
-        {
-            get { return _Chat; }
-            set { Set(ref _Chat, value); }
         }
         #endregion
         #region ObservableCollection<string> Logs : програмные логи
@@ -265,96 +89,23 @@ namespace UIClient.Model
         }
         #endregion
 
-        #region Player Player : текущий игрок
-        private Player _Player;
-        /// <summary>текущий игрок</summary>
-        public Player Player
+        IntPtr web = IntPtr.Zero;
+        object locker = new object();
+        public Core()
         {
-            get { return _Player; }
-            set { Set(ref _Player, value); }
-        }
-        #endregion
-        #region Brush TeamColor : цвет команды игрока
-        private Brush _TeamColor;
-        /// <summary>цвет команды игрока</summary>
-        public Brush TeamColor
-        {
-            get { return _TeamColor; }
-            set { Set(ref _TeamColor, value); }
-        }
-        #endregion
-        #region Map Map : карта
-        private Map _Map;
-        /// <summary>карта</summary>
-        public Map Map
-        {
-            get { return _Map; }
-            set { Set(ref _Map, value); }
-        }
-        #endregion
-        #region HexField Field : игорвое поле
-        private HexField _Field;
-        /// <summary>игорвое поле</summary>
-        public HexField Field
-        {
-            get { return _Field; }
-            set { Set(ref _Field, value); }
-        }
-        #endregion
-        #region GameState GameState : статус игры
-        private GameState _GameState;
-        /// <summary>статус игры</summary>
-        public GameState GameState
-        {
-            get { return _GameState; }
-            set { Set(ref _GameState, value); }
-        }
-        #endregion
+            web = WebClientDll.create();
+            if (web == IntPtr.Zero) throw new Exception("Error create core!");
+            Log("Web ядро создано");
 
-        #region LogoutCommand : выйти из сессии
-        /// <summary>выйти из сессии</summary>
-        public ICommand LogoutCommand { get; }
-        private bool CanLogoutCommandExecute(object p) => Connected;
-        private async void OnLogoutCommandExecuted(object p)
-        {
-            var main_page = App.Host.Services.GetRequiredService<MainWindowViewModel>();
-            main_page.SelectLoadPage();
-            var res = await SendLogoutAsync();
-            if (res != Result.OKEY)
-                Log("Ошибка: " + res.ToString());
+            Log("UI ядро создано");
+            Connect();
         }
-        #endregion
-        #region SendChatMessageCommand : отправить сообщение в чат
-        /// <summary>отправить сообщение в чат</summary>
-        public ICommand SendChatMessageCommand { get; }
-        private bool CanSendChatMessageCommandExecute(object p) => Connected && ChatText?.Length > 1 && StepEnable;
-        private async void OnSendChatMessageCommandExecuted(object p)
-        {
-            var res = await SendChatAsync(ChatText).ConfigureAwait(false);
-            if (res == Result.OKEY)
-            {
-                //Chat.Add(ChatText);
-                ChatText = "";
-            }
-            else
-                Log("Ошибка: " + res.ToString());
-        }
-        #endregion
-        #region TurnCommand : переключить ход
-        /// <summary>переключить ход</summary>
-        public ICommand TurnCommand { get; }
-        private bool CanTurnCommandExecute(object p) => StepEnable;
-        private async void OnTurnCommandExecuted(object p)
-        {
-            await TimerStop();
-        }
-        #endregion
 
-        async Task<Result> SendPacket<T>(WebActions action, T data, bool scip_data = false)
+        public (Result, string) SendPacket<T>(WebAction action, T data, bool skip_data = false)
         {
             string json_str = "";
 
-            if (!scip_data)
+            if (!skip_data)
                 json_str = JsonConvert.SerializeObject(data);
 
             byte[] size_msg = System.Text.Encoding.UTF8.GetBytes(json_str);
@@ -371,7 +122,7 @@ namespace UIClient.Model
             string message = "";
             lock (locker)
             {
-                if (scip_data)
+                if (skip_data)
                     res = WebClientDll.send_packet(web, action, 0, IntPtr.Zero, pointer_out_size, pointer_buffer);
                 else
                     res = WebClientDll.send_packet(web, action, size_msg.Length, pointer_msg, pointer_out_size, pointer_buffer);
@@ -381,106 +132,103 @@ namespace UIClient.Model
             pinned_msg.Free();
             pinned_out_size.Free();
             pinned_buffer.Free();
-
-            if (res == Result.OKEY)
-            {
-                switch (action)
-                {
-                    case WebActions.LOGIN:
-                        {
-                            Player = JsonConvert.DeserializeObject<Player>(message);
-                        }
-                        break;
-                    case WebActions.LOGOUT:
-                        {
-                            GameState = null;
-                        }
-                        break;
-                    case WebActions.MAP:
-                        {
-                            Map = JsonConvert.DeserializeObject<Map>(message);
-                        }
-                        break;
-                    case WebActions.GAME_STATE:
-                        {
-                            GameState = JsonConvert.DeserializeObject<GameState>(message);
-
-                            if (Field.Inited)
-                            {
-                                if (GameState.finished)
-                                {
-                                    if (GameState.winner != null)
-                                        MessageWait = "Победитель: " + Field.players[GameState.winner.Value].player.name;
-                                    else
-                                        MessageWait = "Ничья";
-                                }
-                                else
-                                {
-                                    App.Current.Dispatcher.Invoke(new Action(() =>
-                                    {
-                                        TimerRun().Wait();
-                                        Field.UpdateContent(this.GameState);
-                                        CommandBase.RaiseCanExecuteChanged();
-                                    }));
-                                    await SendActionsAsync().ConfigureAwait(false);
-
-                                    if (AIEnable)
-                                    {
-                                        if (GameState.current_player_idx == Player.idx)
-                                        {
-                                            var actions = GetAIActions();
-                                            int steps = 0;
-                                            foreach (var i in actions.actions)
-                                            {
-                                                Result result = Result.OKEY;
-                                                if (i.action_type == action_type.move)
-                                                {
-                                                    result = await MoveAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z }).ConfigureAwait(false);
-                                                }
-                                                else if (i.action_type == action_type.shoot)
-                                                {
-                                                    result = await ShootAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z }).ConfigureAwait(false);
-                                                }
-                                                if (result == Result.OKEY) steps++;
-                                            }
-                                            if (steps != 5)
-                                            {
-                                                await TimerStop().ConfigureAwait(false);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            await TimerStop().ConfigureAwait(false);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                    case WebActions.GAME_ACTIONS:
-                        {
-                            var v = JsonConvert.DeserializeObject<Actions>(message);
-                            if (v.actions != null)
-                            {
-                                foreach (var i in v.actions)
-                                {
-                                    if (i.action_type == WebActions.CHAT)
-                                    {
-                                        ChatMessage msg = JsonConvert.DeserializeObject<ChatMessage>(i.data.ToString());
-                                        App.Current.Dispatcher.Invoke(() => { Chat.Add(msg.message); });
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-            return res;
+            return (res, message);
         }
 
-        public action_ret GetAIActions()
+        public async Task<(Result, Player)> SendLoginAsync(LoginCreate log)
+        {
+            if (!Connected) return (Result.CONNECTED_FALSE, null);
+            var res = await Task.Run(() => SendPacket(WebAction.LOGIN, log)).ConfigureAwait(false);
+            return (res.Item1, JsonConvert.DeserializeObject<Player>(res.Item2));
+        }
+
+        public async Task<Result> SendLogoutAsync()
+        {
+            if (!Connected) return Result.CONNECTED_FALSE;
+            var res = await Task.Run(() => SendPacket(WebAction.LOGOUT, 0, true)).ConfigureAwait(false);
+            return (res.Item1);
+        }
+
+        public async Task<(Result, Map)> SendMapAsync()
+        {
+            if (!Connected) return (Result.CONNECTED_FALSE, null);
+            var res = await Task.Run(() => SendPacket(WebAction.MAP, 0, true)).ConfigureAwait(false);
+            return (res.Item1, JsonConvert.DeserializeObject<Map>(res.Item2));
+        }
+
+        public async Task<(Result, GameState)> SendGameStateAsync()
+        {
+            if (!Connected) return (Result.CONNECTED_FALSE, null);
+            var res = await Task.Run(() => SendPacket(WebAction.GAME_STATE, 0, true)).ConfigureAwait(false);
+            return (res.Item1, JsonConvert.DeserializeObject<GameState>(res.Item2));
+        }
+
+        public async Task<(Result, Actions)> SendActionsAsync()
+        {
+            if (!Connected) return (Result.CONNECTED_FALSE, null);
+            var res = await Task.Run(() => SendPacket(WebAction.GAME_ACTIONS, 0, true)).ConfigureAwait(false);
+            return (res.Item1, JsonConvert.DeserializeObject<Actions>(res.Item2));
+        }
+
+        public async Task<Result> SendTurnAsync()
+        {
+            if (!Connected) return Result.CONNECTED_FALSE;
+            var res = await Task.Run(() => SendPacket(WebAction.TURN, 0, true)).ConfigureAwait(false);
+            return res.Item1;
+        }
+
+        public async Task<Result> SendMoveAsync(int id, Point3 point)
+        {
+            if (!Connected) return Result.CONNECTED_FALSE;
+            ActionMove move = new ActionMove();
+            move.target = point;
+            move.vehicle_id = id;
+            var res = await Task.Run(() => SendPacket(WebAction.MOVE, move)).ConfigureAwait(false);
+            return res.Item1;
+        }
+
+        public async Task<Result> SendChatAsync(string msg)
+        {
+            if (!Connected) return Result.CONNECTED_FALSE;
+            ChatMessage msgs = new ChatMessage();
+            msgs.message = msg;
+            var res = await Task.Run(() => SendPacket(WebAction.CHAT, msgs)).ConfigureAwait(false);
+            return res.Item1;
+        }
+
+        public async Task<Result> SendShootAsync(int id, Point3 point)
+        {
+            if (!Connected) return Result.CONNECTED_FALSE;
+            ActionShoot shoot = new ActionShoot();
+            shoot.target = point;
+            shoot.vehicle_id = id;
+            var res = await Task.Run(() => SendPacket(WebAction.SHOOT, shoot)).ConfigureAwait(false);
+            return (res.Item1);
+        }
+
+        public async Task Connect()
+        {
+            try
+            {
+                Log("Подключение к серверу...");
+                var config = App.Host.Services.GetRequiredService<AppConfig>();
+
+                IPAddress[] addresslist = Dns.GetHostAddresses(config.NetConfig.HostName);
+#pragma warning disable CS0618 // Тип или член устарел
+                await Task.Run(() => { WebClientDll.connect_(web, (uint)addresslist[0].Address, config.NetConfig.Port); });
+#pragma warning restore CS0618 // Тип или член устарел
+
+                Connected = true;
+                Log("Подключен к серверу");
+            }
+            catch
+            {
+                Connected = false;
+                Log("Ошибка подключения к серверу");
+            }
+        }
+
+        public action_ret GetAIActions(int player_id, GameState GameState, Map Map)
         {
             IntPtr player_s_ptr = IntPtr.Zero;
             GCHandle player_pipe = default(GCHandle);
@@ -494,21 +242,21 @@ namespace UIClient.Model
             GCHandle base_pipe = default(GCHandle);
 
             player_native[] player_s = null;
-            if (this.GameState.players != null)
+            if (GameState.players != null)
             {
-                player_s = new player_native[this.GameState.players.Length];
-                for (int i = 0; i < this.GameState.players.Length; i++)
+                player_s = new player_native[GameState.players.Length];
+                for (int i = 0; i < GameState.players.Length; i++)
                 {
-                    player_s[i].idx = this.GameState.players[i].idx;
-                    player_s[i].is_observer = this.GameState.players[i].is_observer ? 1 : 0;
+                    player_s[i].idx = GameState.players[i].idx;
+                    player_s[i].is_observer = GameState.players[i].is_observer ? 1 : 0;
                 }
             }
             vehicle_native[] vehicle_s = null;
-            if (this.GameState.vehicles.Count > 0)
+            if (GameState.vehicles.Count > 0)
             {
-                vehicle_s = new vehicle_native[this.GameState.vehicles.Count];
+                vehicle_s = new vehicle_native[GameState.vehicles.Count];
                 int i = 0;
-                foreach (var item in this.GameState.vehicles)
+                foreach (var item in GameState.vehicles)
                 {
                     vehicle_s[i].vehicle_id = item.Key;
                     vehicle_s[i].capture_points = item.Value.capture_points;
@@ -525,11 +273,11 @@ namespace UIClient.Model
                 }
             }
             win_points_native[] winpoints_s = null;
-            if (this.GameState.win_points.Count > 0)
+            if (GameState.win_points.Count > 0)
             {
-                winpoints_s = new win_points_native[this.GameState.win_points.Count];
+                winpoints_s = new win_points_native[GameState.win_points.Count];
                 int i = 0;
-                foreach (var item in this.GameState.win_points)
+                foreach (var item in GameState.win_points)
                 {
                     winpoints_s[i].id = item.Key;
                     winpoints_s[i].capture = item.Value.capture;
@@ -538,13 +286,13 @@ namespace UIClient.Model
                 }
             }
             attack_matrix_native[] attackmatrix_s = null;
-            if (this.GameState.attack_matrix.Count > 0)
+            if (GameState.attack_matrix.Count > 0)
             {
-                attackmatrix_s = new attack_matrix_native[this.GameState.attack_matrix.Count];
+                attackmatrix_s = new attack_matrix_native[GameState.attack_matrix.Count];
                 int i = 0;
                 unsafe
                 {
-                    foreach (var item in this.GameState.attack_matrix)
+                    foreach (var item in GameState.attack_matrix)
                     {
                         int j = 0;
                         attackmatrix_s[i].id = item.Key;
@@ -558,11 +306,11 @@ namespace UIClient.Model
                 }
             }
             point[] base_s = null;
-            if (this.Map.content._base != null)
+            if (Map.content._base != null)
             {
-                base_s = new point[this.Map.content._base.Length];
+                base_s = new point[Map.content._base.Length];
                 int i = 0;
-                foreach (var item in this.Map.content._base)
+                foreach (var item in Map.content._base)
                 {
                     base_s[i].x = item.x;
                     base_s[i].y = item.y;
@@ -598,7 +346,7 @@ namespace UIClient.Model
             }
 
             action_ret action_re;
-            var act = WebClientDll.get_action(Player.idx,
+            var act = WebClientDll.get_action(player_id,
                 player_s_ptr, player_s?.Length ?? 0,
                 vehicle_s_ptr, vehicle_s?.Length ?? 0,
                 winpoints_s_ptr, winpoints_s?.Length ?? 0,
@@ -613,151 +361,6 @@ namespace UIClient.Model
             if (base_s != null) base_pipe.Free();
 
             return action_re;
-        }
-
-        public async Task<Result> MoveAsync(int id, Point3 point)
-        {
-            Result res = await SendMoveAsync(id, point).ConfigureAwait(false);
-
-            if (res == Result.OKEY)
-            {
-                TotalStep++;
-                App.Current.Dispatcher.Invoke(() => { Field.VehicleMove(id, point); });
-                Log("Машина перемещена по x: " + point.x + ", y: " + point.y + ", z: " + point.z);
-
-                if (TotalStep == 5)
-                    await TimerStop();
-            }
-            else if (res == Result.BAD_COMMAND)
-            {
-                Log("Неверный ход");
-            }
-            else if (res == Result.INAPPROPRIATE_GAME_STATE)
-            {
-                Log("Ход перешел другому");
-                await TimerStop();
-            }
-            else
-            {
-                Log(res.ToString());
-                await TimerStop();
-            }
-            return res;
-        }
-
-        public async Task<Result> ShootAsync(int id, Point3 point)
-        {
-            Result res = await SendShootAsync(id, point).ConfigureAwait(false);
-
-            if (res == Result.OKEY)
-            {
-                TotalStep++;
-                App.Current.Dispatcher.Invoke(() => { Field.VehicleShoot(id, point); });
-                Log("Выстрел по x: " + point.x + ", y: " + point.y + ", z: " + point.z);
-
-                if (TotalStep == 5)
-                    await TimerStop();
-            }
-            else if (res == Result.BAD_COMMAND)
-            {
-                Log("Неверный ход");
-            }
-            else if (res == Result.INAPPROPRIATE_GAME_STATE)
-            {
-                Log("Ход перешел другому");
-                await TimerStop();
-            }
-            else
-            {
-                Log(res.ToString());
-                await TimerStop();
-            }
-            return res;
-        }
-
-        public async Task<Result> SendLoginAsync(LoginCreate log)
-        {
-            if (!Connected) return Result.CONNECTED_FALSE;
-            return await Task.Run(() => SendPacket(WebActions.LOGIN, log)).ConfigureAwait(false);
-        }
-
-        public async Task<Result> SendLogoutAsync()
-        {
-            if (!Connected) return Result.CONNECTED_FALSE;
-            return await Task.Run(() => SendPacket(WebActions.LOGOUT, 0, true)).ConfigureAwait(false);
-        }
-
-        public async Task<Result> SendMapAsync()
-        {
-            if (!Connected) return Result.CONNECTED_FALSE;
-            return await Task.Run(() => SendPacket(WebActions.MAP, 0, true)).ConfigureAwait(false);
-        }
-
-        public async Task<Result> SendGameStateAsync()
-        {
-            if (!Connected) return Result.CONNECTED_FALSE;
-            return await Task.Run(() => SendPacket(WebActions.GAME_STATE, 0, true)).ConfigureAwait(false);
-        }
-
-        public async Task<Result> SendActionsAsync()
-        {
-            if (!Connected) return Result.CONNECTED_FALSE;
-            return await Task.Run(() => SendPacket(WebActions.GAME_ACTIONS, 0, true)).ConfigureAwait(false);
-        }
-
-        public async Task<Result> SendTurnAsync()
-        {
-            if (!Connected) return Result.CONNECTED_FALSE;
-            App.Current.Dispatcher.Invoke(() => { StepEnable = false; CommandBase.RaiseCanExecuteChanged(); });
-            return await Task.Run(() => SendPacket(WebActions.TURN, 0, true)).ConfigureAwait(false);
-        }
-
-        public async Task<Result> SendMoveAsync(int id, Point3 point)
-        {
-            if (!Connected) return Result.CONNECTED_FALSE;
-            ActionMove move = new ActionMove();
-            move.target = point;
-            move.vehicle_id = id;
-            return await Task.Run(() => SendPacket(WebActions.MOVE, move)).ConfigureAwait(false);
-        }
-
-        public async Task<Result> SendChatAsync(string msg)
-        {
-            if (!Connected) return Result.CONNECTED_FALSE;
-            ChatMessage msgs = new ChatMessage();
-            msgs.message = msg;
-            return await SendPacket(WebActions.CHAT, msgs).ConfigureAwait(false);
-        }
-
-        public async Task<Result> SendShootAsync(int id, Point3 point)
-        {
-            if (!Connected) return Result.CONNECTED_FALSE;
-            ActionShoot shoot = new ActionShoot();
-            shoot.target = point;
-            shoot.vehicle_id = id;
-            return await Task.Run(() => SendPacket(WebActions.SHOOT, shoot)).ConfigureAwait(false);
-        }
-
-        public async void Connect()
-        {
-            try
-            {
-                Log("Подключение к серверу...");
-                var config = App.Host.Services.GetRequiredService<AppConfig>();
-
-                IPAddress[] addresslist = Dns.GetHostAddresses(config.NetConfig.HostName);
-#pragma warning disable CS0618 // Тип или член устарел
-                await Task.Run(() => { WebClientDll.connect_(web, (uint)addresslist[0].Address, config.NetConfig.Port); });
-#pragma warning restore CS0618 // Тип или член устарел
-
-                Connected = true;
-                Log("Подключен к серверу");
-            }
-            catch
-            {
-                Connected = false;
-                Log("Ошибка подключения к серверу");
-            }
         }
     }
 }

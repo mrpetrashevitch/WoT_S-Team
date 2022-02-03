@@ -15,7 +15,7 @@ namespace UIClient.Model.Client
     public class WebAction
     {
         public int player_id { get; set; }
-        public WebActions action_type { get; set; }
+        public Model.WebAction action_type { get; set; }
         public object data { get; set; }
     }
 

@@ -18,7 +18,7 @@ namespace UIClient.Infrastructure.Converters
         {
             if (value is not Dictionary<int, WinPoints> win_points) return value;
             if (parameter is not ViewModelLocator loc) return value;
-            var players = loc?.WGUIPageViewModel?.Core?.Field?.players;
+            var players = loc?.WGUIPageViewModel?.Field?.players;
             if (players == null) return value;
 
             StringBuilder hex = new StringBuilder();

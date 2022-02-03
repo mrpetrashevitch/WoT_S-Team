@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using UIClient.Model;
 using UIClient.Model.Client;
 using UIClient.Model.Server;
+using UIClient.ViewModel;
 
 namespace UIClient.Infrastructure.Controls
 {
@@ -33,6 +34,8 @@ namespace UIClient.Infrastructure.Controls
         public HexField()
         {
             InitializeComponent();
+            SelectedCanMove = new List<Hex>();
+            SelectedCanShoot = new List<Hex>();
             Inited = false;
         }
 
@@ -46,6 +49,15 @@ namespace UIClient.Infrastructure.Controls
         Dictionary<int, VehicleEx> vehicles = new Dictionary<int, VehicleEx>();
 
         public bool Inited { get; set; }
+
+
+        public Hex SelectedHex { get; set; }
+
+        public List<Hex> SelectedCanMove { get; set; }
+
+        public List<Hex> SelectedCanShoot { get; set; }
+
+
 
         void CreateHexField(int size)
         {
@@ -367,6 +379,79 @@ namespace UIClient.Infrastructure.Controls
                 y++;
                 x = 0;
             }
+        }
+
+        public async Task OnHexClick(Hex curr_hex, GamePageViewModel vm)
+        {
+            foreach (var item in SelectedCanMove)
+                item.CanMove = Visibility.Hidden;
+            foreach (var item in SelectedCanShoot)
+                item.CanShoot = Visibility.Hidden;
+            SelectedCanMove.Clear();
+            SelectedCanShoot.Clear();
+
+            Tank tank = (Tank)curr_hex.Tank;
+            if (tank != null && tank.Vehicle.vehicle.player_id == vm.Player.idx)
+            {
+                SelectedCanMove = GetHexAround(curr_hex.Point3, 1, tank.Speed);
+                foreach (var item in SelectedCanMove)
+                    if (item.Tank == null) item.CanMove = Visibility.Visible;
+
+                SelectedCanShoot = GetHexAround(curr_hex.Point3, tank.ShootMin, tank.ShootMax);
+
+                if (tank.Vehicle.vehicle.vehicle_type == VehicleType.ПТ)
+                    SelectedCanShoot.RemoveAll(item => (
+                    item.Point3.x != curr_hex.Point3.x &&
+                    item.Point3.y != curr_hex.Point3.y &&
+                    item.Point3.z != curr_hex.Point3.z));
+                foreach (var item in SelectedCanShoot)
+                    if (item.Tank != null)
+                        if (item.Tank.Vehicle.vehicle.player_id != vm.Player.idx)
+                            item.CanShoot = Visibility.Visible;
+            }
+
+            Hex last_hex = SelectedHex;
+            SelectedHex = curr_hex;
+            if (last_hex == null || last_hex.Tank == null)
+                return;
+
+            tank = last_hex.Tank;
+            if (tank.Vehicle.vehicle.player_id != vm.Player.idx)
+                return;
+
+            Tank new_tank = (Tank)curr_hex.Tank;
+
+            if (new_tank == null)
+            {
+                await vm.MoveAsync(tank.Vehicle.id, curr_hex.Point3).ConfigureAwait(false);
+            }
+            else
+            {
+                if (new_tank.Vehicle.vehicle.player_id == vm.Player.idx)
+                    return;
+
+                if (tank.Vehicle.vehicle.vehicle_type == VehicleType.ПТ)
+                {
+                    Point3 point = new Point3() { x = last_hex.Point3.x, y = last_hex.Point3.y, z = last_hex.Point3.z };
+                    int ds = GetDistance(last_hex.Point3, curr_hex.Point3);
+                    if (last_hex.Point3.x != curr_hex.Point3.x)
+                        if (last_hex.Point3.x < curr_hex.Point3.x)
+                            point.x = curr_hex.Point3.x - (ds - 1);
+                        else point.x = curr_hex.Point3.x + (ds - 1);
+                    if (last_hex.Point3.y != curr_hex.Point3.y)
+                        if (last_hex.Point3.y < curr_hex.Point3.y)
+                            point.y = curr_hex.Point3.y - (ds - 1);
+                        else point.y = curr_hex.Point3.y + (ds - 1);
+                    if (last_hex.Point3.z != curr_hex.Point3.z)
+                        if (last_hex.Point3.z < curr_hex.Point3.z)
+                            point.z = curr_hex.Point3.z - (ds - 1);
+                        else point.z = curr_hex.Point3.z + (ds - 1);
+                    await vm.ShootAsync(tank.Vehicle.id, point).ConfigureAwait(false);
+                }
+                else
+                    await vm.ShootAsync(tank.Vehicle.id, curr_hex.Point3).ConfigureAwait(false);
+            }
+            SelectedHex = null;
         }
 
         public double FieldSizeX

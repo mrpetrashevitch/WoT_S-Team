@@ -94,7 +94,7 @@
                                 IsChecked="{Binding IsObserver, Mode=TwoWay}" Foreground="{StaticResource ControlPressedBorderBrush}"
                                 Height="30" Style="{StaticResource CheckboxStyle}" Focusable="False"/>
                     <CheckBox Content="AI" FontSize="18" HorizontalAlignment="Left"
-                                IsChecked="{Binding Core.AIEnable, Mode=TwoWay}" Foreground="{StaticResource ControlPressedBorderBrush}"
+                                IsChecked="{Binding WGUIPageViewModel.AIEnable, Source={StaticResource Locator}}" Foreground="{StaticResource ControlPressedBorderBrush}"
                                 Height="30" Style="{StaticResource CheckboxStyle}" Focusable="False"/>
                     </StackPanel>
                     <Button Width="70" Grid.Row="3" Command="{Binding LoginCommand}" Margin="10 0" HorizontalAlignment="Right"

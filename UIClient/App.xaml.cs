@@ -47,9 +47,11 @@ namespace UIClient
 
             if (e.Args.Length > 0)
             {
+                //u zxcv p 111 g z  pc 1 tc 45 o 0  ai 0
                 try
                 {
                     var page = Host.Services.GetRequiredService<LoadPageViewModel>();
+                    var page_game = Host.Services.GetRequiredService<GamePageViewModel>();
 
                     int index_u = Array.IndexOf(e.Args, "u");
                     int index_p = Array.IndexOf(e.Args, "p");
@@ -65,7 +67,7 @@ namespace UIClient
                     page.PlayersMax = Convert.ToInt32(e.Args[index_pc + 1]);
                     page.TurnMax = Convert.ToInt32(e.Args[index_tc + 1]);
                     page.IsObserver = Convert.ToBoolean(Convert.ToInt32(e.Args[index_o + 1]));
-                    page.Core.AIEnable = Convert.ToBoolean(Convert.ToInt32(e.Args[index_ai + 1]));
+                    page_game.AIEnable = Convert.ToBoolean(Convert.ToInt32(e.Args[index_ai + 1]));
                     await App.Current.Dispatcher.BeginInvoke(new Action(() => { page.LoginCommand.Execute(null); }));
                 }
                 catch (Exception) { }

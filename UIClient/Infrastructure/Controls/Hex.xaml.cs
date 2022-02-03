@@ -32,7 +32,7 @@ namespace UIClient.Infrastructure.Controls
             Spawn
         }
 
-        static Dictionary<HexType, Style> Stats = new Dictionary<HexType, Style>()
+        readonly static Dictionary<HexType, Style> Stats = new Dictionary<HexType, Style>()
         {
              { HexType.Free, Application.Current.FindResource("ButtonFreeHex") as Style },
              { HexType.Nun, Application.Current.FindResource("ButtonNunHex") as Style },
@@ -53,13 +53,13 @@ namespace UIClient.Infrastructure.Controls
             Point3 = point3;
         }
 
-        public object Tank
+        public Tank Tank
         {
-            get { return (object)GetValue(TankProperty); }
+            get { return (Tank)GetValue(TankProperty); }
             set { SetValue(TankProperty, value); }
         }
         public static readonly DependencyProperty TankProperty =
-            DependencyProperty.Register(nameof(Tank), typeof(object), typeof(Hex), new PropertyMetadata(default(object)));
+            DependencyProperty.Register(nameof(Tank), typeof(Tank), typeof(Hex), new PropertyMetadata(default(Tank)));
 
         public HexType Type
         {
@@ -96,5 +96,10 @@ namespace UIClient.Infrastructure.Controls
 
         public Point2 Point2 { get; set; }
         public Point3 Point3 { get; set; }
+
+        public override string ToString()
+        {
+            return String.Concat("x: ", Point3.x, ", y: ", Point3.y, ", z: ", Point3.z, ", tank: ", Tank);
+        }
     }
 }

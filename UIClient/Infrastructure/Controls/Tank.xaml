@@ -6,21 +6,19 @@
              xmlns:local="clr-namespace:UIClient.Infrastructure.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="30" d:DesignWidth="30"
-             x:Name="CurrentControl">
+             x:Name="CurrentControl" Width="30" Height="30">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="22"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" 
-                   Text="{Binding Path=Type, ElementName=CurrentControl}" 
-                   Foreground="{Binding Path=TeamColor, ElementName=CurrentControl}" 
-                   FontSize="15" VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
 
-        <TextBlock Grid.Row="1" 
+        <Grid Grid.Row="0">
+            <Image Stretch="Uniform" Source="{Binding Type, ElementName=CurrentControl}"/>
+        </Grid>
+        <TextBlock Grid.Row="1"
                    Text="{Binding Path=HP, ElementName=CurrentControl}" 
-                   Foreground="{Binding Path=TeamColor, ElementName=CurrentControl}" 
+                   Foreground="{Binding TeamBrush, ElementName=CurrentControl}" 
                    FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-     
     </Grid>
 </UserControl>
