@@ -34,11 +34,21 @@ namespace UIClient.Infrastructure.Controls
 
         public void SetVahicleType(Model.Server.VehicleType type)
         {
-            Uri uriSource;
+            PathGeometry pathGeometry = new PathGeometry();
+            pathGeometry.FillRule = FillRule.Nonzero;
+
             switch (type)
             {
                 case Model.Server.VehicleType.СТ:
-                    uriSource = new Uri("pack://application:,,,/Resources/Images/MT.png", UriKind.RelativeOrAbsolute);
+                    PathFigure figure = new PathFigure() { StartPoint = new Point(0.0, 36.0), IsClosed = true };
+                    figure.Segments.Add(new LineSegment() { Point = new Point(33.0, 0.0) });
+                    figure.Segments.Add(new LineSegment() { Point = new Point(66.0, 36.0) });
+                    figure.Segments.Add(new LineSegment() { Point = new Point(33.0, 72.0) });
+                    pathGeometry.Figures.Add(figure);
+                    PathFigure figure1 = new PathFigure() { StartPoint = new Point(16.5, 54.0), IsClosed = true };
+                    figure1.Segments.Add(new LineSegment() { Point = new Point(49.5, 18.0) });
+                    pathGeometry.Figures.Add(figure1);
+
                     HPMax = 2;
                     Speed = 2;
                     Damage = 1;
@@ -47,7 +57,13 @@ namespace UIClient.Infrastructure.Controls
                     ShootMax = 2;
                     break;
                 case Model.Server.VehicleType.ЛТ:
-                    uriSource = new Uri("pack://application:,,,/Resources/Images/LT.png", UriKind.RelativeOrAbsolute);
+                    figure = new PathFigure() { StartPoint = new Point(0.0, 36.0), IsClosed = true };
+                    figure.Segments.Add(new LineSegment() { Point = new Point(33.0, 0.0) });
+                    figure.Segments.Add(new LineSegment() { Point = new Point(66.0, 36.0) });
+                    figure.Segments.Add(new LineSegment() { Point = new Point(33.0, 72.0) });
+                    pathGeometry.Figures.Add(figure);
+
+
                     HPMax = 1;
                     Speed = 3;
                     Damage = 1;
@@ -56,7 +72,20 @@ namespace UIClient.Infrastructure.Controls
                     ShootMax = 2;
                     break;
                 case Model.Server.VehicleType.ТТ:
-                    uriSource = new Uri("pack://application:,,,/Resources/Images/HT.png", UriKind.RelativeOrAbsolute);
+                    figure = new PathFigure() { StartPoint = new Point(0.0, 36.0), IsClosed = true };
+                    figure.Segments.Add(new LineSegment() { Point = new Point(33.0, 0.0) });
+                    figure.Segments.Add(new LineSegment() { Point = new Point(66.0, 36.0) });
+                    figure.Segments.Add(new LineSegment() { Point = new Point(33.0, 72.0) });
+                    pathGeometry.Figures.Add(figure);
+
+                    figure1 = new PathFigure() { StartPoint = new Point(44.0, 12.0), IsClosed = true };
+                    figure1.Segments.Add(new LineSegment() { Point = new Point(11.0, 48.0) });
+                    pathGeometry.Figures.Add(figure1);
+
+                    PathFigure figure2 = new PathFigure() { StartPoint = new Point(22.0, 60.0), IsClosed = true };
+                    figure2.Segments.Add(new LineSegment() { Point = new Point(55.0, 24.0) });
+                    pathGeometry.Figures.Add(figure2);
+
                     HPMax = 3;
                     Speed = 1;
                     Damage = 1;
@@ -65,7 +94,11 @@ namespace UIClient.Infrastructure.Controls
                     ShootMax = 2;
                     break;
                 case Model.Server.VehicleType.ПТ:
-                    uriSource = new Uri("pack://application:,,,/Resources/Images/ATSPG.png", UriKind.RelativeOrAbsolute);
+                    figure = new PathFigure() { StartPoint = new Point(0.0, 7.421), IsClosed = true };
+                    figure.Segments.Add(new LineSegment() { Point = new Point(66.0, 7.421) });
+                    figure.Segments.Add(new LineSegment() { Point = new Point(33.0, 64.579) });
+                    pathGeometry.Figures.Add(figure);
+
                     HPMax = 2;
                     Speed = 1;
                     Damage = 1;
@@ -74,7 +107,12 @@ namespace UIClient.Infrastructure.Controls
                     ShootMax = 3;
                     break;
                 case Model.Server.VehicleType.САУ:
-                    uriSource = new Uri("pack://application:,,,/Resources/Images/SPG.png", UriKind.RelativeOrAbsolute);
+                    figure = new PathFigure() { StartPoint = new Point(9.0, 12.0), IsClosed = true };
+                    figure.Segments.Add(new LineSegment() { Point = new Point(57.0, 12.0) });
+                    figure.Segments.Add(new LineSegment() { Point = new Point(57.0, 60.0) });
+                    figure.Segments.Add(new LineSegment() { Point = new Point(9.0, 60.0) });
+                    pathGeometry.Figures.Add(figure);
+
                     HPMax = 1;
                     Speed = 1;
                     Damage = 1;
@@ -85,12 +123,7 @@ namespace UIClient.Infrastructure.Controls
                 default:
                     throw new Exception("Error vehicle type");
             }
-
-            BitmapImage logo = new BitmapImage();
-            logo.BeginInit();
-            logo.UriSource = uriSource;
-            logo.EndInit();
-            Type = logo;
+            Type = pathGeometry;
         }
 
         public VehicleEx Vehicle { get; set; }
@@ -117,13 +150,13 @@ namespace UIClient.Infrastructure.Controls
         public static readonly DependencyProperty TeamBrushProperty =
             DependencyProperty.Register(nameof(TeamBrush), typeof(Brush), typeof(Tank), new PropertyMetadata(default(Brush)));
 
-        public ImageSource Type
+        public PathGeometry Type
         {
-            get { return (ImageSource)GetValue(TypeProperty); }
+            get { return (PathGeometry )GetValue(TypeProperty); }
             set { SetValue(TypeProperty, value); }
         }
         public static readonly DependencyProperty TypeProperty =
-            DependencyProperty.Register(nameof(Type), typeof(ImageSource), typeof(Tank), new PropertyMetadata(default(ImageSource)));
+            DependencyProperty.Register(nameof(Type), typeof(PathGeometry ), typeof(Tank), new PropertyMetadata(default(PathGeometry )));
 
         public int HP
         {

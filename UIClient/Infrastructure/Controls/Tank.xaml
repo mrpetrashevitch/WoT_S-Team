@@ -12,10 +12,14 @@
             <RowDefinition Height="22"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
+        <Viewbox Grid.Row="0">
+            <Grid Width="66" Height="72">
+                <Path Data="{Binding Type,ElementName=CurrentControl}" 
+                      StrokeLineJoin="Round" StrokeThickness="5" 
+                      Stroke="{Binding TeamBrush, ElementName=CurrentControl}"/>
+            </Grid>
+        </Viewbox>
 
-        <Grid Grid.Row="0">
-            <Image Stretch="Uniform" Source="{Binding Type, ElementName=CurrentControl}"/>
-        </Grid>
         <TextBlock Grid.Row="1"
                    Text="{Binding Path=HP, ElementName=CurrentControl}" 
                    Foreground="{Binding TeamBrush, ElementName=CurrentControl}" 

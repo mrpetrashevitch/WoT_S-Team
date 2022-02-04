@@ -16,7 +16,7 @@
         <Button x:Name="Btn" Style="{StaticResource ButtonFreeHex}"
                 Content="{Binding Path=Tank, ElementName=CurrentControl}"/>
     </Grid>
-    
+
     <i:Interaction.Behaviors>
         <b:HexBehavior/>
     </i:Interaction.Behaviors>

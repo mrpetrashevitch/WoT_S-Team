@@ -57,8 +57,6 @@ namespace UIClient.Infrastructure.Controls
 
         public List<Hex> SelectedCanShoot { get; set; }
 
-
-
         void CreateHexField(int size)
         {
             Canv.Children.Clear();
