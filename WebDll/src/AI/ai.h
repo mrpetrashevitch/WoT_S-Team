@@ -70,11 +70,18 @@ namespace ai
 	class ai
 	{
 	private:
-		static void get_targets(int curr_player,
+		static void get_tanks_in_order(int curr_player,
 			vehicles_native* vehicles, int vehicles_size,
-			point position,
-			vehicles_native** targets, int* targets_size);
+			vehicles_native** result, int* result_size);
+		static action check_for_shooting(int curr_player,
+			vehicles_native* vehicles, int vehicles_size,
+			vehicles_native* vehicle,
+			AttackMatrix_native* attack_matrix, int attack_matrix_size);
+		static bool check_the_shooting_zone(vehicles_native* shooter, vehicles_native* goal);
+		static action move_tank(vehicles_native* vehicles, int vehicles_size, vehicles_native* vehicle);
 		static int distance(point a, point b);
+		static int get_destruct_points(vehicle_type type);
+		static int get_speed(vehicle_type type);
 		static bool check_neutrality(int curr_player, int goal,
 			AttackMatrix_native* attack_matrix, int attack_matrix_size);
 	public:
