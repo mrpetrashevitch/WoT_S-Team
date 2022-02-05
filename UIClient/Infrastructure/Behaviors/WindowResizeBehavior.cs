@@ -35,8 +35,6 @@ namespace UIClient.Infrastructure.Behavior
         protected override void OnDetaching()
         {
             AssociatedObject.MouseDown -= AssociatedObject_MouseDown;
-            //AssociatedObject.MouseMove -= AssociatedObject_MouseMove;
-            //AssociatedObject.MouseUp -= AssociatedObject_MouseUp;
         }
 
         private void AssociatedObject_MouseDown(object sender, MouseButtonEventArgs e)

@@ -10,7 +10,7 @@ namespace UIClient.Model.Client
 {
     public class PlayerEx
     {
-        public Player player;
-        public Brush color;
+        public Player CurrentPlayer { get; set; }
+        public Brush TeamColor { get; set; }
     }
 }

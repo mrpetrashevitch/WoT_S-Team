@@ -1,6 +1,12 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -12,8 +18,11 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using UIClient.Infrastructure.Command;
+using UIClient.Infrastructure.Command.Base;
 using UIClient.Model;
 using UIClient.Model.Client;
+using UIClient.Model.Client.Api;
 using UIClient.Model.Server;
 using UIClient.ViewModel;
 
@@ -22,67 +31,320 @@ namespace UIClient.Infrastructure.Controls
     /// <summary>
     /// Логика взаимодействия для CellField.xaml
     /// </summary>
-    public partial class HexField : UserControl
+    public partial class HexField : UserControl, INotifyPropertyChanged
     {
-        static readonly Dictionary<int, Brush> team_colors = new Dictionary<int, Brush>()
+        public bool Inited { get; private set; }
+        public Dictionary<int, PlayerEx> Players { get; private set; }
+        public async Task<bool> SendChatMessageAsync(string text)
+        {
+            if (!App.Core.Connected) return false;
+            if (!StepEnable) return false;
+            if (text.Length < 1) return false;
+            var res = await App.Core.SendChatAsync(text).ConfigureAwait(false);
+            if (res != Result.OKEY)
+            { App.Core.Log("Ошибка: " + res.ToString()); return false; }
+            return true;
+        }
+        public async Task<bool> TurnNextAsync()
+        {
+            if (!App.Core.Connected) return false;
+            if (!StepEnable) return false;
+            _EventWait?.TrySetResult(true);
+            return true;
+        }
+        public async Task<bool> LogoutAsync()
+        {
+            if (!App.Core.Connected) return false;
+            var res = await App.Core.SendLogoutAsync();
+            if (res != Result.OKEY)
+            {
+                App.Core.Log("Ошибка: " + res.ToString());
+                return false;
+            }
+            return true;
+        }
+        public async Task RunGame(LoginCreate login)
+        {
+            if (!await GetLogin(login).ConfigureAwait(false)) return;
+            if (!await GetMap().ConfigureAwait(false)) return;
+            if (!await WaitPlayers().ConfigureAwait(false)) return;
+
+            //game loop
+            while (true)
+            {
+                if (!await UpdateGameState()) break;
+                if (!await GetActions()) break;
+
+                if (AIEnable)
+                {
+                    if (GameState.current_player_idx == Player.CurrentPlayer.idx)
+                    {
+                        var actions = App.Core.GetAIActions(Player.CurrentPlayer.idx, GameState, Map);
+                        foreach (var i in actions.actions)
+                        {
+                            Result result = Result.OKEY;
+                            if (i.action_type == action_type.move)
+                            {
+                                result = await MoveAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z }).ConfigureAwait(false);
+                            }
+                            else if (i.action_type == action_type.shoot)
+                            {
+                                result = await ShootAsync(i.vec_id, new Point3() { x = i.point.x, y = i.point.y, z = i.point.z }).ConfigureAwait(false);
+                            }
+
+                            if (result != Result.OKEY && result != Result.BAD_COMMAND)
+                            {
+                                App.Core.Log(result.ToString());
+                                break;
+                            }
+                        }
+                    }
+                    await TurnAsync();
+                }
+                else
+                {
+                    if (GameState.current_player_idx == Player.CurrentPlayer.idx)
+                        await Task.WhenAny(_EventWait.Task, Task.Delay(9000));
+                    await TurnAsync();
+                }
+            }
+        }
+        public async Task OnHexClick(Hex curr_hex, GamePageViewModel vm)
+        {
+            foreach (var item in _SelectedCanMove)
+                item.CanMove = Visibility.Hidden;
+            foreach (var item in _SelectedCanShoot)
+                item.CanShoot = Visibility.Hidden;
+            _SelectedCanMove.Clear();
+            _SelectedCanShoot.Clear();
+
+            Tank tank = (Tank)curr_hex.Tank;
+            if (tank != null && tank.Vehicle.vehicle.player_id == Player.CurrentPlayer.idx)
+            {
+                _SelectedCanMove = GetHexAround(curr_hex.Point3, 1, tank.Speed);
+                foreach (var item in _SelectedCanMove)
+                    if (item.Tank == null) item.CanMove = Visibility.Visible;
+
+                _SelectedCanShoot = GetHexAround(curr_hex.Point3, tank.ShootMin, tank.ShootMax);
+
+                if (tank.Vehicle.vehicle.vehicle_type == VehicleType.ПТ)
+                    _SelectedCanShoot.RemoveAll(item => (
+                    item.Point3.x != curr_hex.Point3.x &&
+                    item.Point3.y != curr_hex.Point3.y &&
+                    item.Point3.z != curr_hex.Point3.z));
+                foreach (var item in _SelectedCanShoot)
+                    if (item.Tank != null)
+                        if (item.Tank.Vehicle.vehicle.player_id != Player.CurrentPlayer.idx)
+                            item.CanShoot = Visibility.Visible;
+            }
+
+            Hex last_hex = _SelectedHex;
+            _SelectedHex = curr_hex;
+            if (last_hex == null || last_hex.Tank == null)
+                return;
+
+            tank = last_hex.Tank;
+            if (tank.Vehicle.vehicle.player_id != Player.CurrentPlayer.idx)
+                return;
+
+            Tank new_tank = (Tank)curr_hex.Tank;
+
+            if (new_tank == null)
+            {
+                await MoveAsync(tank.Vehicle.id, curr_hex.Point3).ConfigureAwait(false);
+            }
+            else
+            {
+                if (new_tank.Vehicle.vehicle.player_id == Player.CurrentPlayer.idx)
+                    return;
+
+                if (tank.Vehicle.vehicle.vehicle_type == VehicleType.ПТ)
+                {
+                    Point3 point = new Point3() { x = last_hex.Point3.x, y = last_hex.Point3.y, z = last_hex.Point3.z };
+                    int ds = GetDistance(last_hex.Point3, curr_hex.Point3);
+                    if (last_hex.Point3.x != curr_hex.Point3.x)
+                        if (last_hex.Point3.x < curr_hex.Point3.x)
+                            point.x = curr_hex.Point3.x - (ds - 1);
+                        else point.x = curr_hex.Point3.x + (ds - 1);
+                    if (last_hex.Point3.y != curr_hex.Point3.y)
+                        if (last_hex.Point3.y < curr_hex.Point3.y)
+                            point.y = curr_hex.Point3.y - (ds - 1);
+                        else point.y = curr_hex.Point3.y + (ds - 1);
+                    if (last_hex.Point3.z != curr_hex.Point3.z)
+                        if (last_hex.Point3.z < curr_hex.Point3.z)
+                            point.z = curr_hex.Point3.z - (ds - 1);
+                        else point.z = curr_hex.Point3.z + (ds - 1);
+                    await ShootAsync(tank.Vehicle.id, point).ConfigureAwait(false);
+                }
+                else
+                    await ShootAsync(tank.Vehicle.id, curr_hex.Point3).ConfigureAwait(false);
+            }
+            _SelectedHex = null;
+        }
+
+        #region ObservableCollection<string> Chat : логи чата
+        private ObservableCollection<string> _Chat;
+        /// <summary>логи чата</summary>
+        public ObservableCollection<string> Chat
+        {
+            get { return _Chat; }
+            private set { Set(ref _Chat, value); }
+        }
+        #endregion
+        #region bool StepEnable : есть ли возможность ходить
+        private bool _StepEnable;
+        /// <summary>есть ли возможность ходить</summary>
+        public bool StepEnable
+        {
+            get { return _StepEnable; }
+            private set
+            {
+                if (Set(ref _StepEnable, value))
+                {
+                    if (value) MessageWaitVisible = Visibility.Collapsed;
+                    else MessageWaitVisible = Visibility.Visible;
+                }
+            }
+        }
+        #endregion
+        #region string MessageWait : сообщение ожидания
+        private string _MessageWait;
+        /// <summary>сообщение ожидания</summary>
+        public string MessageWait
+        {
+            get { return _MessageWait; }
+            private set { Set(ref _MessageWait, value); }
+        }
+        #endregion
+        #region Visibility MessageWaitVisible : надпись ожидания
+        private Visibility _MessageWaitVisible;
+        /// <summary>надпись ожидания</summary>
+        public Visibility MessageWaitVisible
+        {
+            get { return _MessageWaitVisible; }
+            private set { Set(ref _MessageWaitVisible, value); }
+        }
+        #endregion
+        #region bool AIEnable : включить автоматическую игру
+        private bool _AIEnable;
+        /// <summary>включить автоматическую игру</summary>
+        public bool AIEnable
+        {
+            get { return _AIEnable; }
+            set { Set(ref _AIEnable, value); }
+        }
+        #endregion
+        #region PlayerEx Player : текущий игрок
+        private PlayerEx _Player;
+        /// <summary>текущий игрок</summary>
+        public PlayerEx Player
+        {
+            get { return _Player; }
+            private set { Set(ref _Player, value); }
+        }
+        #endregion
+        #region int PlayerCount : количество игроков
+        private int _PlayerCount;
+        /// <summary>количество игроков</summary>
+        public int PlayerCount
+        {
+            get { return _PlayerCount; }
+            private set { Set(ref _PlayerCount, value); }
+        }
+        #endregion
+        #region Map Map : карта
+        private Map _Map;
+        /// <summary>карта</summary>
+        public Map Map
+        {
+            get { return _Map; }
+            private set { Set(ref _Map, value); }
+        }
+        #endregion
+        #region GameState GameState : статус игры
+        private GameState _GameState;
+        /// <summary>статус игры</summary>
+        public GameState GameState
+        {
+            get { return _GameState; }
+            private set { Set(ref _GameState, value); }
+        }
+        #endregion
+        #region double FieldSizeY : размер поля в пикмелях
+        public double FieldSizeX
+        {
+            get { return (double)GetValue(FieldSizeXProperty); }
+            private set { SetValue(FieldSizeXProperty, value); }
+        }
+        public static readonly DependencyProperty FieldSizeXProperty =
+            DependencyProperty.Register(nameof(FieldSizeX), typeof(double), typeof(HexField), new PropertyMetadata(default(double)));
+        #endregion
+        #region double FieldSizeY : размер поля в пикмелях
+        public double FieldSizeY
+        {
+            get { return (double)GetValue(FieldSizeYProperty); }
+            private set { SetValue(FieldSizeYProperty, value); }
+        }
+        public static readonly DependencyProperty FieldSizeYProperty =
+            DependencyProperty.Register(nameof(FieldSizeY), typeof(double), typeof(HexField), new PropertyMetadata(default(double)));
+        #endregion
+
+        public HexField()
+        {
+            InitializeComponent();
+            _SelectedCanMove = new List<Hex>();
+            _SelectedCanShoot = new List<Hex>();
+            Chat = new ObservableCollection<string>();
+            Players = new Dictionary<int, PlayerEx>();
+            _Vehicles = new Dictionary<int, VehicleEx>();
+
+            Player = new PlayerEx() { TeamColor = new SolidColorBrush(Color.FromArgb(0xFF, 0xf8, 0x57, 0x06)) };
+            Inited = false;
+        }
+
+        private static readonly Dictionary<int, Brush> _TeamColors = new Dictionary<int, Brush>()
         {
             { 0, Brushes.Aqua},
             { 1, Brushes.Red},
             { 2, Brushes.Lime}
         };
+        private Hex[,] _HexField2D = null;
+        private bool _Even = false;
+        private int _FieldSize = 0;
+        private int _CurrentX = 0, _CurrentY = 0;
+        private Point2 _Offset2D = new Point2();
+        private TaskCompletionSource<bool> _EventWait;
+        private Dictionary<int, VehicleEx> _Vehicles;
+        private Hex _SelectedHex;
+        private List<Hex> _SelectedCanMove;
+        private List<Hex> _SelectedCanShoot;
 
-        public HexField()
-        {
-            InitializeComponent();
-            SelectedCanMove = new List<Hex>();
-            SelectedCanShoot = new List<Hex>();
-            Inited = false;
-        }
-
-        Hex[,] hex_field = null;
-        bool even = false;
-        int field_size = 0;
-        int x = 0, y = 0;
-        Point2 offset = new Point2();
-
-        public Dictionary<int, PlayerEx> players = new Dictionary<int, PlayerEx>();
-        Dictionary<int, VehicleEx> vehicles = new Dictionary<int, VehicleEx>();
-
-        public bool Inited { get; set; }
-
-
-        public Hex SelectedHex { get; set; }
-
-        public List<Hex> SelectedCanMove { get; set; }
-
-        public List<Hex> SelectedCanShoot { get; set; }
-
-        void CreateHexField(int size)
+        private void CreateHexField(int size)
         {
             Canv.Children.Clear();
-            x = 0; y = 0;
-            offset.x = size - 1;
-            offset.y = size - 1;
-            FieldSizeX = (field_size + 1) * Hex.size_x * 0.75 - Hex.size_y / 2;
-            FieldSizeY = (field_size) * Hex.size_y;
+            _CurrentX = 0; _CurrentY = 0;
+            _Offset2D.x = size - 1;
+            _Offset2D.y = size - 1;
+            FieldSizeX = (_FieldSize + 1) * Hex.size_x * 0.75 - Hex.size_y / 2;
+            FieldSizeY = (_FieldSize) * Hex.size_y;
 
             int l = size - 2, r = size;
             int i = 0;
 
             for (; i < size / 2; i++)
             {
-                for (int j = 0; j < field_size; j++)
+                for (int j = 0; j < _FieldSize; j++)
                     if (j >= l && j <= r) AddHex(Hex.HexType.Free);
                     else AddHex(Hex.HexType.Nun);
                 l -= 2;
                 r += 2;
             }
 
-            if (even)
+            if (_Even)
             {
                 for (; i < size + size / 2 - 1; i++)
                 {
-                    for (int j = 0; j < field_size; j++)
+                    for (int j = 0; j < _FieldSize; j++)
                         AddHex(Hex.HexType.Free);
                 }
             }
@@ -90,7 +352,7 @@ namespace UIClient.Infrastructure.Controls
             {
                 for (; i < size + size / 2; i++)
                 {
-                    for (int j = 0; j < field_size; j++)
+                    for (int j = 0; j < _FieldSize; j++)
                         AddHex(Hex.HexType.Free);
                 }
             }
@@ -102,50 +364,27 @@ namespace UIClient.Infrastructure.Controls
                 l += 2;
                 r -= 2;
 
-                for (int j = 0; j < field_size; j++)
+                for (int j = 0; j < _FieldSize; j++)
                     if (j >= l && j <= r) AddHex(Hex.HexType.Free);
                     else AddHex(Hex.HexType.Nun);
             }
         }
 
-        void CreateHexField2(int size)
+        private Hex GetHex(Point3 p)
         {
-            Canv.Children.Clear();
-            x = 0; y = 0;
-            offset.x = size - 1;
-            offset.y = size - 1;
-            FieldSizeX = (field_size + 1) * Hex.size_x * 0.75;
-            FieldSizeY = (field_size) * Hex.size_y;
-
-
-            Random r = new Random();
-
-            for (int i = 0; i < field_size * field_size;)
-            {
-                int l = r.Next(1, 15);
-                Hex.HexType t = (Hex.HexType)r.Next(0, 4);
-                for (int j = 0; j < l && i < field_size * field_size; j++, i++)
-                    AddHex(t);
-            }
-
-            AddBase(new Point3 { x = -1, y = 0, z = 1 });
+            int of_x = _Offset2D.x + p.x;
+            if (of_x < 0 || of_x > _FieldSize - 1) return null;
+            int of_y = _Offset2D.y + (p.z + (p.x - (p.x & 1)) / 2);
+            if (of_y < 0 || of_y > _FieldSize - 1) return null;
+            return _HexField2D[of_y, of_x];
         }
 
-        public Hex GetHex(Point3 p)
-        {
-            int of_x = offset.x + p.x;
-            if (of_x < 0 || of_x > field_size - 1) return null;
-            int of_y = offset.y + (p.z + (p.x - (p.x & 1)) / 2);
-            if (of_y < 0 || of_y > field_size - 1) return null;
-            return hex_field[of_y, of_x];
-        }
-
-        public int GetDistance(Point3 a, Point3 b)
+        private int GetDistance(Point3 a, Point3 b)
         {
             return (Math.Abs(a.x - b.x) + Math.Abs(a.y - b.y) + Math.Abs(a.z - b.z)) / 2;
         }
 
-        public List<Hex> GetHexAround(Point3 point, int n, int N)
+        private List<Hex> GetHexAround(Point3 point, int n, int N)
         {
             List<Hex> res = new List<Hex>();
             if (n > N || n < 0 || N < 0) return res;
@@ -175,9 +414,9 @@ namespace UIClient.Infrastructure.Controls
             return res;
         }
 
-        VehicleEx GetVehicle(Point3 p)
+        private VehicleEx GetVehicle(Point3 p)
         {
-            foreach (var item in vehicles)
+            foreach (var item in _Vehicles)
             {
                 var new_vec = item.Value.vehicle;
                 if (new_vec.position.x == p.x &&
@@ -190,47 +429,46 @@ namespace UIClient.Infrastructure.Controls
             return null;
         }
 
-        Point2 GetPoint2(Point3 p)
+        private Point2 GetPoint2(Point3 p)
         {
             Point2 ret = new Point2();
-            ret.x = offset.x + p.x;
-            ret.y = offset.y + (p.z + (p.x - (p.x & 1)) / 2);
+            ret.x = _Offset2D.x + p.x;
+            ret.y = _Offset2D.y + (p.z + (p.x - (p.x & 1)) / 2);
             return ret;
         }
 
-        Point3 GetPoint3(Point2 p)
+        private Point3 GetPoint3(Point2 p)
         {
             Point3 ret = new Point3();
-            p.x -= offset.x;
-            p.y -= offset.y;
+            p.x -= _Offset2D.x;
+            p.y -= _Offset2D.y;
             ret.x = p.x;
             ret.z = p.y - (p.x - (p.x & 1)) / 2;
             ret.y = -ret.x - ret.z;
             return ret;
         }
 
-        public void CreateContent(GameState state)
+        private void CreateContent(GameState state)
         {
             if (state == null) return;
             if (state.players == null) return;
             PlayerCount = state.players.Length;
-            if (state.num_players != state.players.Length) return;
 
-            this.players.Clear();
+            this.Players.Clear();
             PlayerCount = 0;
 
             int i = 0;
             foreach (var item in state.players)
             {
                 PlayerEx px = new PlayerEx();
-                px.player = item;
-                px.color = team_colors[i];
-                this.players.Add(item.idx, px);
+                px.CurrentPlayer = item;
+                px.TeamColor = _TeamColors[i];
+                this.Players.Add(item.idx, px);
                 i++;
                 PlayerCount++;
             }
 
-            vehicles.Clear();
+            _Vehicles.Clear();
             Dictionary<int, Vehicle> v = state.vehicles;
             if (v != null)
                 foreach (var it in v)
@@ -239,15 +477,18 @@ namespace UIClient.Infrastructure.Controls
                     vx.vehicle = it.Value;
                     vx.hex = GetHex(vx.vehicle.position);
                     vx.id = it.Key;
-                    Tank tank = new Tank(vx, players[vx.vehicle.player_id].color);
+                    Tank tank = new Tank(vx, Players[vx.vehicle.player_id].TeamColor);
                     vx.hex.Tank = tank;
-                    vehicles.Add(it.Key, vx);
+                    _Vehicles.Add(it.Key, vx);
                 }
 
+            PlayerEx currentPlayer;
+            if (Players.TryGetValue(Player.CurrentPlayer.idx, out currentPlayer))
+                Player = currentPlayer;
             Inited = true;
         }
 
-        public void UpdateContent(GameState state)
+        private void UpdateContent(GameState state)
         {
             Dictionary<int, Vehicle> v = state.vehicles;
             if (v != null)
@@ -257,7 +498,7 @@ namespace UIClient.Infrastructure.Controls
                     //    continue;
 
                     var new_vec = i.Value;
-                    var curr_vec = vehicles[i.Key];
+                    var curr_vec = _Vehicles[i.Key];
 
                     if (new_vec.health != curr_vec.vehicle.health)
                     {
@@ -273,10 +514,10 @@ namespace UIClient.Infrastructure.Controls
                 }
         }
 
-        public void VehicleMove(int id, Point3 point)
+        private void VehicleMove(int id, Point3 point)
         {
             Hex to = GetHex(point);
-            VehicleEx v = vehicles[id];
+            VehicleEx v = _Vehicles[id];
             Tank tank = (Tank)v.hex.Tank;
 
             if (to == v.hex) return;
@@ -289,7 +530,7 @@ namespace UIClient.Infrastructure.Controls
             v.vehicle.position = to.Point3;
         }
 
-        public void VehicleShoot(int id, Point3 point)
+        private void VehicleShoot(int id, Point3 point)
         {
             var target = GetVehicle(point);
             if (target == null) return;
@@ -306,22 +547,22 @@ namespace UIClient.Infrastructure.Controls
             }
         }
 
-        public void AddBase(Point3 p)
+        private void AddBase(Point3 p)
         {
             GetHex(p).Type = Hex.HexType.Base;
         }
 
-        public void AddSpawn(Point3 p)
+        private void AddSpawn(Point3 p)
         {
             GetHex(p).Type = Hex.HexType.Spawn;
         }
 
-        public void CreateField(Map map)
+        private void CreateField(Map map)
         {
-            if (map.size % 2 == 0) even = true;
-            else even = false;
-            field_size = map.size * 2 - 1;
-            hex_field = new Hex[field_size, field_size];
+            if (map.size % 2 == 0) _Even = true;
+            else _Even = false;
+            _FieldSize = map.size * 2 - 1;
+            _HexField2D = new Hex[_FieldSize, _FieldSize];
             CreateHexField(map.size);
 
             if (map.content._base != null)
@@ -352,128 +593,198 @@ namespace UIClient.Infrastructure.Controls
 
         }
 
-        void AddHex(Hex.HexType type)
+        private void AddHex(Hex.HexType type)
         {
-            Point2 point2 = new Point2() { x = x, y = y };
+            Point2 point2 = new Point2() { x = _CurrentX, y = _CurrentY };
             Hex bt = new Hex(point2, GetPoint3(point2), type);
 
-            Canvas.SetLeft(bt, x * (Hex.size_x * 0.75));
-            if (even)
+            Canvas.SetLeft(bt, _CurrentX * (Hex.size_x * 0.75));
+            if (_Even)
             {
-                if (x % 2 != 0) Canvas.SetTop(bt, y * Hex.size_y);
-                else Canvas.SetTop(bt, y * Hex.size_y + (Hex.size_y / 2));
+                if (_CurrentX % 2 != 0) Canvas.SetTop(bt, _CurrentY * Hex.size_y);
+                else Canvas.SetTop(bt, _CurrentY * Hex.size_y + (Hex.size_y / 2));
             }
             else
             {
-                if (x % 2 == 0) Canvas.SetTop(bt, y * Hex.size_y);
-                else Canvas.SetTop(bt, y * Hex.size_y + (Hex.size_y / 2));
+                if (_CurrentX % 2 == 0) Canvas.SetTop(bt, _CurrentY * Hex.size_y);
+                else Canvas.SetTop(bt, _CurrentY * Hex.size_y + (Hex.size_y / 2));
             }
             Canv.Children.Add(bt);
-            hex_field[y, x] = bt;
-            x++;
+            _HexField2D[_CurrentY, _CurrentX] = bt;
+            _CurrentX++;
 
-            if (x == field_size)
+            if (_CurrentX == _FieldSize)
             {
-                y++;
-                x = 0;
+                _CurrentY++;
+                _CurrentX = 0;
             }
         }
 
-        public async Task OnHexClick(Hex curr_hex, GamePageViewModel vm)
+        private async Task<Result> MoveAsync(int id, Point3 point)
         {
-            foreach (var item in SelectedCanMove)
-                item.CanMove = Visibility.Hidden;
-            foreach (var item in SelectedCanShoot)
-                item.CanShoot = Visibility.Hidden;
-            SelectedCanMove.Clear();
-            SelectedCanShoot.Clear();
+            Result res = await App.Core.SendMoveAsync(id, point).ConfigureAwait(false);
 
-            Tank tank = (Tank)curr_hex.Tank;
-            if (tank != null && tank.Vehicle.vehicle.player_id == vm.Player.idx)
+            if (res == Result.OKEY)
             {
-                SelectedCanMove = GetHexAround(curr_hex.Point3, 1, tank.Speed);
-                foreach (var item in SelectedCanMove)
-                    if (item.Tank == null) item.CanMove = Visibility.Visible;
+                App.Current.Dispatcher.Invoke(() => { VehicleMove(id, point); });
+                App.Core.Log("Машина перемещена по x: " + point.x + ", y: " + point.y + ", z: " + point.z);
+            }
+            else if (res == Result.BAD_COMMAND)
+            {
+                App.Core.Log("MoveAsync: Неверный ход");
+            }
+            return res;
+        }
 
-                SelectedCanShoot = GetHexAround(curr_hex.Point3, tank.ShootMin, tank.ShootMax);
+        private async Task<Result> ShootAsync(int id, Point3 point)
+        {
+            Result res = await App.Core.SendShootAsync(id, point).ConfigureAwait(false);
+            if (res == Result.OKEY)
+            {
+                App.Current.Dispatcher.Invoke(() => { VehicleShoot(id, point); });
+                App.Core.Log("Выстрел по x: " + point.x + ", y: " + point.y + ", z: " + point.z);
+            }
+            else if (res == Result.BAD_COMMAND)
+            {
+                App.Core.Log("ShootAsync: Неверный ход");
+            }
+            return res;
+        }
 
-                if (tank.Vehicle.vehicle.vehicle_type == VehicleType.ПТ)
-                    SelectedCanShoot.RemoveAll(item => (
-                    item.Point3.x != curr_hex.Point3.x &&
-                    item.Point3.y != curr_hex.Point3.y &&
-                    item.Point3.z != curr_hex.Point3.z));
-                foreach (var item in SelectedCanShoot)
-                    if (item.Tank != null)
-                        if (item.Tank.Vehicle.vehicle.player_id != vm.Player.idx)
-                            item.CanShoot = Visibility.Visible;
+        private async Task<Result> TurnAsync()
+        {
+            App.Current.Dispatcher.Invoke(() => { StepEnable = false; CommandBase.RaiseCanExecuteChanged(); });
+            return await App.Core.SendTurnAsync().ConfigureAwait(false);
+        }
+
+        private async Task<bool> GetLogin(LoginCreate login)
+        {
+            var login_res = await App.Core.SendLoginAsync(login).ConfigureAwait(false);
+            if (login_res.Item1 != Result.OKEY)
+            {
+                App.Core.Log("Ошибка: " + login_res.Item1.ToString());
+                return false;
             }
 
-            Hex last_hex = SelectedHex;
-            SelectedHex = curr_hex;
-            if (last_hex == null || last_hex.Tank == null)
-                return;
-
-            tank = last_hex.Tank;
-            if (tank.Vehicle.vehicle.player_id != vm.Player.idx)
-                return;
-
-            Tank new_tank = (Tank)curr_hex.Tank;
-
-            if (new_tank == null)
+            App.Current.Dispatcher.Invoke(() =>
             {
-                await vm.MoveAsync(tank.Vehicle.id, curr_hex.Point3).ConfigureAwait(false);
+                var playerex = new PlayerEx();
+                playerex.CurrentPlayer = login_res.Item2;
+                playerex.TeamColor = new SolidColorBrush(Color.FromArgb(0xFF, 0xf8, 0x57, 0x06));
+                Player = playerex;
+            });
+            App.Core.Log("Авторизация выполнена");
+            return true;
+        }
+
+        private async Task<bool> GetMap()
+        {
+            var res_map = await App.Core.SendMapAsync().ConfigureAwait(false);
+            if (res_map.Item1 != Result.OKEY)
+            {
+                App.Core.Log("Ошибка: " + res_map.Item1.ToString());
+                return false;
             }
-            else
+            App.Current.Dispatcher.Invoke(() =>
             {
-                if (new_tank.Vehicle.vehicle.player_id == vm.Player.idx)
-                    return;
+                Map = res_map.Item2;
+                CreateField(Map);
+                MessageWait = "Ожидание хода...";
+            });
 
-                if (tank.Vehicle.vehicle.vehicle_type == VehicleType.ПТ)
+            var main_page = App.Host.Services.GetRequiredService<MainWindowViewModel>();
+            main_page.SelectGamePage();
+
+            App.Core.Log("Карта загружена");
+            return true;
+        }
+
+        private async Task<bool> WaitPlayers(int timeOut = int.MaxValue)
+        {
+            while (timeOut > 0)
+            {
+                var res = await App.Core.SendGameStateAsync().ConfigureAwait(false);
+                if (res.Item1 == Result.OKEY && res.Item2.num_players == res.Item2.players.Length)
                 {
-                    Point3 point = new Point3() { x = last_hex.Point3.x, y = last_hex.Point3.y, z = last_hex.Point3.z };
-                    int ds = GetDistance(last_hex.Point3, curr_hex.Point3);
-                    if (last_hex.Point3.x != curr_hex.Point3.x)
-                        if (last_hex.Point3.x < curr_hex.Point3.x)
-                            point.x = curr_hex.Point3.x - (ds - 1);
-                        else point.x = curr_hex.Point3.x + (ds - 1);
-                    if (last_hex.Point3.y != curr_hex.Point3.y)
-                        if (last_hex.Point3.y < curr_hex.Point3.y)
-                            point.y = curr_hex.Point3.y - (ds - 1);
-                        else point.y = curr_hex.Point3.y + (ds - 1);
-                    if (last_hex.Point3.z != curr_hex.Point3.z)
-                        if (last_hex.Point3.z < curr_hex.Point3.z)
-                            point.z = curr_hex.Point3.z - (ds - 1);
-                        else point.z = curr_hex.Point3.z + (ds - 1);
-                    await vm.ShootAsync(tank.Vehicle.id, point).ConfigureAwait(false);
+                    App.Current.Dispatcher.Invoke(() => { GameState = res.Item2; CreateContent(res.Item2); });
                 }
-                else
-                    await vm.ShootAsync(tank.Vehicle.id, curr_hex.Point3).ConfigureAwait(false);
+
+                if (!Inited)
+                    await Task.Delay(500);
+                else break;
+                timeOut -= 500;
             }
-            SelectedHex = null;
+
+            if (timeOut < 0)
+            {
+                App.Core.Log("Превышено время ожидания игроков");
+                return false;
+            }
+            App.Core.Log("Все игроки подключены");
+            return true;
         }
 
-        public double FieldSizeX
+        private async Task<bool> UpdateGameState()
         {
-            get { return (double)GetValue(FieldSizeXProperty); }
-            set { SetValue(FieldSizeXProperty, value); }
-        }
-        public static readonly DependencyProperty FieldSizeXProperty =
-            DependencyProperty.Register(nameof(FieldSizeX), typeof(double), typeof(HexField), new PropertyMetadata(default(double)));
+            var res = await App.Core.SendGameStateAsync().ConfigureAwait(false);
+            GameState = res.Item2;
+            if (GameState == null) return false;
 
-        public double FieldSizeY
-        {
-            get { return (double)GetValue(FieldSizeYProperty); }
-            set { SetValue(FieldSizeYProperty, value); }
-        }
-        public static readonly DependencyProperty FieldSizeYProperty =
-            DependencyProperty.Register(nameof(FieldSizeY), typeof(double), typeof(HexField), new PropertyMetadata(default(double)));
+            if (GameState.finished)
+            {
+                if (GameState.winner != null) MessageWait = "Победитель: " + Players[GameState.winner.Value].CurrentPlayer.name;
+                else MessageWait = "Ничья";
+                return false;
+            }
 
-        public int PlayerCount
-        {
-            get { return (int)GetValue(PlayerCountProperty); }
-            set { SetValue(PlayerCountProperty, value); }
+            App.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                StepEnable = true;
+                _EventWait = new TaskCompletionSource<bool>();
+                UpdateContent(GameState);
+                CommandBase.RaiseCanExecuteChanged();
+            }));
+            return StepEnable;
         }
-        public static readonly DependencyProperty PlayerCountProperty =
-            DependencyProperty.Register(nameof(PlayerCount), typeof(int), typeof(HexField), new PropertyMetadata(default(int)));
+
+        private async Task<bool> GetActions()
+        {
+            var act = await App.Core.SendActionsAsync().ConfigureAwait(false);
+            if (act.Item1 != Result.OKEY)
+                return false;
+
+            if (act.Item2 != null)
+            {
+                foreach (var i in act.Item2.actions)
+                {
+                    if (i.action_type == Model.WebAction.CHAT)
+                    {
+                        ChatMessage msg = JsonConvert.DeserializeObject<ChatMessage>(i.data.ToString());
+                        App.Current.Dispatcher.Invoke(() => { Chat.Add(msg.message); });
+                    }
+                }
+            }
+            return true;
+        }
+
+        #region INotifyPropertyChanged
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged([CallerMemberName] string PropetryName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(PropetryName));
+        }
+        protected virtual bool Set<T>(ref T field, T value, [CallerMemberName] string PropetryName = null)
+        {
+            if (Equals(field, value)) return false;
+            field = value;
+            OnPropertyChanged(PropetryName);
+            return true;
+        }
+        protected virtual bool Update([CallerMemberName] string PropetryName = null)
+        {
+            OnPropertyChanged(PropetryName);
+            return true;
+        }
+        #endregion
     }
 }

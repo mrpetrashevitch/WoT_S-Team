@@ -67,7 +67,7 @@ namespace UIClient
                     page.PlayersMax = Convert.ToInt32(e.Args[index_pc + 1]);
                     page.TurnMax = Convert.ToInt32(e.Args[index_tc + 1]);
                     page.IsObserver = Convert.ToBoolean(Convert.ToInt32(e.Args[index_o + 1]));
-                    page_game.AIEnable = Convert.ToBoolean(Convert.ToInt32(e.Args[index_ai + 1]));
+                    page_game.Field.AIEnable = Convert.ToBoolean(Convert.ToInt32(e.Args[index_ai + 1]));
                     await App.Current.Dispatcher.BeginInvoke(new Action(() => { page.LoginCommand.Execute(null); }));
                 }
                 catch (Exception) { }

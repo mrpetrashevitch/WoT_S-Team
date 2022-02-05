@@ -11,7 +11,7 @@
              Width="40" Height="35"
              x:Name="CurrentControl"
              DataContext="{Binding WGUIPageViewModel, Source={StaticResource Locator}}"
-             IsEnabled="{Binding StepEnable}">
+             IsEnabled="{Binding Field.StepEnable}">
     <Grid>
         <Button x:Name="Btn" Style="{StaticResource ButtonFreeHex}"
                 Content="{Binding Path=Tank, ElementName=CurrentControl}"/>

@@ -112,36 +112,42 @@ namespace UIClient.ViewModel
 
         #endregion
 
-        public async void SelectGamePage()
+        public void SelectGamePage()
         {
-            var page = App.Host.Services.GetRequiredService<LoadPageViewModel>();
-            page.IsLoadVisible = Visibility.Visible;
-            page.IsControlVisible = Visibility.Hidden;
+            App.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                var page = App.Host.Services.GetRequiredService<LoadPageViewModel>();
+                page.IsLoadVisible = Visibility.Visible;
+                page.IsControlVisible = Visibility.Hidden;
 
-            await Task.Delay(1000);
+                //Task.Delay(500);
 
-            Opacity = 0;
-            SelectedPage = App.Host.Services.GetRequiredService<GamePage>();
-            await Task.Delay(500);
+                Opacity = 0;
+                SelectedPage = App.Host.Services.GetRequiredService<GamePage>();
+                //Task.Delay(500);
 
-            Width = 1200;
-            Height = 820;
-            Opacity = 1;
+                Width = 1200;
+                Height = 820;
+                Opacity = 1;
+            }));
         }
 
-        public async void SelectLoadPage()
+        public void SelectLoadPage()
         {
-            var page = App.Host.Services.GetRequiredService<LoadPageViewModel>();
-            page.IsLoadVisible = Visibility.Hidden;
-            page.IsControlVisible = Visibility.Visible;
+            App.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                var page = App.Host.Services.GetRequiredService<LoadPageViewModel>();
+                page.IsLoadVisible = Visibility.Hidden;
+                page.IsControlVisible = Visibility.Visible;
 
-            Opacity = 0;
-            await Task.Delay(500);
-            SelectedPage = App.Host.Services.GetRequiredService<LoadPage>();
-            await Task.Delay(500);
-            Width = 650;
-            Height = 250;
-            Opacity = 1;
+                Opacity = 0;
+                //Task.Delay(500);
+                SelectedPage = App.Host.Services.GetRequiredService<LoadPage>();
+                //Task.Delay(500);
+                Width = 650;
+                Height = 250;
+                Opacity = 1;
+            }));
         }
 
         public MainWindowViewModel()

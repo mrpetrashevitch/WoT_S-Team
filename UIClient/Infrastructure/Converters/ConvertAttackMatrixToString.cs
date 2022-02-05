@@ -16,7 +16,7 @@ namespace UIClient.Infrastructure.Converters
         {
             if (value is not Dictionary<int, int[]> attack_matrix) return value;
             if (parameter is not ViewModelLocator loc) return value;
-            var players = loc?.WGUIPageViewModel?.Field?.players;
+            var players = loc?.WGUIPageViewModel?.Field?.Players;
             if (players == null) return value;
 
             StringBuilder hex = new StringBuilder();
@@ -26,12 +26,12 @@ namespace UIClient.Infrastructure.Converters
                 PlayerEx player;
                 if (!players.TryGetValue(item.Key, out player))
                     continue;
-                hex.Append(player.player.name).Append(": ");
+                hex.Append(player.CurrentPlayer.name).Append(": ");
                 foreach (var i in item.Value)
                 {
                     if (!players.TryGetValue(i, out player))
                         continue;
-                    hex.Append(player.player.name).Append(" ");
+                    hex.Append(player.CurrentPlayer.name).Append(" ");
                 }
                 hex.Append("\n");
             }

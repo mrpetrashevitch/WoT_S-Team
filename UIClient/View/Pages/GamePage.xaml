@@ -131,15 +131,15 @@
 
                 <Grid Grid.Row="0">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <TextBlock Text="{Binding StringFormat=Ход: {0}, Path=GameState.current_turn}"
-                               FontSize="18" Foreground="{Binding TeamColor}"/>
-                        <TextBlock Text="{Binding StringFormat=/{0}, Path=GameState.num_turns}"
-                               FontSize="18" Foreground="{Binding TeamColor}"/>
+                        <TextBlock Text="{Binding StringFormat=Ход: {0}, Path=Field.GameState.current_turn}"
+                               FontSize="18" Foreground="{Binding Field.Player.TeamColor}"/>
+                        <TextBlock Text="{Binding StringFormat=/{0}, Path=Field.GameState.num_turns}"
+                               FontSize="18" Foreground="{Binding Field.Player.TeamColor}"/>
 
                         <TextBlock Text="{Binding StringFormat=Игроков: {0}, Path=Field.PlayerCount}" Margin="10 0 0 0"
-                               FontSize="18" Foreground="{Binding TeamColor}"/>
-                        <TextBlock Text="{Binding StringFormat=/{0}, Path=GameState.num_players}"
-                               FontSize="18" Foreground="{Binding TeamColor}"/>
+                               FontSize="18" Foreground="{Binding Field.Player.TeamColor}"/>
+                        <TextBlock Text="{Binding StringFormat=/{0}, Path=Field.GameState.num_players}"
+                               FontSize="18" Foreground="{Binding Field.Player.TeamColor}"/>
                     </StackPanel>
                 </Grid>
 
@@ -147,10 +147,7 @@
                     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                         <ContentControl  Content="{Binding Field}"/>
                     </ScrollViewer>
-                    <TextBlock Text="{Binding MessageWait}" FontSize="28" VerticalAlignment="Center" 
-                               HorizontalAlignment="Center" Visibility="{Binding MessageWaitVisible}"
-                               FontFamily="{StaticResource FontCenturyGothic}" 
-                               Foreground="{Binding TeamColor}"/>
+                   
                 </Grid>
             </Grid>
             <Grid Grid.Column="1">
@@ -160,15 +157,15 @@
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Row="0">
                     <StackPanel Margin="10 0 0 0">
-                        <TextBlock Text="{Binding StringFormat=Карта: {0}, Path=Map.name}"
+                        <TextBlock Text="{Binding StringFormat=Карта: {0}, Path=Field.Map.name}"
                                FontSize="18" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
-                        <TextBlock Text="{Binding StringFormat=Имя: {0}, Path=Player.name}"
+                        <TextBlock Text="{Binding StringFormat=Имя: {0}, Path=Field.Player.CurrentPlayer.name}"
                                FontSize="18" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
 
                         <TextBlock FontSize="18" HorizontalAlignment="Center"
                                Text="Выигрышные очки:" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                         <TextBlock FontSize="18" HorizontalAlignment="Left" 
-                               Text="{Binding GameState.win_points, 
+                               Text="{Binding Field.GameState.win_points, 
                                Converter={StaticResource ConvertWinPointsToString}, 
                                ConverterParameter={StaticResource Locator}}" 
                                Foreground="{StaticResource ControlPressedBorderBrush}"/>
@@ -176,7 +173,7 @@
                         <TextBlock FontSize="18" HorizontalAlignment="Center"
                                Text="Матрица атаки:" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                         <TextBlock FontSize="18" HorizontalAlignment="Left" 
-                               Text="{Binding GameState.attack_matrix, 
+                               Text="{Binding Field.GameState.attack_matrix, 
                                Converter={StaticResource ConvertAttackMatrixToString}, 
                                ConverterParameter={StaticResource Locator}}" 
                                Foreground="{StaticResource ControlPressedBorderBrush}"/>
@@ -184,13 +181,13 @@
                         <TextBlock FontSize="18" HorizontalAlignment="Center"
                                Text="Наблюдатели:" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                         <TextBlock FontSize="18" HorizontalAlignment="Left" 
-                               Text="{Binding GameState.observers, 
+                               Text="{Binding Field.GameState.observers, 
                                Converter={StaticResource ConvertObserversToString}, 
                                ConverterParameter={StaticResource Locator}}" 
                                Foreground="{StaticResource ControlPressedBorderBrush}"/>
 
                         <CheckBox Content="Включить AI" FontSize="18" HorizontalAlignment="Left"
-                                IsChecked="{Binding AIEnable, Mode=TwoWay}" Foreground="{StaticResource ControlPressedBorderBrush}"
+                                IsChecked="{Binding Field.AIEnable, Mode=TwoWay}" Foreground="{StaticResource ControlPressedBorderBrush}"
                                 Height="25" Style="{StaticResource CheckboxStyle}" Focusable="False"/>
                     </StackPanel>
                 </StackPanel>
@@ -221,7 +218,7 @@
                         <RowDefinition Height="20"/>
                     </Grid.RowDefinitions>
                     <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Visible">
-                        <ItemsControl ItemsSource="{Binding Chat}" ItemTemplate="{StaticResource ChatMsgTemplate}"/>
+                        <ItemsControl ItemsSource="{Binding Field.Chat}" ItemTemplate="{StaticResource ChatMsgTemplate}"/>
                     </ScrollViewer>
                     <Grid Grid.Row="1">
                         <Grid.ColumnDefinitions>
@@ -232,19 +229,11 @@
                         <TextBlock  Grid.Column="0" Text="Чат:" FontSize="18" VerticalAlignment="Center"  Margin="5 0"
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                         <TextBox Height="20" FontSize="16" Grid.Column="1"
-                                     Text="{Binding ChatText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                 Text="{Binding ChatText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                             <TextBox.InputBindings>
-                                <KeyBinding Command="{Binding SendChatMessageCommand}" Key="Return" />
+                                <KeyBinding Command="{Binding SendChatMessageCommand}" Key="Return"/>
                             </TextBox.InputBindings>
                         </TextBox>
-                        <Button Grid.Column="2" Width="20" Command="{Binding SendChatMessageCommand}"
-                                Height="20" Style="{StaticResource ButtonCustom}">
-                            <Button.Content>
-                                <TextBlock Grid.Column="0" Text="&#xE043;" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center"
-                                           FontFamily="{StaticResource FontIcons}" Foreground="{StaticResource ControlMouseOverBorderBrush}">
-                                </TextBlock>
-                            </Button.Content>
-                        </Button>
                     </Grid>
                 </Grid>
             </Grid>

@@ -81,7 +81,7 @@
 
                         <TextBlock Text="&#x0054;" FontSize="24" VerticalAlignment="Center" HorizontalAlignment="Center"
                                    Visibility="{Binding Path=CanMove, RelativeSource={ RelativeSource AncestorType=local:Hex, Mode=FindAncestor}}"
-                                   Foreground="{Binding Path=DataContext.TeamColor, RelativeSource={ RelativeSource AncestorType=local:Hex, Mode=FindAncestor}}"
+                                   Foreground="{Binding Path=DataContext.Field.Player.TeamColor, RelativeSource={ RelativeSource AncestorType=local:Hex, Mode=FindAncestor}}"
                                    FontFamily="{ StaticResource FontIcons}" />
 
                         <TextBlock Text="&#x0039;" FontSize="24" VerticalAlignment="Center" HorizontalAlignment="Center"

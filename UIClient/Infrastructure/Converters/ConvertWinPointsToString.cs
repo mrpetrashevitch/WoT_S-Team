@@ -18,7 +18,7 @@ namespace UIClient.Infrastructure.Converters
         {
             if (value is not Dictionary<int, WinPoints> win_points) return value;
             if (parameter is not ViewModelLocator loc) return value;
-            var players = loc?.WGUIPageViewModel?.Field?.players;
+            var players = loc?.WGUIPageViewModel?.Field?.Players;
             if (players == null) return value;
 
             StringBuilder hex = new StringBuilder();
@@ -28,7 +28,7 @@ namespace UIClient.Infrastructure.Converters
                 PlayerEx player;
                 if (!players.TryGetValue(i.Key, out player))
                     continue;
-                hex.Append(player.player.name).Append(": очки захвата: ").Append(i.Value.capture);
+                hex.Append(player.CurrentPlayer.name).Append(": очки захвата: ").Append(i.Value.capture);
                 hex.Append(", убийства: ").Append(i.Value.kill).Append("\n");
             }
             return hex.ToString();

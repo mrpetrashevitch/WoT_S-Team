@@ -112,8 +112,8 @@ namespace UIClient.ViewModel
         #endregion
 
         #region Commands
-        #region LoginCommand : установить имя пользователя
-        /// <summary>установить имя пользователя</summary>
+        #region LoginCommand : войти
+        /// <summary>войти</summary>
         public ICommand LoginCommand { get; }
         private bool CanLoginCommandExecute(object p)
         {
@@ -127,7 +127,6 @@ namespace UIClient.ViewModel
         private async void OnLoginCommandExecuted(object p)
         {
             var vm = App.Host.Services.GetRequiredService<GamePageViewModel>();
-
             LoginCreate log = new LoginCreate();
             log.name = UserName;
             log.password = Pass;
@@ -135,16 +134,7 @@ namespace UIClient.ViewModel
             log.num_turns = TurnMax;
             log.num_players = PlayersMax;
             log.is_observer = IsObserver;
-
-            var res_login = await Core.SendLoginAsync(log).ConfigureAwait(false);
-            if (res_login.Item1 != Result.OKEY)
-            {
-                Core.Log("Ошибка: " + res_login.Item1.ToString());
-                return;
-            }
-            vm.Player = res_login.Item2;
-            Core.Log("Авторизация выполнена");
-            await vm.RunGame();
+            await vm.Field.RunGame(log);
         }
         #endregion
 
