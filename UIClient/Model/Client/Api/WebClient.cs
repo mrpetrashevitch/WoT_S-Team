@@ -30,6 +30,8 @@ namespace UIClient.Model.Client.Api
                                         IntPtr vehicle, int vehicle_size,
                                         IntPtr win_points, int win_points_size,
                                         IntPtr attack_matrix, int attack_matrix_size,
-                                        IntPtr base_, int base_size, out action_ret actions);
+                                        IntPtr base_, int base_size, 
+                                        IntPtr obstacle, int obstacle_size, 
+                                        out action_ret actions);
     }
 }

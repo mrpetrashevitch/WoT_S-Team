@@ -552,6 +552,11 @@ namespace UIClient.Infrastructure.Controls
             GetHex(p).Type = Hex.HexType.Base;
         }
 
+        private void AddObstacle(Point3 p)
+        {
+            GetHex(p).Type = Hex.HexType.Water;
+        }
+
         private void AddSpawn(Point3 p)
         {
             GetHex(p).Type = Hex.HexType.Spawn;
@@ -566,8 +571,12 @@ namespace UIClient.Infrastructure.Controls
             CreateHexField(map.size);
 
             if (map.content._base != null)
-                foreach (var point3 in map.content._base)
-                    AddBase(point3);
+                foreach (var point in map.content._base)
+                    AddBase(point);
+
+            if (map.content.obstacle != null)
+                foreach (var point in map.content.obstacle)
+                    AddObstacle(point);
 
             if (map.spawn_points != null)
             {

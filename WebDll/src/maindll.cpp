@@ -52,13 +52,17 @@ extern "C"
 		ai::vehicles_native* vehicle, int vehicle_size,
 		ai::win_points_native* win_points, int win_points_size,
 		ai::AttackMatrix_native* attack_matrix, int attack_matrix_size,
-		ai::point* base, int base_size, ai::action_ret* out_actions)
+		ai::point* base, int base_size, 
+		ai::point* obstacle, int obstacle_size,
+		ai::action_ret* out_actions)
 	{
 		return ai::ai::get_action(curr_player,
 			players, players_size,
 			vehicle, vehicle_size,
 			win_points, win_points_size,
 			attack_matrix, attack_matrix_size,
-			base, base_size, out_actions);
+			base, base_size, 
+			obstacle, obstacle_size,
+			out_actions);
 	}
 }

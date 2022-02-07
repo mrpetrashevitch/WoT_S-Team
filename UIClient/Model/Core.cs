@@ -240,6 +240,8 @@ namespace UIClient.Model
             GCHandle attackmatrix_pipe = default(GCHandle);
             IntPtr base_s_ptr = IntPtr.Zero;
             GCHandle base_pipe = default(GCHandle);
+            IntPtr obstacle_s_ptr = IntPtr.Zero;
+            GCHandle obstacle_pipe = default(GCHandle);
 
             player_native[] player_s = null;
             if (GameState.players != null)
@@ -318,6 +320,19 @@ namespace UIClient.Model
                     i++;
                 }
             }
+            point[] obstacle_s = null;
+            if (Map.content.obstacle != null)
+            {
+                obstacle_s = new point[Map.content.obstacle.Length];
+                int i = 0;
+                foreach (var item in Map.content.obstacle)
+                {
+                    obstacle_s[i].x = item.x;
+                    obstacle_s[i].y = item.y;
+                    obstacle_s[i].z = item.z;
+                    i++;
+                }
+            }
 
             if (player_s != null)
             {
@@ -344,6 +359,11 @@ namespace UIClient.Model
                 base_pipe = GCHandle.Alloc(base_s, GCHandleType.Pinned);
                 base_s_ptr = base_pipe.AddrOfPinnedObject();
             }
+            if (obstacle_s != null)
+            {
+                obstacle_pipe = GCHandle.Alloc(obstacle_s, GCHandleType.Pinned);
+                obstacle_s_ptr = obstacle_pipe.AddrOfPinnedObject();
+            }
 
             action_ret action_re;
             var act = WebClientDll.get_action(player_id,
@@ -352,6 +372,7 @@ namespace UIClient.Model
                 winpoints_s_ptr, winpoints_s?.Length ?? 0,
                 attackmatrix_s_ptr, attackmatrix_s?.Length ?? 0,
                 base_s_ptr, base_s?.Length ?? 0,
+                obstacle_s_ptr, obstacle_s?.Length ?? 0,
                 out action_re);
 
             if (player_s != null) player_pipe.Free();
@@ -359,6 +380,7 @@ namespace UIClient.Model
             if (winpoints_s != null) winpoints_pipe.Free();
             if (attackmatrix_s != null) attackmatrix_pipe.Free();
             if (base_s != null) base_pipe.Free();
+            if (obstacle_s != null) obstacle_pipe.Free();
 
             return action_re;
         }

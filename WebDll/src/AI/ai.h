@@ -90,6 +90,8 @@ namespace ai
 			vehicles_native* vehicles, int vehicles_size,
 			win_points_native* win_points, int win_points_size,
 			AttackMatrix_native* attack_matrix, int attack_matrix_size,
-			point* base, int base_size, action_ret* out_actions);
+			point* base, int base_size, 
+			point* obstacle, int obstacle_size,
+			action_ret* out_actions);
 	};
 }
