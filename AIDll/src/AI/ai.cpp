@@ -6,11 +6,11 @@
 
 namespace ai
 {
-	Result ai::get_action(int curr_player,
+	result ai::get_action(int curr_player,
 		player_native* players, int players_size,
 		vehicles_native* vehicles, int vehicles_size,
 		win_points_native* win_points, int win_points_size,
-		AttackMatrix_native* attack_matrix, int attack_matrix_size,
+		attack_matrix_native* attack_matrix, int attack_matrix_size,
 		point* base, int base_size, 
 		point* obstacle, int obstacle_size,
 		action_ret* out_actions)
@@ -30,7 +30,7 @@ namespace ai
 			out_actions->actions[i] = act;
 		}
 
-		return Result::OKEY;
+		return result::OKEY;
 	}
 
 	void ai::get_tanks_in_order(int curr_player,
@@ -63,7 +63,7 @@ namespace ai
 	action ai::check_for_shooting(int curr_player,
 		vehicles_native* vehicles, int vehicles_size,
 		vehicles_native* vehicle,
-		AttackMatrix_native* attack_matrix, int attack_matrix_size)
+		attack_matrix_native* attack_matrix, int attack_matrix_size)
 	{
 
 		action to_return;
@@ -260,6 +260,7 @@ namespace ai
 		if (type == vehicle_type::HT) {
 			return 3;
 		}
+		throw std::invalid_argument("vehicle_type error");
 	}
 
 	int ai::get_speed(vehicle_type type)
@@ -273,11 +274,11 @@ namespace ai
 		if (type == vehicle_type::LT) {
 			return 3;
 		}
+		throw std::invalid_argument("vehicle_type error");
 	}
 
 	bool ai::check_the_shooting_zone(vehicles_native* shooter, vehicles_native* goal)
 	{
-
 		if (goal->health == 0 || shooter->player_id == goal->player_id) {
 			return false;
 		}
@@ -291,7 +292,7 @@ namespace ai
 		if (shooter->vehicle_type == vehicle_type::HT) {
 			return distance(shooter->position, goal->position) > 0 && distance(shooter->position, goal->position) <= 2;
 		}
-
+		throw std::invalid_argument("vehicle_type error");
 	}
 
 	int ai::distance(point a, point b)
@@ -300,7 +301,7 @@ namespace ai
 	}
 
 	bool ai::check_neutrality(int curr_player, int goal,
-		AttackMatrix_native* attack_matrix, int attack_matrix_size)
+		attack_matrix_native* attack_matrix, int attack_matrix_size)
 	{
 		for (int i = 0; i < attack_matrix_size; i++) {
 			if (attack_matrix[i].id != goal) {

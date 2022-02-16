@@ -90,12 +90,17 @@ namespace UIClient.Model
         #endregion
 
         IntPtr web = IntPtr.Zero;
+        IntPtr ai = IntPtr.Zero;
         object locker = new object();
         public Core()
         {
-            web = WebClientDll.create();
-            if (web == IntPtr.Zero) throw new Exception("Error create core!");
+            web = WebClientDll.create_wc();
+            if (web == IntPtr.Zero) throw new Exception("Error create web!");
             Log("Web ядро создано");
+
+            web = AIDll.create_ai();
+            if (web == IntPtr.Zero) throw new Exception("Error create ai!");
+            Log("AI ядро создано");
 
             Log("UI ядро создано");
             Connect();
@@ -366,7 +371,7 @@ namespace UIClient.Model
             }
 
             action_ret action_re;
-            var act = WebClientDll.get_action(player_id,
+            var act = AIDll.get_action(ai, player_id,
                 player_s_ptr, player_s?.Length ?? 0,
                 vehicle_s_ptr, vehicle_s?.Length ?? 0,
                 winpoints_s_ptr, winpoints_s?.Length ?? 0,

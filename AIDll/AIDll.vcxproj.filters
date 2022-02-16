@@ -18,15 +18,24 @@
     <ClCompile Include="src\maindll.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="src\WebClient\client.cpp">
+    <ClCompile Include="src\AI\ai.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\WebClient\client.h">
+    <ClInclude Include="src\AI\ai.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AI\vehicle.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AI\action.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\defs.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AI\player.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

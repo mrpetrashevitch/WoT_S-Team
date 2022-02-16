@@ -5,7 +5,7 @@ typedef unsigned short ushort;
 typedef unsigned int uint;
 typedef unsigned long ulong;
 
-enum class Result : int
+enum class result : int
 {
 	OKEY = 0,
 	BAD_COMMAND = 1,

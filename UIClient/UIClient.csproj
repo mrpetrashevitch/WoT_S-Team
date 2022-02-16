@@ -373,6 +373,7 @@
     <Compile Include="Infrastructure\Converters\ConvertWinPointsToString.cs" />
     <Compile Include="Infrastructure\Converters\ConvertAttackMatrixToString.cs" />
     <Compile Include="Model\Client\Actions.cs" />
+    <Compile Include="Model\Client\Api\AI.cs" />
     <Compile Include="Model\Client\Api\WebClient.cs" />
     <Compile Include="Model\Client\ChatMessage.cs" />
     <Compile Include="Model\Client\LoginCreate.cs" />
