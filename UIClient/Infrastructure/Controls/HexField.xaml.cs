@@ -45,7 +45,7 @@ namespace UIClient.Infrastructure.Controls
             { App.Core.Log("Ошибка: " + res.ToString()); return false; }
             return true;
         }
-        public async Task<bool> TurnNextAsync()
+        public bool TurnNextAsync()
         {
             if (!App.Core.Connected) return false;
             if (!StepEnable) return false;

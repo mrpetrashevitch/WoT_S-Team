@@ -83,9 +83,9 @@ namespace UIClient.ViewModel
         /// <summary>переключить ход</summary>
         public ICommand TurnCommand { get; }
         private bool CanTurnCommandExecute(object p) => Field.StepEnable;
-        private async void OnTurnCommandExecuted(object p)
+        private void OnTurnCommandExecuted(object p)
         {
-            await Field.TurnNextAsync();
+            Field.TurnNextAsync();
         }
         #endregion
         #endregion

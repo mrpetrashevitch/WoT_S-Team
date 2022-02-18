@@ -98,12 +98,12 @@ namespace UIClient.Model
             if (web == IntPtr.Zero) throw new Exception("Error create web!");
             Log("Web ядро создано");
 
-            web = AIDll.create_ai();
-            if (web == IntPtr.Zero) throw new Exception("Error create ai!");
+            ai = AIDll.create_ai();
+            if (ai == IntPtr.Zero) throw new Exception("Error create ai!");
             Log("AI ядро создано");
 
             Log("UI ядро создано");
-            Connect();
+            Connect().ConfigureAwait(false);
         }
 
         public (Result, string) SendPacket<T>(WebAction action, T data, bool skip_data = false)
@@ -220,7 +220,9 @@ namespace UIClient.Model
 
                 IPAddress[] addresslist = Dns.GetHostAddresses(config.NetConfig.HostName);
 #pragma warning disable CS0618 // Тип или член устарел
-                await Task.Run(() => { WebClientDll.connect_(web, (uint)addresslist[0].Address, config.NetConfig.Port); });
+                await Task.Run(() => { 
+                    WebClientDll.connect_(web, (uint)addresslist[0].Address, config.NetConfig.Port);
+                });
 #pragma warning restore CS0618 // Тип или член устарел
 
                 Connected = true;
