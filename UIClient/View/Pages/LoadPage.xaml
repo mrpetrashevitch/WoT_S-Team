@@ -170,7 +170,7 @@
                             <RowDefinition/>
                             <RowDefinition Height="auto"/>
                         </Grid.RowDefinitions>
-                        <Image Grid.Row="0" Width="80" Source="/WOT;component/Resources/Images/forge.png" Margin="1 0"/>
+                        <Image Grid.Row="0" Width="80" Source="/Resources/Images/forge.png" Margin="1 0"/>
                         <TextBlock Grid.Row="1" HorizontalAlignment="Center" Text="WG Forge" FontSize="12" VerticalAlignment="Center" 
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                     </Grid>
@@ -180,7 +180,7 @@
                             <RowDefinition/>
                             <RowDefinition Height="auto"/>
                         </Grid.RowDefinitions>
-                        <Image Grid.Row="0" Width="80" Source="/WOT;component/Resources/Images/wg.png" Margin="1 0"/>
+                        <Image Grid.Row="0" Width="80" Source="/Resources/Images/wg.png" Margin="1 0"/>
                         <TextBlock Grid.Row="1" HorizontalAlignment="Center" Text="wargaming.net" FontSize="12" VerticalAlignment="Center" 
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
                     </Grid>
