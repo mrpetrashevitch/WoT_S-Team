@@ -10,7 +10,7 @@
       xmlns:b="clr-namespace:UIClient.Infrastructure.Behavior"
       xmlns:System="clr-namespace:System;assembly=mscorlib"
       FontFamily="{StaticResource HeliosCond}"
-      d:DesignHeight="800" d:DesignWidth="1200"
+      d:DesignHeight="820" d:DesignWidth="1200"
       Title="SatchStatPage"
       DataContext="{Binding WGUIPageViewModel, Source={StaticResource Locator}}">
     <Page.Resources>
