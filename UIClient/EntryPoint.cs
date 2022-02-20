@@ -39,7 +39,16 @@ namespace UIClient
                 cfg.AddJsonFile(config_path, false, true);
                 cfg.AddEnvironmentVariables();
                 if (args != null) cfg.AddCommandLine(args);
-                cfg.Build();
+
+                try
+                {
+                    cfg.Build();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    App.Current.Shutdown();
+                }
             });
 
             host_builder.ConfigureServices(App.ConfigureServices);

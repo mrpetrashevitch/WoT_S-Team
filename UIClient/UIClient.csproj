@@ -7,7 +7,7 @@
     <ProjectGuid>{5885375F-A105-4924-AF10-C87419E2F68E}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>UIClient</RootNamespace>
-    <AssemblyName>WOT</AssemblyName>
+    <AssemblyName>WOTS</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <LangVersion>9.0</LangVersion>
     <FileAlignment>512</FileAlignment>
@@ -339,6 +339,7 @@
     <PostBuildEvent>del "$(TargetDir)*.xml" /q
 del "$(TargetDir)*.exp" /q
 del "$(TargetDir)*.lib" /q
-del "$(TargetDir)*.pdb" /q</PostBuildEvent>
+del "$(TargetDir)*.pdb" /q
+del "$(TargetDir)*.config" /q</PostBuildEvent>
   </PropertyGroup>
 </Project>
