@@ -73,9 +73,9 @@ namespace UIClient.ViewModel
         private bool CanLogoutCommandExecute(object p) => Core.Connected;
         private async void OnLogoutCommandExecuted(object p)
         {
-            await Field.LogoutAsync();
             var main_page = App.Host.Services.GetRequiredService<MainWindowViewModel>();
             main_page.SelectLoadPage();
+            await Field.LogoutAsync();
             Reset();
         }
         #endregion

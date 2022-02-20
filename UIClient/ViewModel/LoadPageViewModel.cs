@@ -146,7 +146,14 @@ namespace UIClient.ViewModel
             log.num_turns = TurnMax;
             log.num_players = PlayersMax;
             log.is_observer = IsObserver;
-            await vm.Field.RunGame(log);
+
+            IsControlVisible = Visibility.Collapsed;
+            IsLoadVisible = Visibility.Visible;
+
+            bool result = await vm.Field.RunGame(log);
+
+            IsControlVisible = Visibility.Visible;
+            IsLoadVisible = Visibility.Collapsed;
         }
         #endregion
 
@@ -157,7 +164,7 @@ namespace UIClient.ViewModel
         {
             #region Properties
             Image = new BitmapImage(new Uri("Resources/Images/logo.jpg", UriKind.Relative));
-            IsLoadVisible = Visibility.Hidden;
+            IsLoadVisible = Visibility.Collapsed;
             Core = App.Core;
             PlayersMax = 2;
             //..

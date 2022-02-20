@@ -63,11 +63,11 @@ namespace UIClient.Infrastructure.Controls
             }
             return true;
         }
-        public async Task RunGame(LoginCreate login)
+        public async Task<bool> RunGame(LoginCreate login)
         {
-            if (!await GetLogin(login).ConfigureAwait(false)) return;
-            if (!await GetMap().ConfigureAwait(false)) return;
-            if (!await WaitPlayers().ConfigureAwait(false)) return;
+            if (!await GetLogin(login).ConfigureAwait(false)) return false;
+            if (!await GetMap().ConfigureAwait(false)) return false;
+            if (!await WaitPlayers().ConfigureAwait(false)) return false;
 
             //game loop
             while (true)
@@ -108,6 +108,7 @@ namespace UIClient.Infrastructure.Controls
                     await TurnAsync();
                 }
             }
+            return true;
         }
         public async Task OnHexClick(Hex curr_hex, GamePageViewModel vm)
         {

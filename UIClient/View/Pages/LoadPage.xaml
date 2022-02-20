@@ -141,8 +141,6 @@
                         </Button>
                     </Grid>
 
-
-
                     <TextBlock x:Name="text_block" Visibility="{Binding IsLoadVisible}" Grid.Row="3" Text="Загрузка..." VerticalAlignment="Center" HorizontalAlignment="Center"
                        FontSize="22" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
 

@@ -186,16 +186,7 @@ namespace UIClient.ViewModel
             App.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
                 var page = App.Host.Services.GetRequiredService<LoadPageViewModel>();
-                page.IsLoadVisible = Visibility.Visible;
-                page.IsControlVisible = Visibility.Hidden;
-
-                //Task.Delay(500);
-
-                Opacity = 0;
                 SelectedPage = App.Host.Services.GetRequiredService<GamePage>();
-                //Task.Delay(500);
-
-                Opacity = 1;
             }));
         }
 
@@ -204,14 +195,9 @@ namespace UIClient.ViewModel
             App.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
                 var page = App.Host.Services.GetRequiredService<LoadPageViewModel>();
-                page.IsLoadVisible = Visibility.Hidden;
+                page.IsLoadVisible = Visibility.Collapsed;
                 page.IsControlVisible = Visibility.Visible;
-
-                Opacity = 0;
-                //Task.Delay(500);
                 SelectedPage = App.Host.Services.GetRequiredService<LoadPage>();
-                //Task.Delay(500);
-                Opacity = 1;
             }));
         }
 
