@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
 using UIClient.View.Pages;
 using UIClient.Model.Client;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace UIClient.ViewModel
 {
@@ -108,6 +110,16 @@ namespace UIClient.ViewModel
         }
         #endregion
 
+        #region ImageSource Image : путь
+        private ImageSource _Image;
+        /// <summary>путь</summary>
+        public ImageSource Image
+        {
+            get { return _Image; }
+            set { Set(ref _Image, value); }
+        }
+        #endregion
+
         //..
         #endregion
 
@@ -144,6 +156,7 @@ namespace UIClient.ViewModel
         public LoadPageViewModel()
         {
             #region Properties
+            Image = new BitmapImage(new Uri("Resources/Images/logo.jpg", UriKind.Relative));
             IsLoadVisible = Visibility.Hidden;
             Core = App.Core;
             PlayersMax = 2;

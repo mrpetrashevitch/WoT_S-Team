@@ -14,7 +14,7 @@
                 Height="{Binding Path=FieldSizeY, Mode=TwoWay, ElementName=CurrentControl}"/>
         <TextBlock Text="{Binding MessageWait, ElementName=CurrentControl}" FontSize="28" VerticalAlignment="Center" 
                                HorizontalAlignment="Center" Visibility="{Binding MessageWaitVisible, ElementName=CurrentControl}"
-                               FontFamily="{StaticResource FontCenturyGothic}" 
+                               FontFamily="{StaticResource HeliosCond}" 
                                Foreground="{Binding Player.TeamColor, ElementName=CurrentControl}"/>
     </Grid>
 

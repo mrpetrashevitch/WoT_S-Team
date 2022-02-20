@@ -21,6 +21,7 @@ using UIClient.Model.Server;
 using System.Windows.Media;
 using UIClient.Model.Client;
 using UIClient.Model.Client.Api;
+using System.Windows.Media.Imaging;
 
 namespace UIClient.ViewModel
 {
@@ -52,6 +53,15 @@ namespace UIClient.ViewModel
         {
             get { return _Field; }
             set { Set(ref _Field, value); }
+        }
+        #endregion
+        #region ImageSource Image : путь
+        private ImageSource _Image;
+        /// <summary>путь</summary>
+        public ImageSource Image
+        {
+            get { return _Image; }
+            set { Set(ref _Image, value); }
         }
         #endregion
         #endregion
@@ -93,6 +103,7 @@ namespace UIClient.ViewModel
         public GamePageViewModel()
         {
             #region Properties
+            Image = new BitmapImage(new Uri("Resources/Images/back.jpg", UriKind.Relative));
             Core = App.Core;
             Reset();
             #endregion

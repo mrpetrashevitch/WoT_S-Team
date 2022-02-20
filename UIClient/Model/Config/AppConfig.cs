@@ -16,9 +16,9 @@ namespace UIClient.Model.Config
 
         private void Update(AppConfigJson settings)
         {
-            NetConfig = settings;
+            Config = settings;
         }
 
-        public AppConfigJson NetConfig { get; set; }
+        public AppConfigJson Config { get; set; }
     }
 }

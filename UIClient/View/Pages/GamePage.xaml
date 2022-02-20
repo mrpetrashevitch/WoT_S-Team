@@ -9,8 +9,8 @@
       xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
       xmlns:b="clr-namespace:UIClient.Infrastructure.Behavior"
       xmlns:System="clr-namespace:System;assembly=mscorlib"
-      FontFamily="{StaticResource FontCenturyGothic}"
-      d:DesignHeight="800" d:DesignWidth="1160"
+      FontFamily="{StaticResource HeliosCond}"
+      d:DesignHeight="800" d:DesignWidth="1200"
       Title="SatchStatPage"
       DataContext="{Binding WGUIPageViewModel, Source={StaticResource Locator}}">
     <Page.Resources>
@@ -95,7 +95,7 @@
     </Page.Resources>
     <Grid>
         <Grid.Background>
-            <ImageBrush Opacity="0.1" Stretch="UniformToFill" ImageSource="../../Resources/Images/back.jpg"/>
+            <ImageBrush Opacity="0.1" Stretch="UniformToFill" ImageSource="{Binding Image}"/>
         </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
@@ -109,7 +109,7 @@
                 <Button.Content>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Grid.Column="0" Text="Выйти" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center"
-                                           FontFamily="{StaticResource FontCenturyGothic}" Foreground="{StaticResource ControlMouseOverBorderBrush}">
+                                            Foreground="{StaticResource ControlMouseOverBorderBrush}">
                         </TextBlock>
                         <TextBlock Grid.Column="0" Text="&#x003D;" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center"
                                     Margin="5 0 0 0"        FontFamily="{StaticResource FontIcons}" Foreground="{StaticResource ControlMouseOverBorderBrush}">
@@ -198,8 +198,7 @@
                         HorizontalContentAlignment="Center">
 
                     <Button.Content>
-                        <TextBlock Grid.Column="0" Text="Походить" FontSize="37"
-                                           FontFamily="{StaticResource FontCenturyGothic}" >
+                        <TextBlock Grid.Column="0" Text="Походить" FontSize="37">
                             <TextBlock.Foreground>
                                 <LinearGradientBrush StartPoint="0 0" EndPoint="0 1">
                                     <LinearGradientBrush.GradientStops>

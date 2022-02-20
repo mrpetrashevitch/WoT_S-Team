@@ -218,10 +218,10 @@ namespace UIClient.Model
                 Log("Подключение к серверу...");
                 var config = App.Host.Services.GetRequiredService<AppConfig>();
 
-                IPAddress[] addresslist = Dns.GetHostAddresses(config.NetConfig.HostName);
+                IPAddress[] addresslist = Dns.GetHostAddresses(config.Config.HostName);
 #pragma warning disable CS0618 // Тип или член устарел
                 await Task.Run(() => { 
-                    WebClientDll.connect_(web, (uint)addresslist[0].Address, config.NetConfig.Port);
+                    WebClientDll.connect_(web, (uint)addresslist[0].Address, config.Config.Port);
                 });
 #pragma warning restore CS0618 // Тип или член устарел
 

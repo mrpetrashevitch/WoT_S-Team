@@ -269,14 +269,12 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="AppConfig.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <Resource Include="Resources\Fonts\FontCenturyGothicBold.otf" />
-    <Resource Include="Resources\Fonts\FontCenturyGothic.ttf" />
     <Resource Include="Resources\Fonts\FontIcons.ttf" />
     <Resource Include="Resources\Fonts\Ionicons.ttf" />
   </ItemGroup>
@@ -296,10 +294,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Images\back.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\prev.jpg" />
+    <Resource Include="Resources\Fonts\Helios Cond.ttf" />
+    <None Include="Resources\Images\back.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="6.ico" />
@@ -319,6 +317,22 @@
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.1</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Images\logo.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Songs\main_theme.mp3">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\wg.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\forge.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

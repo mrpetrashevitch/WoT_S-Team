@@ -7,11 +7,14 @@
         xmlns:vm="clr-namespace:UIClient.ViewModel" 
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:b="clr-namespace:UIClient.Infrastructure.Behavior"
-        FontFamily="{StaticResource FontCenturyGothic}"
+        FontFamily="{StaticResource HeliosCond}"
         WindowStyle="None" ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen" 
         Width="{Binding Width, Mode=TwoWay}" 
         Height="{Binding Height, Mode=TwoWay}" 
+        Left="{Binding Left, Mode=TwoWay}"
+        Top="{Binding Top, Mode=TwoWay}"
+        MinWidth="1200" MinHeight="820"
         Title="{Binding Title}"
         Opacity="{Binding Opacity, Mode=TwoWay}" AllowsTransparency="True"
         DataContext="{Binding MainWindowViewModel, Source={StaticResource Locator}}">
@@ -36,6 +39,16 @@
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
             <TextBlock Text="{Binding Version}" VerticalAlignment="Center" Margin="0 0 5 0"
                        Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
+            <Button Width="20" Height="20" FontSize="14" Style="{StaticResource ButtonCustom}"
+                    Command="{Binding EnableSongCommand}">
+                <Button.Content>
+                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center"
+                               Text="{Binding SongText}" FontSize="14" 
+                               FontFamily="{StaticResource FontIcons}" 
+                               Foreground="{StaticResource ControlMouseOverBorderBrush}">
+                    </TextBlock>
+                </Button.Content>
+            </Button>
             <Button Content="?" Width="20" 
                         Command="{Binding AboutCommand}" 
                         Style="{StaticResource ButtonCustom}" 

@@ -13,6 +13,7 @@ using UIClient.Model.Config;
 using UIClient.Model;
 using System.Threading;
 using System.Reflection;
+using System.Windows.Media;
 
 namespace UIClient.ViewModel
 {
@@ -64,6 +65,24 @@ namespace UIClient.ViewModel
             set { Set(ref _Height, value); }
         }
         #endregion
+        #region double Left : summury
+        private double _Left;
+        /// <summary>summury</summary>
+        public double Left
+        {
+            get { return _Left; }
+            set { Set(ref _Left, value); }
+        }
+        #endregion
+        #region double Top : summury
+        private double _Top;
+        /// <summary>summury</summary>
+        public double Top
+        {
+            get { return _Top; }
+            set { Set(ref _Top, value); }
+        }
+        #endregion
         #region double Opacity : прозрачность окна
         private double _Opacity;
         /// <summary>прозрачность окна</summary>
@@ -71,6 +90,47 @@ namespace UIClient.ViewModel
         {
             get { return _Opacity; }
             set { Set(ref _Opacity, value); }
+        }
+        #endregion
+        #region bool SongEnable : включены ли звуки
+        private bool _SongEnable;
+        /// <summary>включены ли звуки</summary>
+        public bool SongEnable
+        {
+            get { return _SongEnable; }
+            set
+            {
+                if (Set(ref _SongEnable, value))
+                    if (value)
+                    {
+                        SongText = "";
+                        MediaPlayer.Play();
+                    }
+                    else
+                    {
+                        SongText = "";
+                        MediaPlayer.Pause();
+                    }
+            }
+        }
+        #endregion
+
+        #region MediaPlayer MediaPlayer : воспроизводит звуки
+        private MediaPlayer _MediaPlayer = new MediaPlayer();
+        /// <summary>воспроизводит звуки</summary>
+        public MediaPlayer MediaPlayer
+        {
+            get { return _MediaPlayer; }
+            set { Set(ref _MediaPlayer, value); }
+        }
+        #endregion
+        #region string SongText : текст кнопки
+        private string _SongText;
+        /// <summary>текст кнопки</summary>
+        public string SongText
+        {
+            get { return _SongText; }
+            set { Set(ref _SongText, value); }
         }
         #endregion
         #endregion
@@ -94,7 +154,6 @@ namespace UIClient.ViewModel
             Application.Current.MainWindow.WindowState = WindowState.Minimized;
         }
         #endregion
-
         #region AboutCommand : о программе
         /// <summary>о программе</summary>
         public ICommand AboutCommand { get; }
@@ -107,6 +166,16 @@ namespace UIClient.ViewModel
             text += "\n" + "@Artyom-Master";
             text += "\n" + "@banany2001";
             MessageBox.Show(text, "О программе", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        #endregion
+
+        #region EnableSongCommand : включить звуки
+        /// <summary>включить звуки</summary>
+        public ICommand EnableSongCommand { get; }
+        private bool CanEnableSongCommandExecute(object p) => true;
+        private void OnEnableSongCommandExecuted(object p)
+        {
+            SongEnable = !SongEnable;
         }
         #endregion
 
@@ -126,8 +195,6 @@ namespace UIClient.ViewModel
                 SelectedPage = App.Host.Services.GetRequiredService<GamePage>();
                 //Task.Delay(500);
 
-                Width = 1200;
-                Height = 820;
                 Opacity = 1;
             }));
         }
@@ -144,18 +211,33 @@ namespace UIClient.ViewModel
                 //Task.Delay(500);
                 SelectedPage = App.Host.Services.GetRequiredService<LoadPage>();
                 //Task.Delay(500);
-                Width = 650;
-                Height = 250;
                 Opacity = 1;
             }));
+        }
+
+        private void CenterWindowOnScreen()
+        {
+            double screenWidth = System.Windows.SystemParameters.PrimaryScreenWidth;
+            double screenHeight = System.Windows.SystemParameters.PrimaryScreenHeight;
+            double windowWidth = Width;
+            double windowHeight = Height;
+            Left = (screenWidth / 2) - (windowWidth / 2);
+            Top = (screenHeight / 2) - (windowHeight / 2);
+        }
+
+        private void MediaPlayerMediaEnded(object sender, EventArgs e)
+        {
+            MediaPlayer.Position = TimeSpan.FromMilliseconds(1);
         }
 
         public MainWindowViewModel()
         {
             #region Properties
             Opacity = 1;
-            Width = 650;
-            Height = 250;
+            MediaPlayer.Open(new Uri("Resources/Songs/main_theme.mp3", UriKind.Relative));
+            MediaPlayer.MediaEnded += MediaPlayerMediaEnded;
+            Width = 1200;
+            Height = 820;
             Title = "World of Tanks: Strategy";
             Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             SelectedPage = App.Host.Services.GetRequiredService<LoadPage>();
@@ -164,15 +246,16 @@ namespace UIClient.ViewModel
             CloseAppCommand = new LambdaCommand(OnCloseAppCommandExecuted, CanCloseAppCommandExecute);
             HideAppCommand = new LambdaCommand(OnHideAppCommandExecuted, CanHideAppCommandExecute);
             AboutCommand = new LambdaCommand(OnAboutCommandExecuted, CanAboutCommandExecute);
+            EnableSongCommand = new LambdaCommand(OnEnableSongCommandExecuted, CanEnableSongCommandExecute);
             #endregion
 
             App.Host.Services.GetRequiredService<GamePage>();
 
             //load config
-            App.Host.Services.GetRequiredService<AppConfig>();
-
+            var conf = App.Host.Services.GetRequiredService<AppConfig>();
+            SongEnable = conf.Config.Song;
+            CenterWindowOnScreen();
             #endregion
-
         }
     }
 }
