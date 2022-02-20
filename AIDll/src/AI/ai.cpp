@@ -83,19 +83,19 @@ namespace ai
 				continue;
 			}
 			if (vehicles[i].vehicle_type == vehicle_type::SPG) {
-				result[0] = vehicles[i];
+				result[SPG_POSITION_INDEX] = vehicles[i];
 			}
 			else if (vehicles[i].vehicle_type == vehicle_type::LT) {
-				result[1] = vehicles[i];
+				result[LT_POSITION_INDEX] = vehicles[i];
 			}
 			else if (vehicles[i].vehicle_type == vehicle_type::HT) {
-				result[2] = vehicles[i];
+				result[HT_POSITION_INDEX] = vehicles[i];
 			}
 			else if (vehicles[i].vehicle_type == vehicle_type::MT) {
-				result[3] = vehicles[i];
+				result[MT_POSITION_INDEX] = vehicles[i];
 			}
 			else if (vehicles[i].vehicle_type == vehicle_type::ASPG) {
-				result[4] = vehicles[i];
+				result[ASPG_POSITION_INDEX] = vehicles[i];
 			}
 		}
 	}
