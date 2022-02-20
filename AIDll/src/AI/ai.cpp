@@ -331,6 +331,7 @@ namespace ai
 		return_action.point = vehicle->position;
 
 		int vehicle_goal_position = 0;
+		point goal_position_LT = positions[1];
 		switch (vehicle->vehicle_type) {
 		case vehicle_type::SPG: {
 			if (distance(ally_vehicles[2]->position, positions[2]) >=
@@ -341,30 +342,23 @@ namespace ai
 		} break;
 		case vehicle_type::LT: {
 			vehicle_goal_position = 1;
+			if (distance(ally_vehicles[2]->position, positions[2]) > 1)
+				positions[1] = positions[2];
 		} break;
 		case vehicle_type::HT: {
 			vehicle_goal_position = 2;
 		} break;
 		case vehicle_type::MT: {
 			vehicle_goal_position = 3;
-			if (distance(ally_vehicles[2]->position, positions[2]) -
-				distance(vehicle->position, positions[vehicle_goal_position]) > 0) {
-
-				return_action.action_type = action_type::nun;
-				return return_action;
-			}
 		} break;
 		case vehicle_type::ASPG: {
 			vehicle_goal_position = 4;
-			/*if (distance(ally_vehicles[2]->position, positions[2]) >=
-				distance(vehicle->position, positions[vehicle_goal_position])) {
-				return_action.action_type = action_type::nun;
-				return return_action;
-			}*/
 		} break;
 		}
 
 		if (distance(vehicle->position, positions[vehicle_goal_position]) == 0) {
+			if (positions[1] == positions[2])
+				positions[1] = goal_position_LT;
 			return_action.action_type = action_type::nun;
 			return return_action;
 		}
@@ -384,6 +378,8 @@ namespace ai
 		}
 
 		if (speed == 0) {
+			if (positions[1] == positions[2])
+				positions[1] = goal_position_LT;
 			return_action.action_type = action_type::nun;
 			return return_action;
 		}
@@ -400,49 +396,10 @@ namespace ai
 			}
 		}
 
+		if (positions[1] == positions[2])
+			positions[1] = goal_position_LT;
 		return return_action;
 	}
-
-	/*action ai::move_tank(vehicles_native* vehicles, int vehicles_size, vehicles_native* vehicle)
-	{
-		point base_center = point();
-		int min_value = distance(vehicle->position, base_center);
-		int speed = get_speed(vehicle->vehicle_type);
-		action to_return;
-		to_return.action_type = action_type::move;
-		to_return.vec_id = vehicle->vehicle_id;
-		to_return.point = vehicle->position;
-		for (int dx = -speed; dx <= speed; dx++) {
-			for (int dy = -speed; dy <= speed; dy++) {
-				int dz = 0 - dx - dy;
-				point new_point = vehicle->position;
-				new_point.x += dx;
-				new_point.y += dy;
-				new_point.z += dz;
-				int dist0 = distance(vehicle->position, new_point);
-				if (dist0 > speed ||
-					dist0 == 0) {
-					continue;
-				}
-				int dist_to_base = distance(new_point, base_center);
-				if (dist_to_base < min_value) {
-					bool position_ok = true;
-					for (int t = 0; t < vehicles_size; t++) {
-						if (distance(vehicles[t].position, new_point) == 0) {
-							position_ok = false;
-							break;
-						}
-					}
-					if (!position_ok) {
-						continue;
-					}
-					to_return.point = new_point;
-					min_value = dist_to_base;
-				}
-			}
-		}
-		return to_return;
-	}*/
 
 	int ai::get_destruct_points(vehicle_type type)
 	{
