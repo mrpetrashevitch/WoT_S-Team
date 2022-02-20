@@ -335,4 +335,10 @@
     <Resource Include="Resources\Images\forge.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>del "$(TargetDir)*.xml" /q
+del "$(TargetDir)*.exp" /q
+del "$(TargetDir)*.lib" /q
+del "$(TargetDir)*.pdb" /q</PostBuildEvent>
+  </PropertyGroup>
 </Project>
