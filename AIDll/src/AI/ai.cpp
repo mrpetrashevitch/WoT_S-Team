@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <fstream>
 #include <vector>
+#include <limits>
 
 namespace ai
 {
@@ -17,24 +18,10 @@ namespace ai
 	{
 
 		//Initialization of vectors of input
-		std::vector<vehicles_native> vehicles_array;
-		std::vector<point> obstacles_array;
-		std::vector<attack_matrix_native> attack_matrix_array;
-		std::vector<vehicles_native> tanks;
-
-		int i;
-		for (i = 0; i < vehicles_size; i++) {
-			vehicles_array.push_back(vehicles[i]);
-		}
-		for (i = 0; i < obstacle_size; i++) {
-			obstacles_array.push_back(obstacle[i]);
-		}
-		for (i = 0; i < attack_matrix_size; i++) {
-			attack_matrix_array.push_back(attack_matrix[i]);
-		}
-		for (i = 0; i < ALLY_TANKS_NUMBER; i++) {
-			tanks.push_back(vehicles[i]);
-		}
+		std::vector<vehicles_native> vehicles_array(vehicles, vehicles + vehicles_size);
+		std::vector<point> obstacles_array(obstacle, obstacle + obstacle_size);
+		std::vector<attack_matrix_native> attack_matrix_array(attack_matrix, attack_matrix + attack_matrix_size);
+		std::vector<vehicles_native> tanks(vehicles, vehicles + ALLY_TANKS_NUMBER);
 
 		get_tanks_in_order(curr_player, vehicles_array, tanks);
 
@@ -62,19 +49,11 @@ namespace ai
 		return point{ hex.x + vec.x, hex.y + vec.y, hex.z + vec.z };
 	}
 
-	point ai::get_hex_neighbor(point& hex, int& direction) {
+	point ai::get_hex_neighbor(const point& hex, int direction) {
 		return get_hex_sum(hex, hex_direction_vectors[direction]);
 	}
 
-	bool ai::point_is_in_array(point& pt, std::vector<point>& arr) {
-		for (point arr_pt : arr) {
-			if (pt.x == arr_pt.x && pt.y == arr_pt.y && pt.z == arr_pt.z)
-				return true;
-		}
-		return false;
-	}
-
-	void ai::get_tanks_in_order(int& curr_player, std::vector<vehicles_native>& vehicles,
+	void ai::get_tanks_in_order(int curr_player, const std::vector<vehicles_native>& vehicles,
 		std::vector<vehicles_native>& result)
 	{
 
@@ -100,8 +79,8 @@ namespace ai
 		}
 	}
 
-	action ai::check_for_shooting(int& curr_player, std::vector<vehicles_native>& vehicles,
-		vehicles_native& vehicle, std::vector<attack_matrix_native>& attack_matrix)
+	action ai::check_for_shooting(int curr_player, std::vector<vehicles_native>& vehicles,
+		const vehicles_native& vehicle, const std::vector<attack_matrix_native>& attack_matrix)
 	{
 
 		action to_return;
@@ -166,7 +145,7 @@ namespace ai
 					continue;
 				}
 				int dist = distance(vehicle.position, vehicles[i].position);
-				if (dist <= 3) {
+				if (dist <= MAX_SHOOT_RANGE) {
 					if (vehicle.position.x == vehicles[i].position.x) {
 						if (vehicle.position.y < vehicles[i].position.y) {
 							params[0].sum_capture_points += vehicles[i].capture_points;
@@ -246,8 +225,8 @@ namespace ai
 	}
 
 	void ai::get_reachable_hexes(std::vector<std::vector<point>>& points,
-		std::vector<point>& obstacles, std::vector<vehicles_native>& vehicles,
-		point& start, int& speed)
+		const std::vector<point>& obstacles, const std::vector<vehicles_native>& vehicles,
+		const point& start, int speed)
 	{
 
 		std::vector<point> visited;
@@ -261,12 +240,13 @@ namespace ai
 
 		for (int i = 1; i < speed + 1; i++) {
 			points.push_back(std::vector<point>());
-			for (point pts : points[i - 1]) {
+			for (const point& pts : points[i - 1]) {
 				for (int dir = 0; dir < 6; dir++) {
 					point neighbour = get_hex_neighbor(pts, dir);
 					if (std::find(visited.begin(), visited.end(), neighbour) == visited.end() &&
-						!point_is_in_array(neighbour, obstacles) &&
-						!point_is_in_array(neighbour, vehicles_positions)) {
+						std::find(obstacles.begin(), obstacles.end(), neighbour) == obstacles.end() &&
+						std::find(vehicles_positions.begin(), vehicles_positions.end(), neighbour) == 
+						vehicles_positions.end()) {
 
 						visited.push_back(neighbour);
 						points[i].push_back(neighbour);
@@ -276,11 +256,11 @@ namespace ai
 		}
 	}
 
-	void ai::set_vehicles_positions(std::vector<vehicles_native>& vehicles,
-		std::vector<point>& obstacles)
+	void ai::set_vehicles_positions(const std::vector<vehicles_native>& vehicles,
+		const std::vector<point>& obstacles)
 	{
 
-		int min_dist = 1000;
+		int min_dist = std::numeric_limits<int>::max();
 		int dist;
 		std::vector<point> base;
 
@@ -304,8 +284,8 @@ namespace ai
 		for (int dir = 0; dir < DIRECTIONS_NUMBER; dir++) {
 			neighbour = get_hex_neighbor(key_positions[2], dir);
 
-			if (point_is_in_array(neighbour, base) ||
-				point_is_in_array(neighbour, obstacles))
+			if (std::find(base.begin(), base.end(), neighbour) != base.end() ||
+				std::find(obstacles.begin(), obstacles.end(), neighbour) != obstacles.end())
 				continue;
 
 			dist = distance(neighbour, vehicles[3].spawn_position);
@@ -322,8 +302,8 @@ namespace ai
 		for (int dir = 0; dir < DIRECTIONS_NUMBER; dir++) {
 			neighbour = get_hex_neighbor(key_positions[0], dir);
 
-			if (point_is_in_array(neighbour, base) ||
-				point_is_in_array(neighbour, obstacles))
+			if (std::find(base.begin(), base.end(), neighbour) != base.end() ||
+				std::find(obstacles.begin(), obstacles.end(), neighbour) != obstacles.end())
 				continue;
 
 			if (key_positions[3].x == neighbour.x ||
@@ -336,9 +316,9 @@ namespace ai
 		}
 	}
 
-	action ai::move_tank(std::vector<vehicles_native>& vehicles,
-		std::vector<vehicles_native>& ally_vehicles, vehicles_native& vehicle,
-		std::vector<point>& obstacles)
+	action ai::move_tank(const std::vector<vehicles_native>& vehicles,
+		const std::vector<vehicles_native>& ally_vehicles, const vehicles_native& vehicle,
+		const std::vector<point>& obstacles)
 	{
 
 		action return_action;
@@ -402,9 +382,9 @@ namespace ai
 		}
 
 		int dist;
-		int min_dist = 1000;
+		int min_dist = std::numeric_limits<int>::max();
 		for (int i = 1; i < speed + 1; i++) {
-			for (point pts : reachable_points[i]) {
+			for (const point& pts : reachable_points[i]) {
 				dist = distance(pts, key_positions[vehicle_goal_position]);
 				if (dist <= min_dist) {
 					min_dist = dist;
@@ -419,7 +399,7 @@ namespace ai
 		return return_action;
 	}
 
-	int ai::get_destruct_points(vehicle_type& type)
+	int ai::get_destruct_points(const vehicle_type& type)
 	{
 
 		if (type == vehicle_type::SPG || type == vehicle_type::LT) {
@@ -434,7 +414,7 @@ namespace ai
 		throw std::invalid_argument("vehicle_type error");
 	}
 
-	int ai::get_speed(vehicle_type& type)
+	int ai::get_speed(const vehicle_type& type)
 	{
 
 		if (type == vehicle_type::SPG || type == vehicle_type::HT || type == vehicle_type::ASPG) {
@@ -449,7 +429,7 @@ namespace ai
 		throw std::invalid_argument("vehicle_type error");
 	}
 
-	bool ai::check_the_shooting_zone(vehicles_native& shooter, vehicles_native& goal)
+	bool ai::check_the_shooting_zone(const vehicles_native& shooter, const vehicles_native& goal)
 	{
 
 		if (goal.health == 0 || shooter.player_id == goal.player_id) {
@@ -468,15 +448,15 @@ namespace ai
 		throw std::invalid_argument("vehicle_type error");
 	}
 
-	int ai::distance(point& a, point& b)
+	int ai::distance(const point& a, const point& b)
 	{
 		return (abs(a.x - b.x) + abs(a.y - b.y) + abs(a.z - b.z)) / 2;
 	}
 
-	bool ai::check_neutrality(int& curr_player, int& goal, std::vector<attack_matrix_native>& attack_matrix)
+	bool ai::check_neutrality(int curr_player, int goal, const std::vector<attack_matrix_native>& attack_matrix)
 	{
 
-		for (attack_matrix_native shoot : attack_matrix) {
+		for (const attack_matrix_native& shoot : attack_matrix) {
 			if (shoot.id != goal) {
 				continue;
 			}
@@ -487,7 +467,7 @@ namespace ai
 			}
 		}
 		bool was_attacked_by_third = false;
-		for (attack_matrix_native shoot : attack_matrix) {
+		for (const attack_matrix_native& shoot : attack_matrix) {
 			for (int j = 0; j < 3; j++) {
 				if (shoot.attack[j] == goal && shoot.id != curr_player) {
 					was_attacked_by_third = true;

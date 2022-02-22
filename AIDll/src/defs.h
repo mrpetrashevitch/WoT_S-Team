@@ -6,12 +6,12 @@ namespace ai
 	struct point
 	{
 		int x = 0, y = 0, z = 0;
-
-		bool operator==(point right) {
-			if (x == right.x && y == right.y && z == right.z)
-				return true;
-			else
-				return false;
-		}
 	};
+
+	inline bool operator==(const point& right, const point& left) {
+		if (left.x == right.x && left.y == right.y && left.z == right.z)
+			return true;
+		else
+			return false;
+	}
 }

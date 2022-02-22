@@ -6,8 +6,7 @@
 #include "vehicle.h"
 #include "action.h"
 
-namespace ai
-{
+namespace {
 	const int DIRECTIONS_NUMBER = 6;
 	const int ALLY_TANKS_NUMBER = 5;
 	const int SPG_POSITION_INDEX = 0;
@@ -15,7 +14,11 @@ namespace ai
 	const int HT_POSITION_INDEX = 2;
 	const int MT_POSITION_INDEX = 3;
 	const int ASPG_POSITION_INDEX = 4;
+	const int MAX_SHOOT_RANGE = 3;
+}
 
+namespace ai
+{
 	class ai
 	{
 	public:
@@ -29,23 +32,23 @@ namespace ai
 			action_ret* out_actions);
 
 	private:
-		void get_tanks_in_order(int& curr_player, std::vector<vehicles_native>& vehicles,
+		void get_tanks_in_order(int curr_player, const std::vector<vehicles_native>& vehicles,
 			std::vector<vehicles_native>& result);
-		void set_vehicles_positions(std::vector<vehicles_native>& vehicles, std::vector<point>& obstacles);
-		action check_for_shooting(int& curr_player, std::vector<vehicles_native>& vehicles,
-			vehicles_native& vehicle, std::vector<attack_matrix_native>& attack_matrix);
-		bool check_the_shooting_zone(vehicles_native& shooter, vehicles_native& goal);
-		action move_tank(std::vector<vehicles_native>& vehicles, std::vector<vehicles_native>& ally_vehicles,
-			vehicles_native& vehicle, std::vector<point>& obstacles);
-		int distance(point& a, point& b);
-		int get_destruct_points(vehicle_type& type);
-		int get_speed(vehicle_type& type);
-		bool check_neutrality(int& curr_player, int& goal, std::vector<attack_matrix_native>& attack_matrix);
-		void get_reachable_hexes(std::vector<std::vector<point>>& points, std::vector<point>& obstacles,
-			std::vector<vehicles_native>& vehicles, point& start, int& speed);
+		void set_vehicles_positions(const std::vector<vehicles_native>& vehicles, 
+			const std::vector<point>& obstacles);
+		action check_for_shooting(int curr_player, std::vector<vehicles_native>& vehicles,
+			const vehicles_native& vehicle, const std::vector<attack_matrix_native>& attack_matrix);
+		bool check_the_shooting_zone(const vehicles_native& shooter, const vehicles_native& goal);
+		action move_tank(const std::vector<vehicles_native>& vehicles, const std::vector<vehicles_native>& ally_vehicles,
+			const vehicles_native& vehicle, const std::vector<point>& obstacles);
+		int distance(const point& a, const point& b);
+		int get_destruct_points(const vehicle_type& type);
+		int get_speed(const vehicle_type& type);
+		bool check_neutrality(int curr_player, int goal, const std::vector<attack_matrix_native>& attack_matrix);
+		void get_reachable_hexes(std::vector<std::vector<point>>& points, const std::vector<point>& obstacles,
+			const std::vector<vehicles_native>& vehicles, const point& start, int speed);
 		point get_hex_sum(const point& hex, const point& vec);
-		point get_hex_neighbor(point& hex, int& direction);
-		bool point_is_in_array(point& pt, std::vector<point>& arr);
+		point get_hex_neighbor(const point& hex, int direction);
 
 	private:
 		const std::array<point, DIRECTIONS_NUMBER> hex_direction_vectors = {
