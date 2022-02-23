@@ -105,6 +105,17 @@ namespace UIClient.Model
             Log("UI ядро создано");
         }
 
+        ~Core()
+        {
+            if (web != IntPtr.Zero)
+            {
+                WebClientDll.detach(web);
+                WebClientDll.destroy_wc(web);
+            }
+            if (ai != IntPtr.Zero) 
+                AIDll.destroy_ai(ai);
+        }
+
         public (Result, string) SendPacket<T>(WebAction action, T data, bool skip_data = false)
         {
             string json_str = "";
@@ -216,13 +227,13 @@ namespace UIClient.Model
             try
             {
                 Log("Подключение к серверу...");
-                var config = App.Host.Services.GetRequiredService<AppConfig>();
+                var config = App.AppConfig;
 
-                IPAddress[] addresslist = Dns.GetHostAddresses(config.Config.HostName);
+                IPAddress[] addresslist = Dns.GetHostAddresses(config.AppConfigJson.HostName);
 #pragma warning disable CS0618 // Тип или член устарел
                 await Task.Run(() =>
                 {
-                    WebClientDll.connect_(web, (uint)addresslist[0].Address, config.Config.Port);
+                    WebClientDll.connect_(web, (uint)addresslist[0].Address, config.AppConfigJson.Port);
                 });
 #pragma warning restore CS0618 // Тип или член устарел
 

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
@@ -21,18 +22,13 @@ namespace UIClient
     {
         public const string config_path = "AppConfig.json";
 
-        //del "$(TargetDir)*.xml" /q
-        //del "$(TargetDir)*.exp" /q
-        //del "$(TargetDir)*.lib" /q
-        //del "$(TargetDir)*.pdb" /q
-        //del "$(TargetDir)*.config" /q
-
         [STAThread]
         public static void Main(string[] args)
         {
             var app = new App();
             app.InitializeComponent();
             app.Run();
+            UpdateAppSetting();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args)
@@ -59,6 +55,13 @@ namespace UIClient
 
             host_builder.ConfigureServices(App.ConfigureServices);
             return host_builder;
+        }
+
+        public static void UpdateAppSetting()
+        {
+            var conf = App.AppConfig;
+            string json_str = JsonConvert.SerializeObject(conf, Formatting.Indented);
+            File.WriteAllText(config_path, json_str);
         }
     }
 }

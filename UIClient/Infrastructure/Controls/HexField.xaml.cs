@@ -126,21 +126,13 @@ namespace UIClient.Infrastructure.Controls
             Tank tank = (Tank)curr_hex.Tank;
             if (tank != null && tank.Vehicle.vehicle.player_id == Player.CurrentPlayer.idx)
             {
-                _SelectedCanMove = GetHexAround(curr_hex.Point3, 1, tank.Speed);
+                _SelectedCanMove = GetCanMove(curr_hex, tank.Speed);
                 foreach (var item in _SelectedCanMove)
-                    if (item.Tank == null) item.CanMove = Visibility.Visible;
+                    item.CanMove = Visibility.Visible;
 
-                _SelectedCanShoot = GetHexAround(curr_hex.Point3, tank.ShootMin, tank.ShootMax);
-
-                if (tank.Vehicle.vehicle.vehicle_type == VehicleType.ПТ)
-                    _SelectedCanShoot.RemoveAll(item => (
-                    item.Point3.x != curr_hex.Point3.x &&
-                    item.Point3.y != curr_hex.Point3.y &&
-                    item.Point3.z != curr_hex.Point3.z));
+                _SelectedCanShoot = GetCanShoot(tank);
                 foreach (var item in _SelectedCanShoot)
-                    if (item.Tank != null)
-                        if (item.Tank.Vehicle.vehicle.player_id != Player.CurrentPlayer.idx)
-                            item.CanShoot = Visibility.Visible;
+                    item.CanShoot = Visibility.Visible;
             }
 
             Hex last_hex = _SelectedHex;
@@ -165,20 +157,7 @@ namespace UIClient.Infrastructure.Controls
 
                 if (tank.Vehicle.vehicle.vehicle_type == VehicleType.ПТ)
                 {
-                    Point3 point = new Point3() { x = last_hex.Point3.x, y = last_hex.Point3.y, z = last_hex.Point3.z };
-                    int ds = GetDistance(last_hex.Point3, curr_hex.Point3);
-                    if (last_hex.Point3.x != curr_hex.Point3.x)
-                        if (last_hex.Point3.x < curr_hex.Point3.x)
-                            point.x = curr_hex.Point3.x - (ds - 1);
-                        else point.x = curr_hex.Point3.x + (ds - 1);
-                    if (last_hex.Point3.y != curr_hex.Point3.y)
-                        if (last_hex.Point3.y < curr_hex.Point3.y)
-                            point.y = curr_hex.Point3.y - (ds - 1);
-                        else point.y = curr_hex.Point3.y + (ds - 1);
-                    if (last_hex.Point3.z != curr_hex.Point3.z)
-                        if (last_hex.Point3.z < curr_hex.Point3.z)
-                            point.z = curr_hex.Point3.z - (ds - 1);
-                        else point.z = curr_hex.Point3.z + (ds - 1);
+                    Point3 point = GetShootPointPT(last_hex.Point3, curr_hex.Point3);
                     await ShootAsync(tank.Vehicle.id, point).ConfigureAwait(false);
                 }
                 else
@@ -420,6 +399,81 @@ namespace UIClient.Infrastructure.Controls
             return res;
         }
 
+        private List<Hex> GetCanShoot(Tank tank)
+        {
+            var hex = tank.Vehicle.hex;
+            var list = new List<Hex>();
+
+            if (tank.Vehicle.vehicle.vehicle_type == VehicleType.ПТ)
+                list = GetCanShootPT(hex, tank.ShootMax + tank.Vehicle.vehicle.shoot_range_bonus);
+            else
+                list = GetHexAround(hex.Point3, tank.ShootMin, tank.ShootMax + tank.Vehicle.vehicle.shoot_range_bonus);
+            list.RemoveAll(item => item.Tank == null || item.Tank.Vehicle.vehicle.player_id == Player.CurrentPlayer.idx);
+            return list;
+        }
+
+        private List<Hex> GetCanShootPT(Hex hex, int shoot_max)
+        {
+            var set = new HashSet<Hex>();
+            var list = new List<Hex>();
+            list.Add(hex);
+
+            for (int i = 1; i <= shoot_max; i++)
+            {
+                List<Hex> temp = new List<Hex>();
+                foreach (var item in list)
+                {
+                    List<Hex> l = GetHexAround(item.Point3, 1, 1);
+                    l.RemoveAll(item => item.Type == Hex.HexType.Rock || item.Type == Hex.HexType.Nun);
+                    l.RemoveAll(item => item.Point3.x != hex.Point3.x && item.Point3.y != hex.Point3.y && item.Point3.z != hex.Point3.z);
+
+                    foreach (var it in l)
+                        if (set.Add(it))
+                            temp.Add(it);
+                }
+                list = temp;
+            }
+
+            list = new List<Hex>(set.ToArray());
+            return list;
+        }
+
+        private Point3 GetShootPointPT(Point3 tank, Point3 target)
+        {
+            List<Hex> around = GetHexAround(tank, 1, 1);
+            around.RemoveAll(item => item.Point3.x != target.x && item.Point3.y != target.y && item.Point3.z != target.z);
+            if (around.Count == 0) throw new Exception("Error GetShootPointPT");
+            if (around.Count == 1) return around[0].Point3;
+            if (GetDistance(around[0].Point3, target) < GetDistance(around[1].Point3, target)) return around[0].Point3;
+            return around[1].Point3;
+        }
+
+        private List<Hex> GetCanMove(Hex hex, int speed)
+        {
+            var set = new HashSet<Hex>();
+            var list = new List<Hex>();
+            list.Add(hex);
+
+            for (int i = 1; i <= speed; i++)
+            {
+                List<Hex> temp = new List<Hex>();
+                foreach (var item in list)
+                {
+                    List<Hex> l = GetHexAround(item.Point3, 1, 1);
+                    l.RemoveAll(item => item.Type == Hex.HexType.Rock || item.Type == Hex.HexType.Nun);
+
+                    foreach (var it in l)
+                        if (set.Add(it))
+                            temp.Add(it);
+                }
+                list = temp;
+            }
+
+            list = new List<Hex>(set.ToArray());
+            list.RemoveAll(item => item.Tank != null);
+            return list;
+        }
+
         private VehicleEx GetVehicle(Point3 p)
         {
             foreach (var item in _Vehicles)
@@ -516,6 +570,10 @@ namespace UIClient.Infrastructure.Controls
                         new_vec.position.z != curr_vec.hex.Point3.z)
                     {
                         VehicleMove(i.Key, new_vec.position);
+                    }
+                    if (new_vec.shoot_range_bonus != curr_vec.vehicle.shoot_range_bonus)
+                    {
+                        curr_vec.vehicle.shoot_range_bonus = new_vec.shoot_range_bonus;
                     }
                 }
         }
@@ -774,7 +832,7 @@ namespace UIClient.Infrastructure.Controls
             if (GameState.finished)
             {
                 if (GameState.winner != null)
-                { 
+                {
                     MessageWait = "Победитель: " + Players[GameState.winner.Value].CurrentPlayer.name;
                 }
                 else MessageWait = "Ничья";

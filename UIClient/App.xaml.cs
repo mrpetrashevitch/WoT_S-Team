@@ -28,6 +28,9 @@ namespace UIClient
         private static Core __Core;
         public static Core Core => __Core ??= new Core();
 
+        private static AppConfig __AppConfig;
+        public static AppConfig AppConfig => __AppConfig ??= Host.Services.GetRequiredService<AppConfig>();
+
         internal static void ConfigureServices(HostBuilderContext host, IServiceCollection services)
         {
             services.Configure<AppConfigJson>(host.Configuration.GetSection(nameof(AppConfigJson)));

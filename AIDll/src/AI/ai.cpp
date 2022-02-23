@@ -93,7 +93,7 @@ namespace ai
 		if (vehicle.vehicle_type != vehicle_type::ASPG) {
 
 			std::vector<vehicles_native*> targets;
-			for (int i = 0; i < vehicles.size(); i++) {
+			for (size_t i = 0; i < vehicles.size(); i++) {
 				if (check_the_shooting_zone(vehicle, vehicles[i]) &&
 					check_neutrality(curr_player, vehicles[i].player_id, attack_matrix)) {
 					targets.push_back(&vehicles[i]);
@@ -142,7 +142,7 @@ namespace ai
 			params.push_back(direction_parameters(
 				point{ current_position.x + 1, current_position.y - 1, current_position.z })); // for z forwarding down
 
-			for (int i = 0; i < vehicles.size(); i++) {
+			for (size_t i = 0; i < vehicles.size(); i++) {
 				if (curr_player == vehicles[i].player_id ||
 					!check_neutrality(curr_player, vehicles[i].player_id, attack_matrix) ||
 					vehicles[i].health == 0) {
@@ -239,7 +239,7 @@ namespace ai
 		points[0].push_back(start);
 
 		std::vector<point> vehicles_positions;
-		for (int i = 0; i < vehicles.size(); i++)
+		for (size_t i = 0; i < vehicles.size(); i++)
 			vehicles_positions.push_back(vehicles[i].position);
 
 		for (int i = 1; i < speed + 1; i++) {

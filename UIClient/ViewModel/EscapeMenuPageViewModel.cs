@@ -95,7 +95,7 @@ namespace UIClient.ViewModel
             switch (_comm)
             {
                 case EscapeCommands.Exit:
-                    App.Current.Shutdown();
+                    VM.CloseAppCommand.Execute(null);
                     break;
                 case EscapeCommands.LogOut:
                     var gpvm = App.Host.Services.GetRequiredService<GamePageViewModel>();

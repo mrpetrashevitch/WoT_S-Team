@@ -103,6 +103,7 @@ namespace UIClient.ViewModel
             set { Set(ref _Opacity, value); }
         }
         #endregion
+
         #region bool SongEnable : включены ли звуки
         private bool _SongEnable;
         /// <summary>включены ли звуки</summary>
@@ -112,6 +113,9 @@ namespace UIClient.ViewModel
             set
             {
                 if (Set(ref _SongEnable, value))
+                {
+                    var conf = App.AppConfig;
+                    conf.AppConfigJson.Song = value;
                     if (value)
                     {
                         SongText = "";
@@ -122,10 +126,10 @@ namespace UIClient.ViewModel
                         SongText = "";
                         MediaPlayer.Pause();
                     }
+                }
             }
         }
         #endregion
-
         #region MediaPlayer MediaPlayer : воспроизводит звуки
         private MediaPlayer _MediaPlayer = new MediaPlayer();
         /// <summary>воспроизводит звуки</summary>
@@ -165,6 +169,8 @@ namespace UIClient.ViewModel
             {
                 if (Set(ref _FullScreen, value))
                 {
+                    var conf = App.AppConfig;
+                    conf.AppConfigJson.FullScreen = value;
                     if (value)
                     {
                         App.Current.MainWindow.WindowState = WindowState.Maximized;
@@ -172,11 +178,10 @@ namespace UIClient.ViewModel
                     }
                     else
                     {
-                        var conf = App.Host.Services.GetRequiredService<AppConfig>();
                         ControlEnable = Visibility.Visible;
                         App.Current.MainWindow.WindowState = WindowState.Normal;
-                        Width = conf.Config.Width;
-                        Height = conf.Config.Height;
+                        Width = conf.AppConfigJson.Width;
+                        Height = conf.AppConfigJson.Height;
                         CenterWindowOnScreen();
                     }
                 }
@@ -193,6 +198,7 @@ namespace UIClient.ViewModel
         private bool CanCloseAppCommandExecute(object p) => true;
         private void OnCloseAppCommandExecuted(object p)
         {
+            App.Host.Services.GetRequiredService<GamePageViewModel>().LogoutCommand.Execute(null);
             Application.Current.Shutdown();
         }
         #endregion
@@ -219,7 +225,6 @@ namespace UIClient.ViewModel
             MessageBox.Show(text, "О программе", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         #endregion
-
         #region EnableSongCommand : включить звуки
         /// <summary>включить звуки</summary>
         public ICommand EnableSongCommand { get; }
@@ -333,13 +338,13 @@ namespace UIClient.ViewModel
             #endregion
 
             //load config
-            var conf = App.Host.Services.GetRequiredService<AppConfig>();
-            SongEnable = conf.Config.Song;
+            var conf = App.AppConfig;
+            SongEnable = conf.AppConfigJson.Song;
 
-            Width = conf.Config.Width;
-            Height = conf.Config.Height;
+            Width = conf.AppConfigJson.Width;
+            Height = conf.AppConfigJson.Height;
             CenterWindowOnScreen();
-            FullScreen = conf.Config.FullScreen;
+            FullScreen = conf.AppConfigJson.FullScreen;
 
             App.Host.Services.GetRequiredService<GamePage>();
         }
