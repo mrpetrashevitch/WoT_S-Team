@@ -21,6 +21,12 @@ namespace UIClient
     {
         public const string config_path = "AppConfig.json";
 
+        //del "$(TargetDir)*.xml" /q
+        //del "$(TargetDir)*.exp" /q
+        //del "$(TargetDir)*.lib" /q
+        //del "$(TargetDir)*.pdb" /q
+        //del "$(TargetDir)*.config" /q
+
         [STAThread]
         public static void Main(string[] args)
         {
