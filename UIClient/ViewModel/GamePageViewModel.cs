@@ -100,6 +100,19 @@ namespace UIClient.ViewModel
         #endregion
         #endregion
 
+        public void KeyPress(Key key)
+        {
+            var wind_vm = App.Host.Services.GetRequiredService<MainWindowViewModel>();
+            switch (key)
+            {
+                case Key.Escape:
+                    wind_vm.ShowEscapeMenu(EscapeCommands.Menu);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         public GamePageViewModel()
         {
             #region Properties

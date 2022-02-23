@@ -26,20 +26,24 @@ namespace UIClient.Infrastructure.Controls
         {
             Free,
             Nun,
-            Water,
             Rock,
             Base,
-            Spawn
+            Spawn,
+            LightRepair,
+            HardRepair,
+            Catapult,
         }
 
         readonly static Dictionary<HexType, Style> Stats = new Dictionary<HexType, Style>()
         {
              { HexType.Free, Application.Current.FindResource("ButtonFreeHex") as Style },
              { HexType.Nun, Application.Current.FindResource("ButtonNunHex") as Style },
-             { HexType.Water, Application.Current.FindResource("ButtonWaterHex") as Style },
              { HexType.Rock, Application.Current.FindResource("ButtonRockHex") as Style },
              { HexType.Base, Application.Current.FindResource("ButtonBaseHex") as Style },
-             { HexType.Spawn, Application.Current.FindResource("ButtonSpawnHex") as Style }
+             { HexType.Spawn, Application.Current.FindResource("ButtonSpawnHex") as Style },
+             { HexType.LightRepair, Application.Current.FindResource("ButtonLightRepairHex") as Style },
+             { HexType.HardRepair, Application.Current.FindResource("ButtonHardRepairHex") as Style },
+             { HexType.Catapult, Application.Current.FindResource("ButtonCatapultHex") as Style },
         };
 
         public static double size_x = 40;

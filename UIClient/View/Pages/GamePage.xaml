@@ -10,9 +10,10 @@
       xmlns:b="clr-namespace:UIClient.Infrastructure.Behavior"
       xmlns:System="clr-namespace:System;assembly=mscorlib"
       FontFamily="{StaticResource HeliosCond}"
-      d:DesignHeight="820" d:DesignWidth="1200"
-      Title="SatchStatPage"
-      DataContext="{Binding WGUIPageViewModel, Source={StaticResource Locator}}">
+      d:DesignWidth="1024" d:DesignHeight="768" 
+      Title="GamePage"
+      DataContext="{Binding GamePageViewModel, Source={StaticResource Locator}}"
+      Background="Black">
     <Page.Resources>
         <DataTemplate x:Key="PlayerTemplate" DataType="{x:Type model:Player}">
             <Grid>
@@ -93,178 +94,139 @@
             </Grid>
         </DataTemplate>
     </Page.Resources>
+
     <Grid>
         <Grid.Background>
-            <ImageBrush Opacity="0.1" Stretch="UniformToFill" ImageSource="{Binding Image}"/>
+            <ImageBrush Stretch="Uniform" ImageSource="{Binding Image}" RenderOptions.BitmapScalingMode="HighQuality"/>
         </Grid.Background>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="20"/>
-            <RowDefinition Height="20"/>
-            <RowDefinition/>
-            <RowDefinition Height="20"/>
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="1">
-            <Button Width="80" Command="{Binding LogoutCommand}" HorizontalAlignment="Right"
-                                Height="20" Style="{StaticResource ButtonCustom}">
-                <Button.Content>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Grid.Column="0" Text="Выйти" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center"
-                                            Foreground="{StaticResource ControlMouseOverBorderBrush}">
-                        </TextBlock>
-                        <TextBlock Grid.Column="0" Text="&#x003D;" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center"
-                                    Margin="5 0 0 0"        FontFamily="{StaticResource FontIcons}" Foreground="{StaticResource ControlMouseOverBorderBrush}">
-                        </TextBlock>
-                    </StackPanel>
-                </Button.Content>
-            </Button>
-        </Grid>
-        <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-            <Grid Grid.Column="0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="20"/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
+        <Rectangle Grid.Row="1" Fill="#CC000000"/>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20"/>
+                <RowDefinition/>
+                <RowDefinition Height="20"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="20"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <TextBlock Text="{Binding StringFormat=Ход: {0}, Path=Field.GameState.current_turn}"
+                    <Grid Grid.Row="0">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="{Binding StringFormat=Ход: {0}, Path=Field.GameState.current_turn}"
                                FontSize="18" Foreground="{Binding Field.Player.TeamColor}"/>
-                        <TextBlock Text="{Binding StringFormat=/{0}, Path=Field.GameState.num_turns}"
+                            <TextBlock Text="{Binding StringFormat=/{0}, Path=Field.GameState.num_turns}"
                                FontSize="18" Foreground="{Binding Field.Player.TeamColor}"/>
 
-                        <TextBlock Text="{Binding StringFormat=Игроков: {0}, Path=Field.PlayerCount}" Margin="10 0 0 0"
+                            <TextBlock Text="{Binding StringFormat=Игроков: {0}, Path=Field.PlayerCount}" Margin="10 0 0 0"
                                FontSize="18" Foreground="{Binding Field.Player.TeamColor}"/>
-                        <TextBlock Text="{Binding StringFormat=/{0}, Path=Field.GameState.num_players}"
+                            <TextBlock Text="{Binding StringFormat=/{0}, Path=Field.GameState.num_players}"
                                FontSize="18" Foreground="{Binding Field.Player.TeamColor}"/>
-                    </StackPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Grid.Row="1">
+                        <Viewbox HorizontalAlignment="Right">
+                            <ContentControl Content="{Binding Field}"/>
+                        </Viewbox>
+                    </Grid>
                 </Grid>
-
-                <Grid Grid.Row="1">
-                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                        <ContentControl  Content="{Binding Field}"/>
-                    </ScrollViewer>
-                   
-                </Grid>
-            </Grid>
-            <Grid Grid.Column="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition Height="250"/>
-                </Grid.RowDefinitions>
-                <StackPanel Grid.Row="0">
-                    <StackPanel Margin="10 0 0 0">
-                        <TextBlock Text="{Binding StringFormat=Карта: {0}, Path=Field.Map.name}"
+                <Grid Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="500"/>
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0">
+                            <StackPanel Margin="10 0 0 0">
+                                <TextBlock Text="{Binding StringFormat=Карта: {0}, Path=Field.Map.name}"
                                FontSize="18" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
-                        <TextBlock Text="{Binding StringFormat=Имя: {0}, Path=Field.Player.CurrentPlayer.name}"
+                                <TextBlock Text="{Binding StringFormat=Имя: {0}, Path=Field.Player.CurrentPlayer.name}"
                                FontSize="18" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
 
-                        <TextBlock FontSize="18" HorizontalAlignment="Center"
+                                <TextBlock FontSize="18" HorizontalAlignment="Center"
                                Text="Выигрышные очки:" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
-                        <TextBlock FontSize="18" HorizontalAlignment="Left" 
+                                <TextBlock FontSize="18" HorizontalAlignment="Left" 
                                Text="{Binding Field.GameState.win_points, 
                                Converter={StaticResource ConvertWinPointsToString}, 
                                ConverterParameter={StaticResource Locator}}" 
                                Foreground="{StaticResource ControlPressedBorderBrush}"/>
 
-                        <TextBlock FontSize="18" HorizontalAlignment="Center"
+                                <TextBlock FontSize="18" HorizontalAlignment="Center"
                                Text="Матрица атаки:" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
-                        <TextBlock FontSize="18" HorizontalAlignment="Left" 
+                                <TextBlock FontSize="18" HorizontalAlignment="Left" 
                                Text="{Binding Field.GameState.attack_matrix, 
                                Converter={StaticResource ConvertAttackMatrixToString}, 
                                ConverterParameter={StaticResource Locator}}" 
                                Foreground="{StaticResource ControlPressedBorderBrush}"/>
 
-                        <TextBlock FontSize="18" HorizontalAlignment="Center"
+                                <TextBlock FontSize="18" HorizontalAlignment="Center"
                                Text="Наблюдатели:" Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
-                        <TextBlock FontSize="18" HorizontalAlignment="Left" 
+                                <TextBlock FontSize="18" HorizontalAlignment="Left" 
                                Text="{Binding Field.GameState.observers, 
                                Converter={StaticResource ConvertObserversToString}, 
                                ConverterParameter={StaticResource Locator}}" 
                                Foreground="{StaticResource ControlPressedBorderBrush}"/>
 
-                        <CheckBox Content="Включить AI" FontSize="18" HorizontalAlignment="Left"
+                                <CheckBox Content="Включить AI" FontSize="18" HorizontalAlignment="Left"
                                 IsChecked="{Binding Field.AIEnable, Mode=TwoWay}" Foreground="{StaticResource ControlPressedBorderBrush}"
                                 Height="25" Style="{StaticResource CheckboxStyle}" Focusable="False"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <Button Grid.Row="0" Width="200"  Command="{Binding TurnCommand}"
+                            </StackPanel>
+                        </StackPanel>
+                        <Button Grid.Row="0" Width="200"  Command="{Binding TurnCommand}"
                         HorizontalAlignment="Center" VerticalAlignment="Bottom"
                         Height="70" Style="{StaticResource ButtonCustom}" VerticalContentAlignment="Center"
                         HorizontalContentAlignment="Center">
 
-                    <Button.Content>
-                        <TextBlock Grid.Column="0" Text="Походить" FontSize="37">
-                            <TextBlock.Foreground>
-                                <LinearGradientBrush StartPoint="0 0" EndPoint="0 1">
-                                    <LinearGradientBrush.GradientStops>
-                                        <GradientStop Offset="0.1" Color="{StaticResource ControlPressedBorderColor}" />
-                                        <GradientStop Offset="1" Color="{StaticResource ControlMouseOverBorderColor}" />
-                                    </LinearGradientBrush.GradientStops>
-                                </LinearGradientBrush>
-                            </TextBlock.Foreground>
-                        </TextBlock>
-                    </Button.Content>
-                </Button>
-
-                <Grid Grid.Row="1" Background="{StaticResource ControlDisabledBackgroundBrush}">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="230"/>
-                        <RowDefinition Height="20"/>
-                    </Grid.RowDefinitions>
-                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Visible">
-                        <ItemsControl ItemsSource="{Binding Field.Chat}" ItemTemplate="{StaticResource ChatMsgTemplate}"/>
-                    </ScrollViewer>
-                    <Grid Grid.Row="1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock  Grid.Column="0" Text="Чат:" FontSize="18" VerticalAlignment="Center"  Margin="5 0"
+                            <Button.Content>
+                                <TextBlock Grid.Column="0" Text="Походить" FontSize="37">
+                                    <TextBlock.Foreground>
+                                        <LinearGradientBrush StartPoint="0 0" EndPoint="0 1">
+                                            <LinearGradientBrush.GradientStops>
+                                                <GradientStop Offset="0.1" Color="{StaticResource ControlPressedBorderColor}" />
+                                                <GradientStop Offset="1" Color="{StaticResource ControlMouseOverBorderColor}" />
+                                            </LinearGradientBrush.GradientStops>
+                                        </LinearGradientBrush>
+                                    </TextBlock.Foreground>
+                                </TextBlock>
+                            </Button.Content>
+                        </Button>
+                        <Grid Grid.Row="1" Background="{StaticResource ControlDisabledBackgroundBrush}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="230"/>
+                                <RowDefinition Height="20"/>
+                            </Grid.RowDefinitions>
+                            <ScrollViewer Grid.Row="0"  VerticalScrollBarVisibility="Visible">
+                                <ItemsControl ItemsSource="{Binding Field.Chat}" ItemTemplate="{StaticResource ChatMsgTemplate}"/>
+                            </ScrollViewer>
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock  Grid.Column="0" Text="Чат:" FontSize="18" VerticalAlignment="Center"  Margin="5 0"
                                Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
-                        <TextBox Height="20" FontSize="16" Grid.Column="1"
+                                <TextBox Height="20" FontSize="16" Grid.Column="1"
                                  Text="{Binding ChatText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                            <TextBox.InputBindings>
-                                <KeyBinding Command="{Binding SendChatMessageCommand}" Key="Return"/>
-                            </TextBox.InputBindings>
-                        </TextBox>
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Command="{Binding SendChatMessageCommand}" Key="Return"/>
+                                    </TextBox.InputBindings>
+                                </TextBox>
+                            </Grid>
+                        </Grid>
                     </Grid>
                 </Grid>
             </Grid>
         </Grid>
-
-        <Rectangle Grid.Row="3" Height="20" VerticalAlignment="Bottom">
-            <Rectangle.Fill>
-                <LinearGradientBrush EndPoint="0.5,0" StartPoint="0.5,1">
-                    <GradientStop Color="Black" Offset="0"/>
-                    <GradientStop Offset="1" Color="#001E1E1E"/>
-                </LinearGradientBrush>
-            </Rectangle.Fill>
-            <i:Interaction.Behaviors>
-                <b:WindowMoveBehavior/>
-            </i:Interaction.Behaviors>
-        </Rectangle>
-        <Button Grid.Row="3" HorizontalAlignment="Right" Width="20" 
-                Height="20" FontSize="14" Style="{StaticResource ButtonCustom}">
-            <Button.Content>
-                <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center"
-                               Text="&#x003F;" FontSize="14" 
-                               FontFamily="{StaticResource FontIcons}" Foreground="{StaticResource ControlMouseOverBorderBrush}">
-                    <TextBlock.RenderTransform>
-                        <RotateTransform Angle="90" CenterX="7" CenterY="8"/>
-                    </TextBlock.RenderTransform>
-                         <i:Interaction.Behaviors>
-                            <b:WindowResizeBehavior/>
-                          </i:Interaction.Behaviors>
-                </TextBlock>
-            </Button.Content>
-        </Button>
-        <TextBlock Grid.Row="3" Text="{Binding Core.Logs[0]}" VerticalAlignment="Bottom" HorizontalAlignment="Left"
-                       FontSize="12" Foreground="{StaticResource ControlMouseOverBorderBrush}" Margin="2 0 0 2"/>
     </Grid>
 </Page>

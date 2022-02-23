@@ -20,6 +20,15 @@ namespace UIClient.ViewModel
     internal class MainWindowViewModel : Base.ViewModelBase
     {
         #region Properties
+        #region Core Core : ядро
+        private Core _Core;
+        /// <summary>ядро</summary>
+        public Core Core
+        {
+            get { return _Core; }
+            set { Set(ref _Core, value); }
+        }
+        #endregion
         #region string Title : Заголовок акна
         private string _Title = "MainWindowViewModel";
         /// <summary>Заголовок акна</summary>
@@ -82,9 +91,11 @@ namespace UIClient.ViewModel
             get { return _Top; }
             set { Set(ref _Top, value); }
         }
+
+
         #endregion
         #region double Opacity : прозрачность окна
-        private double _Opacity;
+        private double _Opacity = 1;
         /// <summary>прозрачность окна</summary>
         public double Opacity
         {
@@ -133,6 +144,46 @@ namespace UIClient.ViewModel
             set { Set(ref _SongText, value); }
         }
         #endregion
+
+        #region Visibility ControlEnable : сокрытие контролов
+        private Visibility _ControlEnable;
+        /// <summary>сокрытие контролов</summary>
+        public Visibility ControlEnable
+        {
+            get { return _ControlEnable; }
+            set { Set(ref _ControlEnable, value); }
+        }
+        #endregion
+
+        #region bool FullScreen : summury
+        private bool _FullScreen;
+        /// <summary>summury</summary>
+        public bool FullScreen
+        {
+            get { return _FullScreen; }
+            set
+            {
+                if (Set(ref _FullScreen, value))
+                {
+                    if (value)
+                    {
+                        App.Current.MainWindow.WindowState = WindowState.Maximized;
+                        ControlEnable = Visibility.Hidden;
+                    }
+                    else
+                    {
+                        var conf = App.Host.Services.GetRequiredService<AppConfig>();
+                        ControlEnable = Visibility.Visible;
+                        App.Current.MainWindow.WindowState = WindowState.Normal;
+                        Width = conf.Config.Width;
+                        Height = conf.Config.Height;
+                        CenterWindowOnScreen();
+                    }
+                }
+            }
+        }
+        #endregion
+
         #endregion
 
         #region Commands
@@ -195,10 +246,57 @@ namespace UIClient.ViewModel
             App.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
                 var page = App.Host.Services.GetRequiredService<LoadPageViewModel>();
-                page.IsLoadVisible = Visibility.Collapsed;
+                page.IsLoadVisible = Visibility.Hidden;
                 page.IsControlVisible = Visibility.Visible;
                 SelectedPage = App.Host.Services.GetRequiredService<LoadPage>();
             }));
+        }
+
+        public void SelectEscapePage(Page page)
+        {
+            App.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                SelectedPage = page;
+            }));
+        }
+
+        public void ShowEscapeMenu(EscapeCommands comm)
+        {
+            var p = App.Host.Services.GetRequiredService<EscapeMenuPage>();
+            var vm = (EscapeMenuPageViewModel)p.DataContext;
+            vm.Load(SelectedPage, comm);
+            SelectPage(p);
+        }
+
+        public void SelectPage(Page page)
+        {
+            if (page.DataContext is ViewModel.LoadPageViewModel vml)
+            {
+                SelectLoadPage();
+                return;
+            }
+            if (page.DataContext is ViewModel.GamePageViewModel vmg)
+            {
+                SelectGamePage();
+                return;
+            }
+            if (page.DataContext is ViewModel.EscapeMenuPageViewModel vme)
+            {
+                SelectEscapePage(page);
+                return;
+            }
+        }
+
+        public void KeyPress(KeyEventArgs e)
+        {
+            if (SelectedPage is LoadPage && SelectedPage.DataContext is LoadPageViewModel vml)
+                vml.KeyPress(e.Key);
+
+            if (SelectedPage is GamePage && SelectedPage.DataContext is GamePageViewModel vmg)
+                vmg.KeyPress(e.Key);
+
+            if (SelectedPage is EscapeMenuPage && SelectedPage.DataContext is EscapeMenuPageViewModel vme)
+                vme.KeyPress(e.Key);
         }
 
         private void CenterWindowOnScreen()
@@ -219,14 +317,13 @@ namespace UIClient.ViewModel
         public MainWindowViewModel()
         {
             #region Properties
-            Opacity = 1;
+            Core = App.Core;
             MediaPlayer.Open(new Uri("Resources/Songs/main_theme.mp3", UriKind.Relative));
             MediaPlayer.MediaEnded += MediaPlayerMediaEnded;
-            Width = 1200;
-            Height = 820;
             Title = "World of Tanks: Strategy";
             Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             SelectedPage = App.Host.Services.GetRequiredService<LoadPage>();
+            #endregion
 
             #region Commands
             CloseAppCommand = new LambdaCommand(OnCloseAppCommandExecuted, CanCloseAppCommandExecute);
@@ -235,13 +332,16 @@ namespace UIClient.ViewModel
             EnableSongCommand = new LambdaCommand(OnEnableSongCommandExecuted, CanEnableSongCommandExecute);
             #endregion
 
-            App.Host.Services.GetRequiredService<GamePage>();
-
             //load config
             var conf = App.Host.Services.GetRequiredService<AppConfig>();
             SongEnable = conf.Config.Song;
+
+            Width = conf.Config.Width;
+            Height = conf.Config.Height;
             CenterWindowOnScreen();
-            #endregion
+            FullScreen = conf.Config.FullScreen;
+
+            App.Host.Services.GetRequiredService<GamePage>();
         }
     }
 }

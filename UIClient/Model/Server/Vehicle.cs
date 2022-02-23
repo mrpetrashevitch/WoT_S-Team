@@ -29,5 +29,6 @@ namespace UIClient.Model.Server
         public Point3 spawn_position { get; set; }
         public Point3 position { get; set; }
         public int capture_points { get; set; }
+        public int shoot_range_bonus { get; set; }
     }
 }

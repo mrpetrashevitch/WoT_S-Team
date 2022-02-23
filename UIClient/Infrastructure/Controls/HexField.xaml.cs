@@ -54,7 +54,10 @@ namespace UIClient.Infrastructure.Controls
         }
         public async Task<bool> LogoutAsync()
         {
+            _game_over = true;
+            _EventWait?.TrySetResult(true);
             if (!App.Core.Connected) return false;
+
             var res = await App.Core.SendLogoutAsync();
             if (res != Result.OKEY)
             {
@@ -70,7 +73,8 @@ namespace UIClient.Infrastructure.Controls
             if (!await WaitPlayers().ConfigureAwait(false)) return false;
 
             //game loop
-            while (true)
+            _game_over = false;
+            while (!_game_over)
             {
                 if (!await UpdateGameState()) break;
                 if (!await GetActions()) break;
@@ -303,6 +307,7 @@ namespace UIClient.Infrastructure.Controls
             Inited = false;
         }
 
+        private bool _game_over = true;
         private static readonly Dictionary<int, Brush> _TeamColors = new Dictionary<int, Brush>()
         {
             { 0, Brushes.Aqua},
@@ -555,12 +560,27 @@ namespace UIClient.Infrastructure.Controls
 
         private void AddObstacle(Point3 p)
         {
-            GetHex(p).Type = Hex.HexType.Water;
+            GetHex(p).Type = Hex.HexType.Rock;
         }
 
         private void AddSpawn(Point3 p)
         {
             GetHex(p).Type = Hex.HexType.Spawn;
+        }
+
+        private void AddCatapult(Point3 p)
+        {
+            GetHex(p).Type = Hex.HexType.Catapult;
+        }
+
+        private void AddHardRepair(Point3 p)
+        {
+            GetHex(p).Type = Hex.HexType.HardRepair;
+        }
+
+        private void AddLightRepair(Point3 p)
+        {
+            GetHex(p).Type = Hex.HexType.LightRepair;
         }
 
         private void CreateField(Map map)
@@ -601,6 +621,17 @@ namespace UIClient.Infrastructure.Controls
                 }
             }
 
+            if (map.content.light_repair != null)
+                foreach (var point in map.content.light_repair)
+                    AddLightRepair(point);
+
+            if (map.content.hard_repair != null)
+                foreach (var point in map.content.hard_repair)
+                    AddHardRepair(point);
+
+            if (map.content.catapult != null)
+                foreach (var point in map.content.catapult)
+                    AddCatapult(point);
         }
 
         private void AddHex(Hex.HexType type)
@@ -742,7 +773,10 @@ namespace UIClient.Infrastructure.Controls
 
             if (GameState.finished)
             {
-                if (GameState.winner != null) MessageWait = "Победитель: " + Players[GameState.winner.Value].CurrentPlayer.name;
+                if (GameState.winner != null)
+                { 
+                    MessageWait = "Победитель: " + Players[GameState.winner.Value].CurrentPlayer.name;
+                }
                 else MessageWait = "Ничья";
                 return false;
             }

@@ -17,16 +17,17 @@
                 <ResourceDictionary Source="Resources/Styles/CheckBoxStyle.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ScrollViewerStyle.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/TextBoxStyle.xaml"/>
-                <ResourceDictionary Source="Resources/Styles/TabItemStyle.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ComboBoxStyle.xaml"/>
                 <ResourceDictionary Source="Resources/Fonts/Fonts.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ButtonCustomStyle.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ButtonNunHex.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ButtonFreeHex.xaml"/>
-                <ResourceDictionary Source="Resources/Styles/ButtonWaterHex.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ButtonRockHex.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ButtonBaseHex.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ButtonSpawnHex.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/ButtonCatapultHex.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/ButtonHardRepairHex.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/ButtonLightRepairHex.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

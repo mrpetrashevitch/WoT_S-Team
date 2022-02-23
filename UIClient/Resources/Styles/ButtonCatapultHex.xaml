@@ -5,7 +5,7 @@
         <ResourceDictionary Source="../Colors/Colors.xaml"/>
     </ResourceDictionary.MergedDictionaries>
 
-    <Style x:Key="ButtonWaterHex" TargetType="{x:Type Button}">
+    <Style x:Key="ButtonCatapultHex" TargetType="{x:Type Button}">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="Width" Value="40"/>
@@ -20,11 +20,11 @@
                                     <Storyboard>
                                         <ColorAnimation Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" 
                                                                     Storyboard.TargetName="Border"
-                                                                    To = "{StaticResource WaterNormalBackgroundColor}"
+                                                                    To = "{StaticResource ElementNormalBackgroundColor}"
                                                                     Duration="0:0:0.3"/>
                                         <ColorAnimation Storyboard.TargetProperty="(Stroke).(SolidColorBrush.Color)" 
                                                                     Storyboard.TargetName="Border"
-                                                                    To = "{StaticResource WaterNormalBorderColor}"
+                                                                    To = "{StaticResource ElementNormalBorderColor}"
                                                                     Duration="0:0:0.3"/>
                                     </Storyboard>
                                 </VisualState>
@@ -32,11 +32,11 @@
                                     <Storyboard>
                                         <ColorAnimation Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" 
                                                                     Storyboard.TargetName="Border"
-                                                                    To = "{StaticResource WaterMouseOverBackgroundColor}"
+                                                                    To = "{StaticResource ElementMouseOverBackgroundColor}"
                                                                     Duration="0:0:0.3"/>
                                         <ColorAnimation Storyboard.TargetProperty="(Stroke).(SolidColorBrush.Color)" 
                                                                     Storyboard.TargetName="Border"
-                                                                    To = "{StaticResource WaterMouseOverBorderColor}"
+                                                                    To = "{StaticResource ElementMouseOverBorderColor}"
                                                                     Duration="0:0:0.3"/>
                                     </Storyboard>
                                 </VisualState>
@@ -44,11 +44,11 @@
                                     <Storyboard>
                                         <ColorAnimation Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" 
                                                                     Storyboard.TargetName="Border"
-                                                                    To = "{StaticResource WaterPressedBackgroundColor}"
+                                                                    To = "{StaticResource ElementPressedBackgroundColor}"
                                                                     Duration="0:0:0.1"/>
                                         <ColorAnimation Storyboard.TargetProperty="(Stroke).(SolidColorBrush.Color)" 
                                                                     Storyboard.TargetName="Border"
-                                                                    To = "{StaticResource WaterPressedBorderColor}"
+                                                                    To = "{StaticResource ElementPressedBorderColor}"
                                                                     Duration="0:0:0.1"/>
                                     </Storyboard>
                                 </VisualState>
@@ -56,15 +56,15 @@
                                     <Storyboard>
                                         <ColorAnimation Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" 
                                                                     Storyboard.TargetName="Border"
-                                                                    To = "{StaticResource WaterNormalBackgroundColor}"
+                                                                    To = "{StaticResource ElementNormalBackgroundColor}"
                                                                     Duration="0:0:0.1"/>
                                         <ColorAnimation Storyboard.TargetProperty="(Stroke).(SolidColorBrush.Color)" 
                                                                     Storyboard.TargetName="Border"
-                                                                    To = "{StaticResource WaterNormalBackgroundColor}"
+                                                                    To = "{StaticResource ElementNormalBackgroundColor}"
                                                                     Duration="0:0:0.1"/>
                                         <ColorAnimation Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)" 
                                                                     Storyboard.TargetName="ContentPresenter"
-                                                                    To = "{StaticResource WaterNormalBackgroundColor}"
+                                                                    To = "{StaticResource ElementNormalBackgroundColor}"
                                                                     Duration="0:0:0.1"/>
                                     </Storyboard>
                                 </VisualState>
@@ -72,9 +72,11 @@
                         </VisualStateManager.VisualStateGroups>
 
                         <Path x:Name="Border" Data="M11,1 L29,1 L39,17.5 L29,34 L11,34 L1,17.5z" StrokeThickness="1" 
-                              Fill="{StaticResource WaterNormalBackgroundBrush}" 
-                              Stroke="{StaticResource WaterDisabledBorderBrush}"/>
+                              Fill="{StaticResource ElementNormalBackgroundBrush}" 
+                              Stroke="{StaticResource ElementDisabledBorderBrush}"/>
 
+                        <Image Source="/Resources/Images/catapult.png" Opacity="0.4" Margin="3" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        
                         <TextBlock Text="&#x0054;" FontSize="24" VerticalAlignment="Center" HorizontalAlignment="Center"
                                    Visibility="{Binding Path=CanMove, RelativeSource={ RelativeSource AncestorType=local:Hex, Mode=FindAncestor}}"
                                    Foreground="{Binding Path=DataContext.Field.Player.TeamColor, RelativeSource={ RelativeSource AncestorType=local:Hex, Mode=FindAncestor}}"
