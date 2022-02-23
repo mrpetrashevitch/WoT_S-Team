@@ -14,41 +14,49 @@
         Height="{Binding Height, Mode=TwoWay}" 
         Left="{Binding Left, Mode=TwoWay}"
         Top="{Binding Top, Mode=TwoWay}"
-        MinWidth="1200" MinHeight="820"
+        MinWidth="1024" MinHeight="768"
         Title="{Binding Title}"
         Opacity="{Binding Opacity, Mode=TwoWay}" AllowsTransparency="True"
         DataContext="{Binding MainWindowViewModel, Source={StaticResource Locator}}">
     <Grid Background="{StaticResource ControlBackgroundBrush}">
         <Frame Content="{Binding SelectedPage}" NavigationUIVisibility="Hidden"/>
-        <Rectangle Height="20" VerticalAlignment="Top">
+        <Rectangle Visibility="{Binding ControlEnable}" Height="20" VerticalAlignment="Top">
             <Rectangle.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="Black" Offset="0"/>
                     <GradientStop Offset="1" Color="#001E1E1E"/>
                 </LinearGradientBrush>
             </Rectangle.Fill>
-
             <i:Interaction.Behaviors>
                 <b:WindowMoveBehavior/>
             </i:Interaction.Behaviors>
         </Rectangle>
-        
-        <TextBlock Text="{Binding Title}" VerticalAlignment="Top" HorizontalAlignment="Center" 
+
+        <TextBlock Visibility="{Binding ControlEnable}" Text="{Binding Title}" VerticalAlignment="Top" HorizontalAlignment="Center" 
                    Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+        <TextBlock Text="{Binding Core.Logs[0]}" VerticalAlignment="Bottom" HorizontalAlignment="Left"
+                       FontSize="12" Foreground="{StaticResource ControlMouseOverBorderBrush}" Margin="2 0 0 2"/>
+
+        <Button Visibility="{Binding ControlEnable}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="20" 
+                Height="20" FontSize="14" Style="{StaticResource ButtonCustom}">
+            <Button.Content>
+                <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center"
+                               Text="&#x003F;" FontSize="14" 
+                               FontFamily="{StaticResource FontIcons}" Foreground="{StaticResource ControlMouseOverBorderBrush}">
+                    <TextBlock.RenderTransform>
+                        <RotateTransform Angle="90" CenterX="7" CenterY="8"/>
+                    </TextBlock.RenderTransform>
+                         <i:Interaction.Behaviors>
+                            <b:WindowResizeBehavior/>
+                          </i:Interaction.Behaviors>
+                </TextBlock>
+            </Button.Content>
+        </Button>
+        
+        <StackPanel Visibility="{Binding ControlEnable}" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
             <TextBlock Text="{Binding Version}" VerticalAlignment="Center" Margin="0 0 5 0"
                        Foreground="{StaticResource ControlMouseOverBorderBrush}"/>
-            <Button Width="20" Height="20" FontSize="14" Style="{StaticResource ButtonCustom}"
-                    Command="{Binding EnableSongCommand}">
-                <Button.Content>
-                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center"
-                               Text="{Binding SongText}" FontSize="14" 
-                               FontFamily="{StaticResource FontIcons}" 
-                               Foreground="{StaticResource ControlMouseOverBorderBrush}">
-                    </TextBlock>
-                </Button.Content>
-            </Button>
             <Button Content="?" Width="20" 
                         Command="{Binding AboutCommand}" 
                         Style="{StaticResource ButtonCustom}" 
@@ -63,4 +71,7 @@
                         FontSize="18"/>
         </StackPanel>
     </Grid>
+    <i:Interaction.Behaviors>
+        <b:WindowKeyBehavior/>
+    </i:Interaction.Behaviors>
 </Window>

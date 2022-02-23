@@ -38,6 +38,8 @@ namespace UIClient
             services.AddSingleton<LoadPage>();
             services.AddSingleton<GamePageViewModel>();
             services.AddSingleton<GamePage>();
+            services.AddTransient<EscapeMenuPageViewModel>();
+            services.AddTransient<EscapeMenuPage>();
         }
 
         protected override async void OnStartup(StartupEventArgs e)
@@ -70,7 +72,7 @@ namespace UIClient
                     page_game.Field.AIEnable = Convert.ToBoolean(Convert.ToInt32(e.Args[index_ai + 1]));
                     await App.Current.Dispatcher.BeginInvoke(new Action(() => { page.LoginCommand.Execute(null); }));
                 }
-                catch (Exception) { }
+                catch (Exception ex) { MessageBox.Show(ex.Message); }
             }
 
             await host.StartAsync().ConfigureAwait(false);

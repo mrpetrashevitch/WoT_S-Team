@@ -13,6 +13,7 @@ namespace UIClient.ViewModel
     {
         public MainWindowViewModel MainWindowViewModel => App.Host.Services.GetRequiredService<MainWindowViewModel>();
         public LoadPageViewModel LoadPageViewModel => App.Host.Services.GetRequiredService<LoadPageViewModel>();
-        public GamePageViewModel WGUIPageViewModel => App.Host.Services.GetRequiredService<GamePageViewModel>();
+        public GamePageViewModel GamePageViewModel => App.Host.Services.GetRequiredService<GamePageViewModel>();
+        public EscapeMenuPageViewModel EscapeMenuPageViewModel => App.Host.Services.GetRequiredService<EscapeMenuPageViewModel>();
     }
 }

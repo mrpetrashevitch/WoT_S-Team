@@ -13,6 +13,7 @@ using UIClient.View.Pages;
 using UIClient.Model.Client;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Controls;
 
 namespace UIClient.ViewModel
 {
@@ -91,7 +92,7 @@ namespace UIClient.ViewModel
         #endregion
 
         #region Visibility IsLoadVisible : summury
-        private Visibility _IsLoadVisible;
+        private Visibility _IsLoadVisible = Visibility.Hidden;
         /// <summary>summury</summary>
         public Visibility IsLoadVisible
         {
@@ -129,7 +130,6 @@ namespace UIClient.ViewModel
         public ICommand LoginCommand { get; }
         private bool CanLoginCommandExecute(object p)
         {
-            if (!Core.Connected) return false;
             if (UserName == null || UserName.Length < 4) return false;
             if (GameName != null && GameName.Length == 0) return false;
             if (PlayersMax < 1 || PlayersMax > 3) return false;
@@ -147,26 +147,45 @@ namespace UIClient.ViewModel
             log.num_players = PlayersMax;
             log.is_observer = IsObserver;
 
-            IsControlVisible = Visibility.Collapsed;
+            IsControlVisible = Visibility.Hidden;
             IsLoadVisible = Visibility.Visible;
 
-            bool result = await vm.Field.RunGame(log);
+            await vm.Core.ConnectAsync().ConfigureAwait(false);
+
+            if (vm.Core.Connected)
+                await vm.Field.RunGame(log);
 
             IsControlVisible = Visibility.Visible;
-            IsLoadVisible = Visibility.Collapsed;
+            IsLoadVisible = Visibility.Hidden;
         }
         #endregion
 
         //..
         #endregion
 
+        public void KeyPress(Key key)
+        {
+            var wind_vm = App.Host.Services.GetRequiredService<MainWindowViewModel>();
+            switch (key)
+            {
+                case Key.Enter: // login
+                    if (CanLoginCommandExecute(null))
+                        OnLoginCommandExecuted(null);
+                    break;
+                case Key.Escape:
+                    wind_vm.ShowEscapeMenu(EscapeCommands.Exit);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         public LoadPageViewModel()
         {
             #region Properties
             Image = new BitmapImage(new Uri("Resources/Images/logo.jpg", UriKind.Relative));
-            IsLoadVisible = Visibility.Collapsed;
             Core = App.Core;
-            PlayersMax = 2;
+            PlayersMax = 1;
             //..
             #endregion
 

@@ -7,6 +7,9 @@ namespace UIClient.Model.Config
     {
         public string HostName { get; set; }
         public ushort Port { get; set; }
+        public bool FullScreen { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
         public bool Song { get; set; }
     }
 }

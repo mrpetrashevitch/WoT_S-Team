@@ -103,7 +103,6 @@ namespace UIClient.Model
             Log("AI ядро создано");
 
             Log("UI ядро создано");
-            Connect().ConfigureAwait(false);
         }
 
         public (Result, string) SendPacket<T>(WebAction action, T data, bool skip_data = false)
@@ -211,8 +210,9 @@ namespace UIClient.Model
             return (res.Item1);
         }
 
-        public async Task Connect()
+        public async Task ConnectAsync()
         {
+            if (Connected) return;
             try
             {
                 Log("Подключение к серверу...");
@@ -220,7 +220,8 @@ namespace UIClient.Model
 
                 IPAddress[] addresslist = Dns.GetHostAddresses(config.Config.HostName);
 #pragma warning disable CS0618 // Тип или член устарел
-                await Task.Run(() => { 
+                await Task.Run(() =>
+                {
                     WebClientDll.connect_(web, (uint)addresslist[0].Address, config.Config.Port);
                 });
 #pragma warning restore CS0618 // Тип или член устарел
@@ -233,6 +234,18 @@ namespace UIClient.Model
                 Connected = false;
                 Log("Ошибка подключения к серверу");
             }
+        }
+
+        public async Task DetachAsync()
+        {
+            if (!Connected) return;
+            Log("Отключение от сервера...");
+            await Task.Run(() =>
+            {
+                WebClientDll.detach(web);
+            });
+            Connected = false;
+            Log("Отключен от сервера");
         }
 
         public action_ret GetAIActions(int player_id, GameState GameState, Map Map)

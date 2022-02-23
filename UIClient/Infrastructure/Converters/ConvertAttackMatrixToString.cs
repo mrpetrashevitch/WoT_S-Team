@@ -16,7 +16,7 @@ namespace UIClient.Infrastructure.Converters
         {
             if (value is not Dictionary<int, int[]> attack_matrix) return value;
             if (parameter is not ViewModelLocator loc) return value;
-            var players = loc?.WGUIPageViewModel?.Field?.Players;
+            var players = loc?.GamePageViewModel?.Field?.Players;
             if (players == null) return value;
 
             StringBuilder hex = new StringBuilder();

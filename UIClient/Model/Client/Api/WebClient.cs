@@ -21,6 +21,9 @@ namespace UIClient.Model.Client.Api
         public extern static Result connect_(IntPtr web, uint addr, ushort port);
 
         [DllImport(_PathWebDll, CallingConvention = CallingConvention.Cdecl)]
+        public extern static Result detach(IntPtr web);
+
+        [DllImport(_PathWebDll, CallingConvention = CallingConvention.Cdecl)]
         public extern static Result send_packet(IntPtr web, Model.WebAction action, int size, IntPtr data, IntPtr out_size, IntPtr out_data);
     }
 }

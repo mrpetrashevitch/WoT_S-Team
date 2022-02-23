@@ -118,6 +118,7 @@
     </ApplicationDefinition>
     <Compile Include="EntryPoint.cs" />
     <Compile Include="Infrastructure\Behaviors\HexBehavior.cs" />
+    <Compile Include="Infrastructure\Behaviors\WindowKeyBehavior.cs" />
     <Compile Include="Infrastructure\Behaviors\WindowResizeBehavior.cs" />
     <Compile Include="Infrastructure\Controls\HexField.xaml.cs">
       <DependentUpon>HexField.xaml</DependentUpon>
@@ -146,10 +147,14 @@
     <Compile Include="Model\Server\Vehicle.cs" />
     <Compile Include="Model\Server\WinPoints.cs" />
     <Compile Include="ViewModel\Base\ViewModelBase.cs" />
+    <Compile Include="ViewModel\EscapeMenuPageViewModel.cs" />
     <Compile Include="ViewModel\LoadPageViewModel.cs" />
     <Compile Include="ViewModel\MainWindowViewModel.cs" />
     <Compile Include="ViewModel\GamePageViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Compile Include="View\Pages\EscapeMenuPage.xaml.cs">
+      <DependentUpon>EscapeMenuPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Pages\LoadPage.xaml.cs">
       <DependentUpon>LoadPage.xaml</DependentUpon>
     </Compile>
@@ -186,6 +191,18 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Resources\Styles\ButtonCatapultHex.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resources\Styles\ButtonHardRepairHex.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resources\Styles\ButtonLightRepairHex.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Resources\Styles\ButtonSpawnHex.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -199,10 +216,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Resources\Styles\ButtonBaseHex.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Resources\Styles\ButtonWaterHex.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -226,13 +239,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Resources\Styles\TabItemStyle.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Resources\Styles\TextBoxStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\Pages\EscapeMenuPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Pages\LoadPage.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -333,6 +346,16 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Images\forge.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Images\back_menu.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\catapult.png" />
+    <Resource Include="Resources\Images\gear_h.png" />
+    <Resource Include="Resources\Images\gear_l.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

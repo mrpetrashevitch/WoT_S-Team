@@ -21,5 +21,6 @@ namespace UIClient.Model.Server
         public Dictionary<int, int[]> attack_matrix { get; set; }
         public int? winner { get; set; }
         public Dictionary<int, WinPoints> win_points { get; set; }
+        public Point3[] catapult_usage { get; set; }
     }
 }
