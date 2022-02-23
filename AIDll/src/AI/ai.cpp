@@ -14,6 +14,10 @@ namespace ai
 		attack_matrix_native* attack_matrix, int attack_matrix_size,
 		point* base, int base_size,
 		point* obstacle, int obstacle_size,
+		point* light_repair, int light_repair_size,
+		point* hard_repair, int hard_repair_size,
+		point* catapult, int catapult_size,
+		point* catapult_usage, int catapult_usage_size,
 		action_ret* out_actions)
 	{
 

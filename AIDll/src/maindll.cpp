@@ -4,7 +4,7 @@
 extern "C"
 {
 #pragma region AI
-/////////////////// AI /////////////////////////////
+	/////////////////// AI /////////////////////////////
 
 	__declspec(dllexport) ai::ai* create_ai()
 	{
@@ -28,6 +28,10 @@ extern "C"
 		ai::attack_matrix_native* attack_matrix, int attack_matrix_size,
 		ai::point* base, int base_size,
 		ai::point* obstacle, int obstacle_size,
+		ai::point* light_repair, int light_repair_size,
+		ai::point* hard_repair, int hard_repair_size,
+		ai::point* catapult, int catapult_size,
+		ai::point* catapult_usage, int catapult_usage_size,
 		ai::action_ret* out_actions)
 	{
 		return ai->get_action(curr_player,
@@ -37,6 +41,10 @@ extern "C"
 			attack_matrix, attack_matrix_size,
 			base, base_size,
 			obstacle, obstacle_size,
+			light_repair, light_repair_size,
+			hard_repair, hard_repair_size,
+			catapult, catapult_size,
+			catapult_usage, catapult_usage_size,
 			out_actions);
 	}
 

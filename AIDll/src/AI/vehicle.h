@@ -21,5 +21,6 @@ namespace ai
 		point spawn_position{};
 		point position{};
 		int capture_points = 0;
+		int shoot_range_bonus;
 	};
 }

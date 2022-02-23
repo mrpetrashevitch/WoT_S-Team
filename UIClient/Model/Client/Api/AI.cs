@@ -26,6 +26,10 @@ namespace UIClient.Model.Client.Api
                                         IntPtr attack_matrix, int attack_matrix_size,
                                         IntPtr base_, int base_size,
                                         IntPtr obstacle, int obstacle_size,
+                                        IntPtr light_repair, int light_repair_size,
+                                        IntPtr hard_repair, int hard_repair_size,
+                                        IntPtr catapult, int catapult_size,
+                                        IntPtr catapult_usage, int catapult_usage_size,
                                         out action_ret actions);
     }
 }

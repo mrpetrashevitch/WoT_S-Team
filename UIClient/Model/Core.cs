@@ -262,6 +262,14 @@ namespace UIClient.Model
             GCHandle base_pipe = default(GCHandle);
             IntPtr obstacle_s_ptr = IntPtr.Zero;
             GCHandle obstacle_pipe = default(GCHandle);
+            IntPtr light_repair_s_ptr = IntPtr.Zero;
+            GCHandle light_repair_pipe = default(GCHandle);
+            IntPtr hard_repair_s_ptr = IntPtr.Zero;
+            GCHandle hard_repair_pipe = default(GCHandle);
+            IntPtr catapult_s_ptr = IntPtr.Zero;
+            GCHandle catapult_pipe = default(GCHandle);
+            IntPtr catapult_usage_s_ptr = IntPtr.Zero;
+            GCHandle catapult_usage_pipe = default(GCHandle);
 
             player_native[] player_s = null;
             if (GameState.players != null)
@@ -291,6 +299,7 @@ namespace UIClient.Model
                     vehicle_s[i].spawn_position.y = item.Value.spawn_position.y;
                     vehicle_s[i].spawn_position.z = item.Value.spawn_position.z;
                     vehicle_s[i].vehicle_type = item.Value.vehicle_type;
+                    vehicle_s[i].shoot_range_bonus = item.Value.shoot_range_bonus;
                     i++;
                 }
             }
@@ -353,6 +362,58 @@ namespace UIClient.Model
                     i++;
                 }
             }
+            point[] light_repair_s = null;
+            if (Map.content.light_repair != null)
+            {
+                light_repair_s = new point[Map.content.light_repair.Length];
+                int i = 0;
+                foreach (var item in Map.content.light_repair)
+                {
+                    light_repair_s[i].x = item.x;
+                    light_repair_s[i].y = item.y;
+                    light_repair_s[i].z = item.z;
+                    i++;
+                }
+            }
+            point[] hard_repair_s = null;
+            if (Map.content.hard_repair != null)
+            {
+                hard_repair_s = new point[Map.content.hard_repair.Length];
+                int i = 0;
+                foreach (var item in Map.content.hard_repair)
+                {
+                    hard_repair_s[i].x = item.x;
+                    hard_repair_s[i].y = item.y;
+                    hard_repair_s[i].z = item.z;
+                    i++;
+                }
+            }
+            point[] catapult_s = null;
+            if (Map.content.catapult != null)
+            {
+                catapult_s = new point[Map.content.catapult.Length];
+                int i = 0;
+                foreach (var item in Map.content.catapult)
+                {
+                    catapult_s[i].x = item.x;
+                    catapult_s[i].y = item.y;
+                    catapult_s[i].z = item.z;
+                    i++;
+                }
+            }
+            point[] catapult_usage_s = null;
+            if (GameState.catapult_usage != null)
+            {
+                catapult_usage_s = new point[GameState.catapult_usage.Length];
+                int i = 0;
+                foreach (var item in GameState.catapult_usage)
+                {
+                    catapult_usage_s[i].x = item.x;
+                    catapult_usage_s[i].y = item.y;
+                    catapult_usage_s[i].z = item.z;
+                    i++;
+                }
+            }
 
             if (player_s != null)
             {
@@ -384,6 +445,26 @@ namespace UIClient.Model
                 obstacle_pipe = GCHandle.Alloc(obstacle_s, GCHandleType.Pinned);
                 obstacle_s_ptr = obstacle_pipe.AddrOfPinnedObject();
             }
+            if (light_repair_s != null)
+            {
+                light_repair_pipe = GCHandle.Alloc(light_repair_s, GCHandleType.Pinned);
+                light_repair_s_ptr = light_repair_pipe.AddrOfPinnedObject();
+            }
+            if (hard_repair_s != null)
+            {
+                hard_repair_pipe = GCHandle.Alloc(hard_repair_s, GCHandleType.Pinned);
+                hard_repair_s_ptr = hard_repair_pipe.AddrOfPinnedObject();
+            }
+            if (catapult_s != null)
+            {
+                catapult_pipe = GCHandle.Alloc(catapult_s, GCHandleType.Pinned);
+                catapult_s_ptr = catapult_pipe.AddrOfPinnedObject();
+            }
+            if (catapult_usage_s != null)
+            {
+                catapult_usage_pipe = GCHandle.Alloc(catapult_usage_s, GCHandleType.Pinned);
+                catapult_usage_s_ptr = catapult_usage_pipe.AddrOfPinnedObject();
+            }
 
             action_ret action_re;
             var act = AIDll.get_action(ai, player_id,
@@ -393,6 +474,10 @@ namespace UIClient.Model
                 attackmatrix_s_ptr, attackmatrix_s?.Length ?? 0,
                 base_s_ptr, base_s?.Length ?? 0,
                 obstacle_s_ptr, obstacle_s?.Length ?? 0,
+                light_repair_s_ptr, light_repair_s?.Length ?? 0,
+                hard_repair_s_ptr, hard_repair_s?.Length ?? 0,
+                catapult_s_ptr, catapult_s?.Length ?? 0,
+                catapult_usage_s_ptr, catapult_usage_s?.Length ?? 0,
                 out action_re);
 
             if (player_s != null) player_pipe.Free();
@@ -401,6 +486,10 @@ namespace UIClient.Model
             if (attackmatrix_s != null) attackmatrix_pipe.Free();
             if (base_s != null) base_pipe.Free();
             if (obstacle_s != null) obstacle_pipe.Free();
+            if (light_repair_s != null) light_repair_pipe.Free();
+            if (hard_repair_s != null) hard_repair_pipe.Free();
+            if (catapult_s != null) catapult_pipe.Free();
+            if (catapult_usage_s != null) catapult_usage_pipe.Free();
 
             return action_re;
         }

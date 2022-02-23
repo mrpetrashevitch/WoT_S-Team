@@ -24,6 +24,7 @@ namespace UIClient.Model.Client.Api
         public point spawn_position;
         public point position;
         public int capture_points;
+        public int shoot_range_bonus;
     }
 
     public enum action_type : int
