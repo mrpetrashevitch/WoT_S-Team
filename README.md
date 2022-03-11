@@ -23,7 +23,7 @@
 - `-ai` - enable artificial intelligence (0 or 1)
 
 ### Command line (optional)
-- -q - close the game after the end of the game
+- `-q` - close the game after the end of the game
 
 Example: `-u USER -p PASS -g GAMENAME  -pc 1 -tc 45 -o 0  -ai 1 -q`
 
