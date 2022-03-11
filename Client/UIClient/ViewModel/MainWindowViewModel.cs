@@ -199,7 +199,7 @@ namespace UIClient.ViewModel
         private void OnCloseAppCommandExecuted(object p)
         {
             App.Host.Services.GetRequiredService<GamePageViewModel>().LogoutCommand.Execute(null);
-            Application.Current.Shutdown();
+            Application.Current.Shutdown(0);
         }
         #endregion
         #region HideAppCommand : Свернуть программу

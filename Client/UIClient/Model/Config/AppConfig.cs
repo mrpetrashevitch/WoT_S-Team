@@ -20,5 +20,6 @@ namespace UIClient.Model.Config
         }
 
         public AppConfigJson AppConfigJson { get; set; }
+        public bool ExitEnd { get; set; } = false;
     }
 }

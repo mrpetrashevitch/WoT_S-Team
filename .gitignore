@@ -2,7 +2,5 @@
 Build/
 Packages/
 Product/
-/UIClient/bin
-/UIClient/obj
-/UIClient/Release
-/UIClient/Debug
+Client/UIClient/bin
+Client/UIClient/obj

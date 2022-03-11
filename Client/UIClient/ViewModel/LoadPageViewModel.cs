@@ -157,6 +157,12 @@ namespace UIClient.ViewModel
 
             IsControlVisible = Visibility.Visible;
             IsLoadVisible = Visibility.Hidden;
+
+            if(App.AppConfig.ExitEnd)
+            {
+                var mwvm = App.Host.Services.GetRequiredService<MainWindowViewModel>();
+                mwvm.CloseAppCommand.Execute(null);
+            }
         }
         #endregion
 

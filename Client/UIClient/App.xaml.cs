@@ -58,14 +58,17 @@ namespace UIClient
                     var page = Host.Services.GetRequiredService<LoadPageViewModel>();
                     var page_game = Host.Services.GetRequiredService<GamePageViewModel>();
 
-                    int index_u = Array.IndexOf(e.Args, "u");
-                    int index_p = Array.IndexOf(e.Args, "p");
-                    int index_g = Array.IndexOf(e.Args, "g");
-                    int index_pc = Array.IndexOf(e.Args, "pc");
-                    int index_tc = Array.IndexOf(e.Args, "tc");
-                    int index_o = Array.IndexOf(e.Args, "o");
-                    int index_ai = Array.IndexOf(e.Args, "ai");
+                    int index_u = Array.IndexOf(e.Args, "-u");
+                    int index_p = Array.IndexOf(e.Args, "-p");
+                    int index_g = Array.IndexOf(e.Args, "-g");
+                    int index_pc = Array.IndexOf(e.Args, "-pc");
+                    int index_tc = Array.IndexOf(e.Args, "-tc");
+                    int index_o = Array.IndexOf(e.Args, "-o");
+                    int index_ai = Array.IndexOf(e.Args, "-ai");
+                    int index_exit = Array.IndexOf(e.Args, "-q");
 
+
+                    if (index_exit != -1) AppConfig.ExitEnd = true;
                     page.UserName = e.Args[index_u + 1];
                     page.Pass = e.Args[index_p + 1];
                     page.GameName = e.Args[index_g + 1];
