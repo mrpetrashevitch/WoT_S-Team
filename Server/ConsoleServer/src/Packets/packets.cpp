@@ -1,14 +1,18 @@
 #include "packets.h"
 #include <string>
-
+#pragma warning(disable : 4996)
 
 namespace packets
 {
-
-	packet_data::packet_data(const void* body, const int data_size)
+	packet_error::packet_error(models::Result res)
 	{
-		_header.type = static_cast<int32>(packet_type::packet_data);
-		if (!memcpy_s(&this->body, sizeof(this->body), body, data_size))
-			_header.size += data_size;
+		_header.type = static_cast<int32>(res);
+	}
+
+	packet_json::packet_json(models::Result res, std::string json)
+	{
+		_header.type = static_cast<int32>(res);
+		strncpy(reinterpret_cast<char*>(json_str), json.c_str(), sizeof(json_str));
+		_header.size = strlen((char*)json_str) + 1;
 	}
 }

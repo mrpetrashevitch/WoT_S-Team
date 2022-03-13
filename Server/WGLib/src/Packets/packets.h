@@ -20,6 +20,7 @@ namespace web
 			packet_string(const char* s)
 			{
 				_header.type = 0;
+				if (s == nullptr) return;
 				if (!memcpy_s(str, sizeof(str), s, strlen(s) + sizeof(char)))
 					_header.size += strlen(s) + sizeof(char);
 			}
