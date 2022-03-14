@@ -4,12 +4,12 @@
 
 namespace packets
 {
-	packet_error::packet_error(models::Result res)
+	packet_error::packet_error(models::result res)
 	{
 		_header.type = static_cast<int32>(res);
 	}
 
-	packet_json::packet_json(models::Result res, std::string json)
+	packet_json::packet_json(models::result res, std::string json)
 	{
 		_header.type = static_cast<int32>(res);
 		strncpy(reinterpret_cast<char*>(json_str), json.c_str(), sizeof(json_str));

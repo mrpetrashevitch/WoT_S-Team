@@ -2,7 +2,7 @@
 #include "../defs.h"
 //#pragma warning(disable : 4200) // byte packet[0];
 
-#define WEB_BASE_PACKET_NETWORK_MAX_SIZE 512
+#define WEB_BASE_PACKET_NETWORK_MAX_SIZE 40960
 #define WEB_BASE_PACKET_MAX_SIZE (WEB_BASE_PACKET_NETWORK_MAX_SIZE - sizeof(web::packet::packet_header))
 #define WEB_BASE_PACKET_MIN_SIZE (sizeof(web::packet::packet_header))
 

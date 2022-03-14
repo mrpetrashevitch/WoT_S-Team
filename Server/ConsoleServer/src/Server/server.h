@@ -20,6 +20,9 @@ namespace server
 		std::recursive_mutex mut_conn;
 		std::vector<web::io_base::i_connection*> _connestions;
 
+
+
+
 		std::atomic<unsigned long long> total_packet_r = 0;
 		std::atomic<unsigned long long> total_packet_s = 0;
 		std::atomic<unsigned long long> total_sended_b = 0;

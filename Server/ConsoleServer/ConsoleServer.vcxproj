@@ -160,6 +160,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Engine\battle.cpp" />
     <ClCompile Include="src\Json\json_extensions.cpp" />
     <ClCompile Include="src\Engine\engine.cpp" />
     <ClCompile Include="src\Model\model.cpp" />
@@ -169,6 +170,7 @@
     <ClCompile Include="src\Thread\thread.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Engine\battle.h" />
     <ClInclude Include="src\Json\json_extensions.h" />
     <ClInclude Include="src\Engine\engine.h" />
     <ClInclude Include="src\Json\json.hpp" />

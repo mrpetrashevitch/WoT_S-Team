@@ -16,59 +16,68 @@ namespace server
 		total_recved_b += packet->header.size + sizeof(packet->header);
 		total_packet_r++;
 
-		std::string str_json((char*)packet->body, packet->header.size);
-		nlohmann::json js_parser = nlohmann::json::parse(str_json);
+		models::result result_code = models::result::BAD_COMMAND;
+		std::string result_str = "";
 
-		models::game_state gs;
-		gs.attack_matrix.insert(std::pair<int, std::vector<int>>(123, { 3,3 }));
-		gs.attack_matrix.insert(std::pair<int, std::vector<int>>(3, { 1,2 }));
-		const nlohmann::json j11{ gs };
-		const auto s11 = j11[0].dump(4);
-
-		models::map map;
-		map.size = 11;
-		map.name = "map01";
-		map.spawn_points.push_back({ {{ 1,2,3 }},{{4,5,6}},{{7,8,9}},{{10,11,12}},{{13,14,15}} });
-		map.spawn_points.push_back({ {{ 10,20,30 }},{{40,50,60}},{{70,80,90}},{{100,110,120}},{{130,140,150}} });
-		map.content.base.push_back({ 1,2,3 });
-		map.content.base.push_back({ 333,2,3 });
-		map.content.obstacle.push_back({ 5,5,5 });
-		const nlohmann::json j1{ map };
-		const auto s1 = j1[0].dump(4);
-
-		if (packet->header.type == models::Action::LOGIN)
+		if (packet->header.type == models::action::LOGIN)
 		{
 			models::login data;
+			std::string str_json((char*)packet->body, packet->header.size);
+			nlohmann::json js_parser = nlohmann::json::parse(str_json);
 			try
 			{
-				data = js_parser.get<models::login>();
+				data = js_parser.get<models::login>();//maybe exception
+
+				auto [res, player] = _engine.login(data, (int)conn->get_socket());
+				result_code = res;
+
+				if (result_code == models::result::OKEY)
+				{
+					const nlohmann::json j_player{ player };
+					result_str = j_player[0].dump();
+				}
 			}
 			catch (const std::exception& ex)
 			{
 				printf(ex.what());
-			}
-
-			auto [res,player] = _engine.login(data, (int)conn->get_socket());
-
-			if (res != models::Result::OKEY)
-			{
-				_server->send_packet_async(conn, std::make_shared<packets::packet_error>(res));
-			}
-			else
-			{
-				const nlohmann::json j_player{ player };
-				const auto str_player = j_player[0].dump(4);
-				_server->send_packet_async(conn, std::make_shared<packets::packet_json>(res, str_player));
+				data.name = "";
 			}
 		}
-		else if (packet->header.type == models::Action::MAP)
+		else if (packet->header.type == models::action::MAP)
 		{
-			auto [res, player] = _engine.map((int)conn->get_socket());
+			auto [res, map] = _engine.map((int)conn->get_socket());
+			result_code = res;
+			if (result_code == models::result::OKEY)
+			{
+				nlohmann::json j_map{ map };
+				result_str = j_map[0].dump();
+			}
+		}
+		else if (packet->header.type == models::action::GAME_STATE)
+		{
+			auto [res, game_state] = _engine.game_state((int)conn->get_socket());
+			result_code = res;
+			if (result_code == models::result::OKEY)
+			{
+				nlohmann::json j_map{ game_state };
+				result_str = j_map[0].dump();
+			}
+		}
+		else if (packet->header.type == models::action::GAME_ACTIONS)
+		{
+			auto [res, actions] = _engine.actions((int)conn->get_socket());
+			result_code = res;
+			if (result_code == models::result::OKEY)
+			{
+				nlohmann::json j_map{ actions };
+				result_str = j_map[0].dump();
+			}
 		}
 
-
-
-		int a = 100;
+		if (result_code != models::result::OKEY)
+			_server->send_packet_async(conn, std::make_shared<packets::packet_error>(result_code));
+		else
+			_server->send_packet_async(conn, std::make_shared<packets::packet_json>(result_code, result_str));
 
 	}
 

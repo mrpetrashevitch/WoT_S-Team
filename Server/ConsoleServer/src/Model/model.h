@@ -5,7 +5,7 @@
 
 namespace models
 {
-	enum Action
+	enum action
 	{
 		LOGIN = 1,
 		LOGOUT = 2,
@@ -18,7 +18,7 @@ namespace models
 		SHOOT = 102,
 	};
 
-	enum Result
+	enum result
 	{
 		OKEY = 0,
 		BAD_COMMAND = 1,
@@ -66,6 +66,16 @@ namespace models
 		std::vector<point3> catapult;
 	};
 
+#define VEHICLE_TYPE_COUNT 5
+	enum vehicle_type : int
+	{
+		medium_tank,
+		light_tank,
+		heavy_tank,
+		at_spg,
+		spg
+	};
+
 	struct spawn_points
 	{
 		std::vector<point3> medium_tank;
@@ -73,6 +83,8 @@ namespace models
 		std::vector<point3> heavy_tank;
 		std::vector<point3> at_spg;
 		std::vector<point3> spg;
+
+		std::vector<point3>& get_spawn_points_by_type(vehicle_type type);
 	};
 
 	struct map
@@ -83,14 +95,6 @@ namespace models
 		content content;
 	};
 
-	enum vehicle_type : int
-	{
-		medium_tank,
-		light_tank,
-		heavy_tank,
-		at_spg,
-		spg
-	};
 
 	struct vehicle
 	{
@@ -123,5 +127,10 @@ namespace models
 		int winner = 0;//?
 		std::map<int, win_points> win_points;
 		std::vector<point3> catapult_usage;
+	};
+
+	struct action_rsp
+	{
+		std::vector<player> actions;
 	};
 }

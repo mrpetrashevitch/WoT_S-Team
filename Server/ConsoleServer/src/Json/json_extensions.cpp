@@ -48,7 +48,7 @@ namespace models
 		if (j_is_observer.is_null()) p.is_observer = false; else j_is_observer.get_to(p.is_observer);
 	}
 
-	
+
 	void to_json(nlohmann::json& j, const point3& p)
 	{
 		j = nlohmann::json{
@@ -161,10 +161,20 @@ namespace models
 		j.at("kill").get_to(p.kill);
 	}
 
-		//	std::map<int, int[]> attack_matrix;
-	
 	void to_json(nlohmann::json& j, const game_state& p)
 	{
+		nlohmann::json arr_win_points;
+		for (auto it = p.win_points.begin(); it != p.win_points.end(); ++it)
+			arr_win_points[std::to_string(it->first)] = it->second;
+
+		nlohmann::json arr_vehicles;
+		for (auto it = p.vehicles.begin(); it != p.vehicles.end(); ++it)
+			arr_vehicles[std::to_string(it->first)] = it->second;
+	
+		nlohmann::json arr_attack;
+		for (auto it = p.attack_matrix.begin(); it != p.attack_matrix.end(); ++it)
+			arr_attack[std::to_string(it->first)] = it->second;
+
 		j = nlohmann::json{
 			{"num_players", p.num_players},
 			{"num_turns", p.num_turns},
@@ -173,14 +183,17 @@ namespace models
 			{"observers", p.observers},
 			{"current_player_idx", p.current_player_idx},
 			{"finished", p.finished},
-			{"vehicles", p.vehicles},
-
-			{"attack_matrix", p.attack_matrix},
-
+			{"vehicles", arr_vehicles},
+			{"attack_matrix", arr_attack},
 			{"winner", p.winner},
-			{"win_points", p.win_points},
+			{"win_points", arr_win_points},
 			{"catapult_usage", p.catapult_usage}
 		};
+
+		if (p.current_player_idx == 0)
+			j["current_player_idx"] = nullptr;
+		if (p.winner == 0)
+			j["winner"] = nullptr;
 	}
 
 	void from_json(const nlohmann::json& j, game_state& p)
@@ -199,5 +212,17 @@ namespace models
 		j.at("winner").get_to(p.winner);
 		j.at("win_points").get_to<std::map<int, win_points>>(p.win_points);
 		j.at("catapult_usage").get_to(p.catapult_usage);
+	}
+
+	void to_json(nlohmann::json& j, const action_rsp& p)
+	{
+		j = nlohmann::json{
+			{"actions", p.actions}
+		};
+	}
+
+	void from_json(const nlohmann::json& j, action_rsp& p)
+	{
+		j.at("capture").get_to(p.actions);
 	}
 }

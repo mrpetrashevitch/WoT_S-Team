@@ -7,10 +7,17 @@ namespace engine
 
 	}
 
-	void engine::_create_game()
+	std::shared_ptr<battle> engine::_get_battle_by_conn_id(int conn_id)
 	{
-		models::game_state gs;
+		auto iter_c = _con_name.find(conn_id);
+		if (iter_c == _con_name.end())
+			return nullptr;
 
+		auto iter_n = _name_battle.find(iter_c->second);
+		if (iter_n == _name_battle.end())
+			return nullptr;
+
+		return iter_n->second;
 	}
 
 	engine::engine()
@@ -31,102 +38,63 @@ namespace engine
 		return true;
 	}
 
-	std::tuple<models::Result, models::player> engine::login(const models::login& login, int conn_id)
+	std::tuple<models::result, models::player> engine::login(const models::login& login, int conn_id)
 	{
-		models::player pl;
+		auto iter_c = _con_name.find(conn_id);
+		auto iter_n = _name_battle.find(login.name);
 
-		if (_users.find(login.name) == _users.end())
-			_users.insert(std::pair<std::string, int>(login.name, _user_id++));
+		if (iter_c != _con_name.end() && iter_n != _name_battle.end())
+		{
+			auto battle = iter_n->second;
+			auto player = battle->get_player_by_name(login.name);
+			return { models::result::OKEY, player };
+		}
 
-		int user_id = _users[login.name];
+		if (iter_n != _name_battle.end())
+		{
+			auto battle = iter_n->second;
+			auto player = battle->get_player_by_name(login.name);
+			_con_name.insert(std::pair<int, std::string>(conn_id, login.name));
+			return { models::result::OKEY, player };
+		}
 
-		pl.idx = user_id;
-		pl.is_observer = login.is_observer;
-		pl.name = login.name;
+		if (iter_c == _con_name.end())
+			_con_name.insert(std::pair<int, std::string>(conn_id, login.name));
 
-		return { models::Result::OKEY, pl };
+		//create battle
+		auto ptr_battle = std::make_shared<battle>(login.game, login.num_players, login.num_turns);
+
+		//create player
+		models::player player;
+		player.name = login.name;
+		player.is_observer = login.is_observer;
+		player.idx = _user_id++;
+
+		ptr_battle->add_player(player);
+		_battles.push_back(ptr_battle);
+		_name_battle.insert(std::pair<std::string, std::shared_ptr<battle>>(login.name, ptr_battle));
+
+		return { models::result::OKEY, player };
 	}
 
-	std::tuple<models::Result, models::map> engine::map(int conn_id)
+	std::tuple<models::result, models::map> engine::map(int conn_id)
 	{
-		models::map map;
-
-		map.name = "map04";
-		map.size = 11;
-		map.spawn_points.push_back({ {{ -4,-6,10 }},{{-6,-4,10}},{{-5,-5,10}},{{-3,-7,10}},{{-7,-3,10}} });
-		map.spawn_points.push_back({ {{ -6,10,-4 }},{{-4,10,-6}},{{-5,10,-5}},{{-7,10,-3}},{{-3,10,-7}} });
-		map.spawn_points.push_back({ {{ 10,-4,-6 }},{{10,-6,-4}},{{10,-5,-5}},{{10,-3,-7}},{{10,-7,-3}} });
-
-		map.content.base.push_back({ -1,0,1 });
-		map.content.base.push_back({ -1,1,0 });
-		map.content.base.push_back({ 0,-1,1 });
-		map.content.base.push_back({ 0,0,0 });
-		map.content.base.push_back({ 0,1,-1 });
-		map.content.base.push_back({ 1,-1,0 });
-		map.content.base.push_back({ 1,0,-1 });
-
-		map.content.catapult.push_back({ -6,3,3 });
-		map.content.catapult.push_back({ 3,-6,3 });
-		map.content.catapult.push_back({ 3,3,-6 });
-
-		map.content.hard_repair.push_back({ -6,-6,6 });
-		map.content.hard_repair.push_back({ -6,6,-6 });
-		map.content.hard_repair.push_back({ 6,-6,-6 });
-
-		map.content.light_repair.push_back({});
-
-		map.content.obstacle.push_back({ -10,  0,  10 });
-		map.content.obstacle.push_back({ -10,  10,  0 });
-		map.content.obstacle.push_back({ -9,  0,  9 });
-		map.content.obstacle.push_back({ -9,  9,  0 });
-		map.content.obstacle.push_back({ -8,  0,  8 });
-		map.content.obstacle.push_back({ -8,  8,  0 });
-		map.content.obstacle.push_back({ -7,  0,  7 });
-		map.content.obstacle.push_back({ -7,  7,  0 });
-		map.content.obstacle.push_back({ -6,  0,  6 });
-		map.content.obstacle.push_back({ -6,  6,  0 });
-		map.content.obstacle.push_back({ -5,  0,  5 });
-		map.content.obstacle.push_back({ -5,  5,  0 });
-		map.content.obstacle.push_back({ -3,  0,  3 });
-		map.content.obstacle.push_back({ -3,  3,  0 });
-		map.content.obstacle.push_back({ -2,  0,  2 });
-		map.content.obstacle.push_back({ -2,  2,  0 });
-		map.content.obstacle.push_back({ 0,  -10,  10 });
-		map.content.obstacle.push_back({ 0,  -9,  9 });
-		map.content.obstacle.push_back({ 0,  -8,  8 });
-		map.content.obstacle.push_back({ 0,  -7,  7 });
-		map.content.obstacle.push_back({ 0,  -6,  6 });
-		map.content.obstacle.push_back({ 0,  -5,  5 });
-		map.content.obstacle.push_back({ 0,  -3,  3 });
-		map.content.obstacle.push_back({ 0,  -2,  2 });
-		map.content.obstacle.push_back({ 0,  2,  -2 });
-		map.content.obstacle.push_back({ 0,  3,  -3 });
-		map.content.obstacle.push_back({ 0,  5,  -5 });
-		map.content.obstacle.push_back({ 0,  6,  -6 });
-		map.content.obstacle.push_back({ 0,  7,  -7 });
-		map.content.obstacle.push_back({ 0,  8,  -8 });
-		map.content.obstacle.push_back({ 0,  9,  -9 });
-		map.content.obstacle.push_back({ 0,  10,  -10 });
-		map.content.obstacle.push_back({ 2,  -2,  0 });
-		map.content.obstacle.push_back({ 2,  0,  -2 });
-		map.content.obstacle.push_back({ 3,  -3,  0 });
-		map.content.obstacle.push_back({ 3,  0,  -3 });
-		map.content.obstacle.push_back({ 5,  -5,  0 });
-		map.content.obstacle.push_back({ 5,  0,  -5 });
-		map.content.obstacle.push_back({ 6,  -6,  0 });
-		map.content.obstacle.push_back({ 6,  0,  -6 });
-		map.content.obstacle.push_back({ 7,  -7,  0 });
-		map.content.obstacle.push_back({ 7,  0,  -7 });
-		map.content.obstacle.push_back({ 8,  -8,  0 });
-		map.content.obstacle.push_back({ 8,  0,  -8 });
-		map.content.obstacle.push_back({ 9,  -9,  0 });
-		map.content.obstacle.push_back({ 9,  0,  -9 });
-		map.content.obstacle.push_back({ 10,  -10,  0 });
-		map.content.obstacle.push_back({ 10,  0,  -10 });
-
-
-		return { models::Result::OKEY, map };
+		auto battle = _get_battle_by_conn_id(conn_id);
+		if (battle == nullptr) return { models::result::ACCESS_DENIED, {} };
+		return { models::result::OKEY, battle->get_map()};
 	}
 
+	std::tuple<models::result, models::game_state> engine::game_state(int conn_id)
+	{
+		auto battle = _get_battle_by_conn_id(conn_id);
+		if (battle == nullptr) return { models::result::ACCESS_DENIED, {} };
+		return { models::result::OKEY, battle->get_game_state() };
+	}
 
+	std::tuple<models::result, models::action_rsp> engine::actions(int conn_id)
+	{
+		auto battle = _get_battle_by_conn_id(conn_id);
+		if (battle == nullptr) return { models::result::ACCESS_DENIED, {} };
+		return { models::result::OKEY, battle->get_actions() };
+	}
 }
