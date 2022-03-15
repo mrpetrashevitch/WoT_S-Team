@@ -55,7 +55,20 @@ namespace models
 	struct point3
 	{
 		int x = 0, y = 0, z = 0;
+		static int get_distance(const point3& p0, const point3& p1)
+		{
+			return (std::abs(p0.x - p1.x) + std::abs(p0.y - p1.y) + std::abs(p0.z - p1.z)) / 2;
+		}
+		bool operator==(const point3& p) const
+		{
+			return x == p.x && y == p.y && z == p.z;
+		}
+		/*friend bool operator<(const point3& p1, const point3& p2)
+		{
+			return (p1.x < p2.x) && (p1.y < p2.y) && (p1.z < p2.z);
+		}*/
 	};
+
 
 	struct content
 	{
@@ -132,5 +145,17 @@ namespace models
 	struct action_rsp
 	{
 		std::vector<player> actions;
+	};
+
+	struct move
+	{
+		int vehicle_id = 0;
+		point3 target{};
+	};
+
+	struct shoot
+	{
+		int vehicle_id = 0;
+		point3 target{};
 	};
 }

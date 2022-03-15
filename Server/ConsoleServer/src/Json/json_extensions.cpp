@@ -225,4 +225,32 @@ namespace models
 	{
 		j.at("capture").get_to(p.actions);
 	}
+
+	void to_json(nlohmann::json& j, const move& p)
+	{
+		j = nlohmann::json{
+			{"vehicle_id", p.vehicle_id},
+			{"target", p.target}
+		};
+	}
+
+	void from_json(const nlohmann::json& j, move& p)
+	{
+		j.at("vehicle_id").get_to(p.vehicle_id);
+		j.at("target").get_to(p.target);
+	}
+
+	void to_json(nlohmann::json& j, const shoot& p)
+	{
+		j = nlohmann::json{
+			{"vehicle_id", p.vehicle_id},
+			{"target", p.target}
+		};
+	}
+
+	void from_json(const nlohmann::json& j, shoot& p)
+	{
+		j.at("vehicle_id").get_to(p.vehicle_id);
+		j.at("target").get_to(p.target);
+	}
 }

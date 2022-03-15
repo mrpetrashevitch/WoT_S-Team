@@ -1,6 +1,5 @@
 #include "server.h"
-#include "../Json/json_extensions.h"
-#include "../Packets/packets.h"
+
 
 namespace server
 {
@@ -8,7 +7,6 @@ namespace server
 	{
 		total_connection++;
 		printf("accepted: socket %d, total %d\n", socket, total_connection.load());
-
 	}
 
 	void server::_cb_on_recv(web::io_base::i_connection* conn, web::packet::packet_network* packet)
@@ -28,7 +26,7 @@ namespace server
 			{
 				data = js_parser.get<models::login>();//maybe exception
 
-				auto [res, player] = _engine.login(data, (int)conn->get_socket());
+				auto [res, player] = _engine.login(data, conn);
 				result_code = res;
 
 				if (result_code == models::result::OKEY)
@@ -40,12 +38,11 @@ namespace server
 			catch (const std::exception& ex)
 			{
 				printf(ex.what());
-				data.name = "";
 			}
 		}
 		else if (packet->header.type == models::action::MAP)
 		{
-			auto [res, map] = _engine.map((int)conn->get_socket());
+			auto [res, map] = _engine.map(conn);
 			result_code = res;
 			if (result_code == models::result::OKEY)
 			{
@@ -55,7 +52,7 @@ namespace server
 		}
 		else if (packet->header.type == models::action::GAME_STATE)
 		{
-			auto [res, game_state] = _engine.game_state((int)conn->get_socket());
+			auto [res, game_state] = _engine.game_state(conn);
 			result_code = res;
 			if (result_code == models::result::OKEY)
 			{
@@ -65,7 +62,7 @@ namespace server
 		}
 		else if (packet->header.type == models::action::GAME_ACTIONS)
 		{
-			auto [res, actions] = _engine.actions((int)conn->get_socket());
+			auto [res, actions] = _engine.actions(conn);
 			result_code = res;
 			if (result_code == models::result::OKEY)
 			{
@@ -73,11 +70,32 @@ namespace server
 				result_str = j_map[0].dump();
 			}
 		}
+		else if (packet->header.type == models::action::MOVE)
+		{
+			models::move data;
+			std::string str_json((char*)packet->body, packet->header.size);
+			nlohmann::json js_parser = nlohmann::json::parse(str_json);
+			try
+			{
+				data = js_parser.get<models::move>();//maybe exception
+				result_code = _engine.move(data, conn);
+			}
+			catch (const std::exception& ex)
+			{
+				printf(ex.what());
+			}
+		}
+		else if (packet->header.type == models::action::TURN)
+		{
+			result_code = _engine.turn(conn);
+			if (result_code == models::result::OKEY)
+				return;
+		}
 
 		if (result_code != models::result::OKEY)
-			_server->send_packet_async(conn, std::make_shared<packets::packet_error>(result_code));
+			_server.send_packet_async(conn, std::make_shared<packets::packet_error>(result_code));
 		else
-			_server->send_packet_async(conn, std::make_shared<packets::packet_json>(result_code, result_str));
+			_server.send_packet_async(conn, std::make_shared<packets::packet_json>(result_code, result_str));
 
 	}
 
@@ -115,17 +133,17 @@ namespace server
 		}
 	}
 
-	server::server(web::io_server::i_server* server) : _server(server)
+	server::server(web::io_server::i_server& server) : _server(server)
 	{
-		_server->set_on_accepted(std::bind(&server::_cb_on_accepted, this, std::placeholders::_1, std::placeholders::_2));
-		_server->set_on_recv(std::bind(&server::_cb_on_recv, this, std::placeholders::_1, std::placeholders::_2));
-		_server->set_on_send(std::bind(&server::_cb_on_send, this, std::placeholders::_1, std::placeholders::_2));
-		_server->set_on_disconnected(std::bind(&server::_cb_on_disconnected, this, std::placeholders::_1));
+		_server.set_on_accepted(std::bind(&server::_cb_on_accepted, this, std::placeholders::_1, std::placeholders::_2));
+		_server.set_on_recv(std::bind(&server::_cb_on_recv, this, std::placeholders::_1, std::placeholders::_2));
+		_server.set_on_send(std::bind(&server::_cb_on_send, this, std::placeholders::_1, std::placeholders::_2));
+		_server.set_on_disconnected(std::bind(&server::_cb_on_disconnected, this, std::placeholders::_1));
 	}
 
 	bool server::run()
 	{
-		if (_server->run() && _engine.run())
+		if (_server.run() && _engine.run(&_server))
 			return true;
 		return false;
 	}

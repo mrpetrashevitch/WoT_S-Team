@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 
 	web::io_server::i_server* server_cl = ld.create_fn(b0, b1, b2, b3, port);
 
-	server::server server(server_cl);
+	server::server server(*server_cl);
 	server.run();
 
 	int last = 0;

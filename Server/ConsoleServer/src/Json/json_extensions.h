@@ -42,4 +42,10 @@ namespace models
 
 	void to_json(nlohmann::json& j, const action_rsp& p);
 	void from_json(const nlohmann::json& j, action_rsp& p);
+
+	void to_json(nlohmann::json& j, const move& p);
+	void from_json(const nlohmann::json& j, move& p);
+
+	void to_json(nlohmann::json& j, const shoot& p);
+	void from_json(const nlohmann::json& j, shoot& p);
 }
