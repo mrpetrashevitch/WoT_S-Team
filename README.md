@@ -36,5 +36,10 @@ Command: `docker build -t game_image:latest -m 2GB .`
 - Run the container from the image with the parameters
 Command: `docker run -i --name game_container game_image -u USER -p PASS -g GAMENAME -pc 1 -tc 45 -o 0  -ai 1 -q`
 
+### Team members
+- [Andrei Petrashevich](https://github.com/mrpetrashevitch)
+- [Vasili Siachko](https://github.com/banany2001)
+- [Artsiom Khilko](https://github.com/Artyom-Master)
+
 ### About
 - This product is designed for educational purposes only.
