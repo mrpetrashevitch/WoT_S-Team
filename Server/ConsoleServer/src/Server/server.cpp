@@ -40,6 +40,10 @@ namespace server
 				printf(ex.what());
 			}
 		}
+		else if (packet->header.type == models::action::LOGOUT)
+		{
+			result_code = _engine.logout(conn);
+		}
 		else if (packet->header.type == models::action::MAP)
 		{
 			auto [res, map] = _engine.map(conn);
@@ -85,6 +89,21 @@ namespace server
 				printf(ex.what());
 			}
 		}
+		else if (packet->header.type == models::action::SHOOT)
+		{
+			models::shoot data;
+			std::string str_json((char*)packet->body, packet->header.size);
+			nlohmann::json js_parser = nlohmann::json::parse(str_json);
+			try
+			{
+				data = js_parser.get<models::shoot>();//maybe exception
+				result_code = _engine.shoot(data, conn);
+			}
+			catch (const std::exception& ex)
+			{
+				printf(ex.what());
+			}
+		}
 		else if (packet->header.type == models::action::TURN)
 		{
 			result_code = _engine.turn(conn);
@@ -109,28 +128,6 @@ namespace server
 	{
 		total_connection--;
 		printf("disconnected: socket %d, total %d\n", conn->get_socket(), total_connection.load());
-
-
-		std::string str("[user");
-		str += std::to_string(conn->get_socket());
-		str += "] ";
-		str += " has been disconnected";
-
-		std::shared_ptr<web::packet::packet_string> p(std::make_shared<web::packet::packet_string>(str.c_str()));
-		web::io_server::i_server* server = reinterpret_cast<web::io_server::i_server*>(conn->get_owner());
-
-		{
-			std::lock_guard<std::recursive_mutex> lg(mut_conn);
-			auto item = std::find_if(_connestions.begin(), _connestions.end(), [&conn](web::io_base::i_connection* c) { return c->get_socket() == conn->get_socket(); });
-			if (item != _connestions.end())
-				_connestions.erase(item);
-
-			/*for (auto& i : _connestions)
-			if (i->get_socket() != conn->get_socket())
-			{
-			server->send_packet_async(i, p);
-			}*/
-		}
 	}
 
 	server::server(web::io_server::i_server& server) : _server(server)

@@ -79,10 +79,12 @@ namespace engine
 		_map.content.obstacle.push_back({ 10,  -10,  0 });
 		_map.content.obstacle.push_back({ 10,  0,  -10 });
 	}
+
 	void battle::_init_game_state()
 	{
 
 	}
+
 	models::vehicle battle::_create_vehicle(models::vehicle_type type, int player_index, const models::point3& pos)
 	{
 		models::vehicle v;
@@ -229,18 +231,41 @@ namespace engine
 		return valid;
 	}
 
-	std::vector<models::point3> battle::_get_path_shoot_pt(const models::point3& point, const models::point3& target, int shoot_max)
+	std::vector<int> battle::_get_path_shoot_pt(int player_id, const models::point3& point, const models::point3& target, int shoot_max)
 	{
-		std::vector<models::point3> ret;
-		for (size_t i = 1; i <= shoot_max; i++)
+		std::vector<int> ret;
+		for (int i = 1; i <= shoot_max; i++)
 		{
 			models::point3 p{};
 			if (!_get_vector(point, target, i, p))
 				break;
 			if (std::find(_map.content.obstacle.begin(), _map.content.obstacle.end(), p) != _map.content.obstacle.end())
 				break;
-			ret.push_back(p);
+
+			auto it = std::find_if(_game_state.vehicles.begin(), _game_state.vehicles.end(),
+				[p, player_id](const std::pair<int, models::vehicle>& v) -> bool
+				{
+					return v.second.position == p && v.second.player_id != player_id;
+				}
+			);
+			if (it == _game_state.vehicles.end()) continue;
+			ret.push_back((*it).first);
 		}
+		return ret;
+	}
+
+	std::vector<int> battle::_get_path_shoot(int player_id, const models::point3& target)
+	{
+		std::vector<int> ret;
+
+		auto it = std::find_if(_game_state.vehicles.begin(), _game_state.vehicles.end(),
+			[target, player_id](const std::pair<int, models::vehicle>& v) -> bool
+			{
+				return v.second.position == target && v.second.player_id != player_id;
+			}
+		);
+		if (it != _game_state.vehicles.end())
+			ret.push_back((*it).first);
 		return ret;
 	}
 
@@ -257,40 +282,88 @@ namespace engine
 		return std::find(p.begin(), p.end(), point) != p.end();
 	}
 
-	std::vector<models::point3> battle::_can_shoot(const models::vehicle& vehicle, const models::point3& point)
+	std::vector<int> battle::_can_shoot(const models::vehicle& vehicle, const models::point3& point)
 	{
-		std::vector<models::point3> list;
+		std::vector<int> list;
 		if (std::abs(point.x) > _map.size - 1) return list;
 		if (std::abs(point.y) > _map.size - 1) return list;
 		if (std::abs(point.z) > _map.size - 1) return list;
 
 		int dist = models::point3::get_distance(vehicle.position, point);
 		int shoot_min = _vehicle_params[(int)vehicle.vehicle_type].shoot_min;
-		int shoot_max = _vehicle_params[(int)vehicle.vehicle_type].shoot_max;
+		int shoot_max = _vehicle_params[(int)vehicle.vehicle_type].shoot_max + vehicle.shoot_range_bonus;
 		if (shoot_min > dist) return list;
 		if (shoot_max < dist) return list;
 
 		if (vehicle.vehicle_type == models::vehicle_type::at_spg)
-			list = _get_path_shoot_pt(vehicle.position, point, shoot_max + vehicle.shoot_range_bonus);
+			list = _get_path_shoot_pt(vehicle.player_id, vehicle.position, point, shoot_max);
 		else
-			list = _get_point_around(vehicle.position, shoot_min, shoot_max + vehicle.shoot_range_bonus);
-
-		list.erase(std::remove_if(list.begin(), list.end(),
-			[this, &vehicle](const models::point3& p)
-			{
-				auto it = std::find_if(_game_state.vehicles.begin(), _game_state.vehicles.end(),
-					[p](const std::pair<int, models::vehicle>& v) -> bool
-					{
-						return v.second.position == p;
-					}
-				);
-				if (it == _game_state.vehicles.end()) return true;
-				if ((*it).second.player_id == vehicle.player_id) return true;
-				return false;
-			}),
-			list.end());
-
+			list = _get_path_shoot(vehicle.player_id, point);
 		return list;
+	}
+
+	void battle::_add_capture_points()
+	{
+		std::set<int> on_base;
+		std::vector<int> on_base_veh_id_add;
+		std::vector<int> on_base_veh_id_zero;
+
+		for (auto& v : _game_state.vehicles)
+		{
+			auto it = std::find(_map.content.base.begin(), _map.content.base.end(), v.second.position);
+			if (it == _map.content.base.end())
+			{
+				on_base_veh_id_zero.push_back(v.first);
+			}
+			else
+			{
+				on_base_veh_id_add.push_back(v.first);
+				on_base.insert(v.second.player_id);
+			}
+		}
+
+		if (on_base.size() > 2) return;
+
+		for (auto& id : on_base_veh_id_add)
+			_game_state.vehicles[id].capture_points++;
+		for (auto& id : on_base_veh_id_zero)
+			_game_state.vehicles[id].capture_points = 0;
+
+		for (int i = 0; i < _game_state.num_players; i++)
+		{
+			_game_state.win_points[_game_state.players[i].idx].capture = 0;
+			for (auto& p : _game_state.vehicles)
+			{
+				if (p.second.player_id == _game_state.players[i].idx)
+					_game_state.win_points[_game_state.players[i].idx].capture += p.second.capture_points;
+			}
+		}
+	}
+
+	void battle::_add_stubs()
+	{
+		for (auto& v : _game_state.vehicles)
+		{
+			auto it_catapult = std::find(_map.content.catapult.begin(), _map.content.catapult.end(), v.second.position);
+			if (it_catapult != _map.content.catapult.end())
+				v.second.shoot_range_bonus = 1;
+
+			auto it_hard_repair = std::find(_map.content.hard_repair.begin(), _map.content.hard_repair.end(), v.second.position);
+			if (it_hard_repair != _map.content.hard_repair.end() &&
+				(v.second.vehicle_type == models::vehicle_type::at_spg || v.second.vehicle_type == models::vehicle_type::heavy_tank))
+				v.second.health = _vehicle_params[(int)v.second.vehicle_type].hp_max;
+
+			auto it_light_repair = std::find(_map.content.light_repair.begin(), _map.content.light_repair.end(), v.second.position);
+			if (it_light_repair != _map.content.light_repair.end() &&
+				v.second.vehicle_type != models::vehicle_type::at_spg && 
+				v.second.vehicle_type != models::vehicle_type::heavy_tank)
+				v.second.health = _vehicle_params[(int)v.second.vehicle_type].hp_max;
+		}
+	}
+
+	bool battle::_check_actioned(int veh_id)
+	{
+		return  !_actioned.insert(veh_id).second;
 	}
 
 	std::vector<post_action> battle::_next()
@@ -311,19 +384,31 @@ namespace engine
 				act.push_back({ i,models::result::OKEY,{} });
 			_waiters.clear();
 
+			_add_capture_points();
+			_add_stubs();
 
-			//gev vehicle on base and add points for base
+			for (auto& i : _game_state.win_points)
+			{
+				if (i.second.capture >= 5)
+				{
+					_game_state.finished = true;
+					_game_state.winner = i.first;
+				}
+			}
 
 			_game_state.current_turn++;
 			if (_game_state.current_turn == _game_state.num_turns)
 			{
-				// get winner
 				_game_state.finished = true;
+				//count kill
 			}
+
+			if (_game_state.current_turn % _game_state.num_players == 0)
+				_actioned.clear();
+
 			_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 			return act;
 		}
-
 		return{};
 	}
 
@@ -359,6 +444,33 @@ namespace engine
 		_game_state.attack_matrix.insert(std::pair<int, std::vector<int>>(player.idx, {}));
 		_game_state.win_points.insert(std::pair<int, models::win_points>(player.idx, {}));
 		return true;
+	}
+
+	bool battle::update_player(const models::player& player, web::io_base::i_connection* conn)
+	{
+		if (!player.is_observer)
+		{
+			for (int i = 0; i < _game_state.num_players; i++)
+			{
+				if (_game_state.players[i].idx == player.idx)
+				{
+					_player_conn[i] = conn;
+					return true;
+				}
+			}
+		}
+		else
+		{
+			for (int i = 0; i < _game_state.observers.size(); i++)
+			{
+				if (_game_state.observers[i].idx == player.idx)
+				{
+					_observer_conn[i] = conn;
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	models::player battle::get_player_by_name(const std::string name)
@@ -407,9 +519,28 @@ namespace engine
 		auto& vehicle = _game_state.vehicles[move.vehicle_id];
 		if (vehicle.player_id != _game_state.players[index_player].idx) return models::result::BAD_COMMAND;
 		if (!_can_move(vehicle, move.target)) return models::result::BAD_COMMAND;
+		if (_check_actioned(move.vehicle_id)) return models::result::BAD_COMMAND;
 
 		vehicle.position = move.target;
 		return models::result::OKEY;
+	}
+
+	void battle::_shoot(int player_index, int vehicle_id)
+	{
+		auto& veh = _game_state.vehicles[vehicle_id];
+
+		veh.health--;
+		if (veh.health < 1)
+		{
+			veh.shoot_range_bonus = 0;
+			veh.capture_points = 0;
+			veh.position = veh.spawn_position;
+			veh.health = _vehicle_params[(int)veh.vehicle_type].hp_max;
+
+			_game_state.win_points[_game_state.players[player_index].idx].kill +=
+				_vehicle_params[(int)veh.vehicle_type].gold;
+		}
+
 	}
 
 	models::result battle::set_shoot(const models::shoot& shoot, web::io_base::i_connection* conn)
@@ -420,16 +551,11 @@ namespace engine
 		auto& vehicle = _game_state.vehicles[shoot.vehicle_id];
 		if (vehicle.player_id != _game_state.players[index_player].idx) return models::result::BAD_COMMAND;
 		auto points = _can_shoot(vehicle, shoot.target);
+		if (points.empty())return models::result::BAD_COMMAND;
+		if (_check_actioned(shoot.vehicle_id)) return models::result::BAD_COMMAND;
 
-		// killing hevicles and add poinp kill and spawn vehicles
-		if (vehicle.vehicle_type == models::vehicle_type::at_spg)
-		{
-
-		}
-		else
-		{
-
-		}
+		for (auto p : points)
+			_shoot(index_player, p);
 
 		return models::result::OKEY;
 	}

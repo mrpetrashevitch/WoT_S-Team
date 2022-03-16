@@ -31,6 +31,7 @@ namespace engine
 		battle(std::string name, int num_players, int num_turns);
 
 		bool add_player(const models::player& player, web::io_base::i_connection* conn);
+		bool update_player(const models::player& player, web::io_base::i_connection* conn);
 		const std::string& get_name();
 		const models::map& get_map();
 		const models::game_state& get_game_state();
@@ -45,11 +46,11 @@ namespace engine
 		int _vehicle_id = 1;
 		vehicle_param _vehicle_params[5]
 		{
-			{2,2,1,2,2,2},
+			{1,1,1,1,3,3},
 			{1,3,1,1,2,2},
 			{3,1,1,3,1,2},
+			{2,2,1,2,2,2},
 			{2,1,1,2,1,3},
-			{1,1,1,1,3,3}
 		};
 		std::chrono::milliseconds _time;
 		std::string _name{};
@@ -58,7 +59,9 @@ namespace engine
 		models::action_rsp _actions;
 		std::vector<web::io_base::i_connection*> _player_conn;
 		std::vector<web::io_base::i_connection*> _observer_conn;
-		std::vector< web::io_base::i_connection*> _waiters;
+
+		std::vector<web::io_base::i_connection*> _waiters;
+		std::set<int> _actioned;
 
 		void _init_map();
 		void _init_game_state();
@@ -70,9 +73,14 @@ namespace engine
 		std::vector<models::point3> _get_point_around(const models::point3& point, int n, int N);
 		std::vector<models::point3> _get_points_move(const models::point3& point, int speed);
 		bool _get_vector(const models::point3& src, const models::point3& dst, int offset, models::point3& out);
-		std::vector<models::point3> _get_path_shoot_pt(const models::point3& point, const models::point3& target, int shoot_max);
+		std::vector<int> _get_path_shoot_pt(int player_id, const models::point3& point, const models::point3& target, int shoot_max);
+		std::vector<int> _get_path_shoot(int player_id, const models::point3& target);
 		bool _can_move(const models::vehicle& vehicle, const models::point3& point);
-		std::vector<models::point3> _can_shoot(const models::vehicle& vehicle, const models::point3& point);
+		void _shoot(int player_index, int vehicle_id);
+		std::vector<int> _can_shoot(const models::vehicle& vehicle, const models::point3& point);
+		void _add_capture_points();
+		void _add_stubs();
+		bool _check_actioned(int veh_id);
 		std::vector<post_action> _next();
 	};
 }

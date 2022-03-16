@@ -63,10 +63,6 @@ namespace models
 		{
 			return x == p.x && y == p.y && z == p.z;
 		}
-		/*friend bool operator<(const point3& p1, const point3& p2)
-		{
-			return (p1.x < p2.x) && (p1.y < p2.y) && (p1.z < p2.z);
-		}*/
 	};
 
 
@@ -82,20 +78,19 @@ namespace models
 #define VEHICLE_TYPE_COUNT 5
 	enum vehicle_type : int
 	{
-		medium_tank,
+		spg,
 		light_tank,
 		heavy_tank,
+		medium_tank,
 		at_spg,
-		spg
 	};
-
 	struct spawn_points
 	{
-		std::vector<point3> medium_tank;
+		std::vector<point3> spg;
 		std::vector<point3> light_tank;
 		std::vector<point3> heavy_tank;
+		std::vector<point3> medium_tank;
 		std::vector<point3> at_spg;
-		std::vector<point3> spg;
 
 		std::vector<point3>& get_spawn_points_by_type(vehicle_type type);
 	};
