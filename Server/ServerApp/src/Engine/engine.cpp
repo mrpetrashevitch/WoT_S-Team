@@ -90,6 +90,12 @@ namespace engine
 		return true;
 	}
 
+	int engine::get_total_games()
+	{
+		std::lock_guard<std::mutex> lg(_mut);
+		return _battles.size();
+	}
+
 	std::tuple<models::result, models::player> engine::login(const models::login& login, web::io_base::i_connection* conn)
 	{
 		std::lock_guard<std::mutex> lg(_mut);

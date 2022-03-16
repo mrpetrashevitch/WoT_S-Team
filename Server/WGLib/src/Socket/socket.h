@@ -8,9 +8,6 @@ namespace web
 	{
 		class socket
 		{
-			SOCKET _socket;
-			sockaddr_in _socket_address;
-			bool _inited;
 		public:
 			socket();
 			bool init(byte s_b1, byte s_b2, byte s_b3, byte s_b4, ushort port);
@@ -23,6 +20,10 @@ namespace web
 			bool listen(int members);
 			const SOCKET& get_socket() const;
 			const sockaddr_in& get_socket_address() const;
+		private:
+			SOCKET _socket;
+			sockaddr_in _socket_address;
+			bool _inited;
 		};
 	}
 }

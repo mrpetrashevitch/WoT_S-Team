@@ -8,20 +8,7 @@ namespace thread
 {
 	class thread
 	{
-		std::function<void()>_task;
-		std::function<void()>_exit;
-		std::thread _thread;
-		std::recursive_mutex _mut;
-		std::condition_variable_any _con;
-		bool _task_work = false;
-		template <typename F>
-		void set_task(const F& task)
-		{
-			const std::scoped_lock lock(_mut);
-			exit();
-			_task = std::function<void()>(task);
-			_exit = nullptr;
-		}
+
 	public:
 		thread();
 		~thread();
@@ -140,5 +127,21 @@ namespace thread
 		void exit();
 
 		bool is_work();
+
+	private:
+		std::function<void()>_task;
+		std::function<void()>_exit;
+		std::thread _thread;
+		std::recursive_mutex _mut;
+		std::condition_variable_any _con;
+		bool _task_work = false;
+		template <typename F>
+		void set_task(const F& task)
+		{
+			const std::scoped_lock lock(_mut);
+			exit();
+			_task = std::function<void()>(task);
+			_exit = nullptr;
+		}
 	};
 }

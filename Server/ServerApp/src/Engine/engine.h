@@ -17,6 +17,7 @@ namespace engine
 	public:
 		engine();
 		bool run(web::io_server::i_server* server);
+		int get_total_games();
 		std::tuple<models::result, models::player> login(const models::login& login, web::io_base::i_connection* conn);
 		models::result logout(web::io_base::i_connection* conn);
 		std::tuple<models::result, models::map> map(web::io_base::i_connection* conn);

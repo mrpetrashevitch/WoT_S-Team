@@ -144,4 +144,9 @@ namespace server
 			return true;
 		return false;
 	}
+	void server::status()
+	{
+		printf("connection: %d\ngames: %d\npackts (r/s): %d / %d\ndata (r/s): %d / %d\n",
+			total_connection.load(),_engine.get_total_games(), (int)total_packet_r.load(), (int)total_packet_s.load(), (int)total_recved_b.load(), (int)total_sended_b.load());
+	}
 }

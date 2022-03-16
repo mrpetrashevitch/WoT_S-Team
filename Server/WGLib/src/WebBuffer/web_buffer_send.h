@@ -13,6 +13,11 @@ namespace web
 
 		class web_send_task
 		{
+		public:
+			web_send_task(web::packet::i_packet_network* packet);
+			web_send_task(const std::shared_ptr<packet::i_packet_network>& ptr);
+			friend web_buffer_send;
+		private:
 			bool _is_ready;
 			packet::i_packet_network* _packet;
 			int _need;
@@ -20,17 +25,10 @@ namespace web
 			WSABUF _wsa;
 			std::shared_ptr<web::packet::i_packet_network> _ptr;
 			bool _move(int len);
-		public:
-			web_send_task(web::packet::i_packet_network* packet);
-			web_send_task(const std::shared_ptr<packet::i_packet_network>& ptr);
-			friend web_buffer_send;
 		};
 
 		class web_buffer_send
 		{
-			lockers::spin_lock _mut;
-			std::deque<web_send_task> _q;
-			web_send_task* _front = nullptr;
 		public:
 			bool empty();
 			void push(const web_send_task& task);
@@ -48,6 +46,10 @@ namespace web
 			{
 				_mut.unlock();
 			}
+		private:
+			lockers::spin_lock _mut;
+			std::deque<web_send_task> _q;
+			web_send_task* _front = nullptr;
 		};
 	}
 }

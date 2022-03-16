@@ -51,10 +51,6 @@ namespace web
 
 		class connection : public i_connection
 		{
-			void* _owner;
-			SOCKET _socket;
-			SOCKADDR_IN _addr;
-			HANDLE _icmp_handle;
 		public:
 			overlapped_connect connect_overlapped;
 			overlapped_accept accept_overlapped;
@@ -68,6 +64,11 @@ namespace web
 			void set_addr(const SOCKADDR_IN& addr);
 			SOCKADDR_IN& get_addr() override;
 			int get_ping() override;
+		private:
+			void* _owner;
+			SOCKET _socket;
+			SOCKADDR_IN _addr;
+			HANDLE _icmp_handle;
 		};
 	}
 }
