@@ -7,7 +7,7 @@
 
 ### Technologies
 - UI - C# WPF (MVVM)
-- AI and Network - C++
+- AI and Network - C++ (IOCP)
 
 ### Compiler
 - MSVC++ v.143 (vs2022)
