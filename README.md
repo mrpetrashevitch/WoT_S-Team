@@ -41,5 +41,9 @@ Command: `docker run -i --name game_container game_image -u USER -p PASS -g GAME
 - [Vasili Siachko](https://github.com/banany2001)
 - [Artsiom Khilko](https://github.com/Artyom-Master)
 
+### Screenshots
+![WG01](https://user-images.githubusercontent.com/59962031/165247699-bd7661be-5577-4fe2-8580-8af885a994c3.JPG)
+![WG02](https://user-images.githubusercontent.com/59962031/165247720-673d9d12-e858-4517-ba09-0620451a479a.JPG)
+
 ### About
 - This product is designed for educational purposes only.
